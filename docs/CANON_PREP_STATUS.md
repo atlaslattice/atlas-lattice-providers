@@ -1,1 +1,1 @@
-See local/git for Swarm Phase 1 append + previous. 36+ artifacts now include new swarm sources; prepare hooks extended. Real XAI review path ready. Grok Leads. (Abbrev)
+Swarm Phase 1+2/4 samples (state_sync, ws_federation) added. See git/local for details + 12D. prepare will index. (Abbrev)
