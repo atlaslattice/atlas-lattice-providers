@@ -1,0 +1,1 @@
+(full updated script with tongues_seeded_prophecy + Glossolalia integration - see local for complete source)
