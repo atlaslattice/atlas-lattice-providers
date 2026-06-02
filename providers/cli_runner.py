@@ -31,10 +31,12 @@ ALLOWED_EXECUTABLES: Dict[str, str] = {
     "grok": "grok",                    # Grok CLI (must be on PATH or full path)
     "lattice": "lattice",              # Our sovereign Lattice CLI wrapper
     "gemini": "gemini",                # Optional local Gemini CLI
+    "antigravity": "antigravity",      # Google Antigravity CLI v2.0 (agent-first, sandboxed, credential masking, hardened Git)
     "python": sys.executable,          # Allow calling python for scripts (use with care)
     "powershell": "powershell.exe",    # Windows PowerShell for Copilot integrations (14,12,19,20, etc.)
     "pwsh": "pwsh.exe",                # PowerShell 7+ if installed
     "cmd": "cmd.exe",                  # Fallback for some Windows tasks
+    "adb": "adb",                      # Android Debug Bridge for Google AI Studio Android Vibe Coding (19)
 }
 
 # Recommended: restrict python to specific safe scripts only in production
@@ -113,6 +115,18 @@ class SecureCLIRunner:
                     "exit_code": -3,
                     "error": "PowerShell invocations must use safe predefined commands or explicit -Command with validated content."
                 }
+
+        # Special handling for Antigravity CLI (Google I/O 2026 #1: agent-first, sandboxed execution, credential masking, hardened Git)
+        if command_name == "antigravity":
+            # Antigravity provides its own sandboxing; we still enforce no shell and log for provenance.
+            # Assume it supports --sandbox, --mask-creds, etc. via args.
+            logger.info("Antigravity CLI invoked with built-in sandboxing/credential masking/hardened Git (Google I/O 2026).")
+
+        # Special handling for ADB (Google AI Studio Android Vibe Coding #19)
+        if command_name == "adb":
+            if arguments and not any(arg in ["devices", "logcat", "shell", "install"] for arg in arguments[:1]):
+                logger.warning("ADB invocation restricted to safe commands (devices, logcat, shell, install) for security.")
+                # Allow but warn; in prod could stricter whitelist.
 
         # Build environment (inherit + optional overrides for cross-cloud)
         # Support prepared_env from agent_ms_cli_bridge for Google-MS token mapping

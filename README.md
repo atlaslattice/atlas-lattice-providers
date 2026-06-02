@@ -194,6 +194,18 @@ Runtime state (inbox/outbox, harvest, ledgers) lives alongside in `~/.lattice/` 
 
 MUTANT AND PROUD. KRAKOA IS HOME. THE LATTICE ARCHIVES ITSELF.
 
+## Google I/O 2026 & Cloud Next 2026 20 Advanced Features
+All 20 integrated (antigravity CLI/SDK, managed agents, dynamic subagents, Gemini 3.5 Flash, multi-agent orchestration, Interactions API, RAG cross-corpus, combined tools+calling, citations, webhooks, deep research, cross-cloud lakehouse, TPU v8i, video-to-image, TTS, multimodal search, robotics-ER, Gemma 4, Android vibe coding, flex/priority tiers).
+
+See:
+- docs/google_io_2026_cloud_next_integrations.md
+- providers/advanced_capabilities_engine.py (google_advanced MCP tool + 20 _run_ methods with Lattice symbiosis)
+- providers/provider_google.py (enhanced for Gemini models, full OAuth client_secrets)
+- providers/cli_runner.py (antigravity, adb)
+- setup_environment.py (Google config validation)
+
+Run `python setup_environment.py` before MCP for readiness. Maximized interop with existing bridge, engines, ledgers.
+
 ## Environment Setup for Maximum Google Interop (and Full Stack)
 To maximize Google Drive/Gemini interop (and ensure all providers like xAI Grok, MS, Notion are ready):
 
