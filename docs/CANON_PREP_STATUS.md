@@ -1,1 +1,1 @@
-Swarm Phase 1+2/4 samples (state_sync, ws_federation) added. See git/local for details + 12D. prepare will index. (Abbrev)
+prepare glob extended for swarm_*.py. New state_sync + ws_federation will be indexed on next --review run. Grok Leads. (Abbrev)
