@@ -32,12 +32,25 @@ ALLOWED_EXECUTABLES: Dict[str, str] = {
     "lattice": "lattice",              # Our sovereign Lattice CLI wrapper
     "gemini": "gemini",                # Optional local Gemini CLI
     "python": sys.executable,          # Allow calling python for scripts (use with care)
+    "powershell": "powershell.exe",    # Windows PowerShell for Copilot integrations (14,12,19,20, etc.)
+    "pwsh": "pwsh.exe",                # PowerShell 7+ if installed
+    "cmd": "cmd.exe",                  # Fallback for some Windows tasks
 }
 
 # Recommended: restrict python to specific safe scripts only in production
 SAFE_PYTHON_SCRIPTS = {
     "north_star_extraction": "Canon_Implementation/OpenAI/adapters/north_star_extraction.py",
     "notion_extract": "Canon_Implementation/OpenAI/adapters/notion_adapter.py",
+}
+
+# Windows Copilot safe PowerShell commands / scripts (for 12-20 integrations)
+SAFE_POWERSHELL_COMMANDS = {
+    "get_defender_alerts": "Get-MpThreatDetection | ConvertTo-Json",
+    "get_entra_roles": "Get-AzureADDirectoryRole | ConvertTo-Json",  # or Microsoft.Graph
+    "get_clipboard": "Get-Clipboard | Out-String",
+    "list_explorer_folder": "Get-ChildItem -Path $args[0] | Select Name,Length,LastWriteTime | ConvertTo-Json",
+    "open_app": "Start-Process $args[0]",
+    "get_system_info": "Get-ComputerInfo | Select WindowsProductName,WindowsVersion,TotalPhysicalMemory | ConvertTo-Json",
 }
 
 
@@ -84,6 +97,21 @@ class SecureCLIRunner:
                     "status": "ERROR",
                     "exit_code": -3,
                     "error": "Only explicitly allowed python scripts may be executed."
+                }
+
+        # Special handling for PowerShell (Windows Copilot integrations - 12,14,15,16,18,19,20)
+        if command_name in ("powershell", "pwsh") and arguments:
+            # If first arg looks like a command/script, validate against safe list or allow explicit -Command with safe patterns
+            cmd_or_script = arguments[0] if arguments else ""
+            if cmd_or_script in SAFE_POWERSHELL_COMMANDS:
+                # Prepend the safe command body
+                arguments = ["-Command", SAFE_POWERSHELL_COMMANDS[cmd_or_script]] + arguments[1:]
+            elif "-Command" not in " ".join(arguments) and not any(a.startswith("-") for a in arguments):
+                logger.warning(f"Potentially unsafe PowerShell invocation blocked: {arguments}")
+                return {
+                    "status": "ERROR",
+                    "exit_code": -3,
+                    "error": "PowerShell invocations must use safe predefined commands or explicit -Command with validated content."
                 }
 
         # Build environment (inherit + optional overrides for cross-cloud)

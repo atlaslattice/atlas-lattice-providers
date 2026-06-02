@@ -120,6 +120,19 @@ class MultiProviderMCPServer:
                         },
                         "required": ["provider", "claim"]
                     }
+                },
+                {
+                    "name": "microsoft_copilot",
+                    "description": "Execute any of the 20 Advanced Microsoft Windows Copilot integrations (Graph search/delta, Outlook drafts, Teams cards, Planner, Word/Excel, Power Automate, Azure OpenAI functions, Windows local/PowerShell/Defender/Entra/clipboard/explorer/app control, etc.).",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "integration": {"type": "string", "description": "Name of the Copilot integration (e.g. graph_file_search, outlook_draft, powershell_ai_scripting, copilot_local_app_control)"},
+                            "arguments": {"type": "array", "items": {"type": "string"}},
+                            "kwargs": {"type": "object"}
+                        },
+                        "required": ["integration"]
+                    }
                 }
             ]
             return {"jsonrpc": "2.0", "id": mid, "result": {"tools": tools}}
@@ -163,6 +176,14 @@ class MultiProviderMCPServer:
                 if not provider:
                     return self._error(mid, f"Unknown provider: {provider_name}")
                 result = await provider.mirror(claim, parent=parent)
+                return {"jsonrpc": "2.0", "id": mid, "result": result}
+
+            if name == "microsoft_copilot":
+                integration = args.get("integration")
+                arguments = args.get("arguments", [])
+                kws = args.get("kwargs", {})
+                # Route through the microsoft provider's execute (which now dispatches to the 20 integrations engine)
+                result = await self.microsoft.execute(integration, arguments, **kws)
                 return {"jsonrpc": "2.0", "id": mid, "result": result}
 
         return self._error(mid, f"Method '{method}' not supported or not implemented.")

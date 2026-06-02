@@ -16,3 +16,10 @@ except Exception:
     PATTERN_REGISTRY = {}
     HIGHEST_LEVERAGE = []
 
+# Microsoft Copilot 20 integrations
+try:
+    from .microsoft_copilot_integrations import MicrosoftCopilotIntegrations, COPILOT_INTEGRATIONS
+except Exception:
+    MicrosoftCopilotIntegrations = None
+    COPILOT_INTEGRATIONS = {}
+

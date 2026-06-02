@@ -49,8 +49,22 @@ class MicrosoftProvider(ProviderContract):
         except Exception:
             self.bridge = None
 
+        # The 20 Advanced Microsoft Windows Copilot Integrations engine
+        try:
+            from .microsoft_copilot_integrations import MicrosoftCopilotIntegrations
+            self.copilot_engine = MicrosoftCopilotIntegrations(
+                ms_provider=self,
+                runner=None,  # Will be injected by orchestrator/MCP if needed
+                bridge=self.bridge,
+                graph_token=self.graph_token,
+                simulate_default=True
+            )
+        except Exception as e:
+            logger.warning(f"MicrosoftCopilotIntegrations not available: {e}")
+            self.copilot_engine = None
+
         if not self.graph_token:
-            logger.warning("MicrosoftProvider initialized without Graph token. Graph calls will be stubbed. Bridge available for token mapping to Google.")
+            logger.warning("MicrosoftProvider initialized without Graph token. Graph calls will be stubbed. Bridge available for token mapping to Google. Copilot 20 integrations available in simulate mode.")
 
     @property
     def name(self) -> str:
@@ -173,18 +187,42 @@ class MicrosoftProvider(ProviderContract):
         }
 
     async def execute(self, command: str, args: List[str], **kwargs) -> Dict[str, Any]:
-        """Microsoft provider does not execute local CLI. Use LocalCLIProvider."""
+        """
+        Microsoft Copilot surfaces (the 20 advanced integrations).
+        Examples:
+          execute("graph_file_search", ["query here"])
+          execute("powershell_ai_scripting", ["get system info"])
+          execute("outlook_draft", ["subject", "body", "to@example.com"])
+          execute("copilot_local_app_control", ["notepad"])
+        """
+        if self.copilot_engine:
+            # command is the integration name, args[0] can be primary arg
+            integration = command
+            kw = {}
+            if args:
+                kw["query"] = args[0] if len(args) == 1 else " ".join(args)
+            # Pass through any extra from kwargs
+            kw.update(kwargs)
+            try:
+                result = await self.copilot_engine.run(integration, **kw)
+                return {"status": "SUCCESS", "provider": self.name, "integration": integration, "result": result}
+            except Exception as e:
+                return {"status": "ERROR", "provider": self.name, "integration": integration, "error": str(e)}
+
         return {
             "status": "ERROR",
-            "error": "execute() is not supported on MicrosoftProvider. Route to LocalCLIProvider instead.",
+            "error": "MicrosoftCopilotIntegrations not wired. Route to LocalCLIProvider or provide the engine.",
             "provider": self.name
         }
 
     def capabilities(self) -> Dict[str, Any]:
-        return {
+        caps = {
             "name": self.name,
-            "supports": ["search", "fetch", "extract_claims", "mirror"],
+            "supports": ["search", "fetch", "extract_claims", "mirror", "execute"],
             "priority": 2,
-            "description": "Microsoft Graph + Azure OpenAI first-class provider. Optimized for enterprise governance, identity, and Office 365 surfaces.",
+            "description": "Microsoft Graph + Azure OpenAI + full 20 Advanced Windows Copilot integrations (Graph search/delta, Outlook/Teams/Planner/Loop/Word/Excel, Power Automate, Azure OpenAI functions, Windows local context, PowerShell, Defender, Entra, clipboard, explorer, app control).",
             "requires": ["MS_GRAPH_TOKEN or azure-identity", "Azure OpenAI client (optional but recommended)"]
         }
+        if self.copilot_engine:
+            caps["copilot_integrations"] = self.copilot_engine.list_integrations()
+        return caps
