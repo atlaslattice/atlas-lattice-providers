@@ -1,0 +1,1 @@
+(full Founder/human-root sign-off checklist with constitutional enforcement points, Phase 1 exit criteria.)

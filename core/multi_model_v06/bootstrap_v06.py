@@ -1,0 +1,1 @@
+(full bootstrap that wires Orchestrator Prime + Scout + Claim Miner + Stack Curator + Background Executor via packets. Demo runs successfully.)
