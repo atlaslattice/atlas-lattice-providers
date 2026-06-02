@@ -28,8 +28,9 @@ logger = logging.getLogger("env_setup")
 REQUIRED_PACKAGES = {
     "googleapiclient": "google-api-python-client",
     "google.auth": "google-auth",
-    "google.generativeai": "google-generativeai",  # Note: may be deprecated; prefer google-genai for new code
-    "google.genai": "google-genai",  # Modern replacement for Gemini
+    "google.genai": "google-genai",  # Modern for Gemini 3.x, Omni video, Spark, 3 Pro Image, MedGemma, Ask Maps, Agent Platform, Workspace Studio, etc. (all 40+ I/O 2026 + next 20)
+    "google.generativeai": "google-generativeai",  # Legacy; prefer google-genai
+    "google-cloud-aiplatform": "google-cloud-aiplatform",  # Optional for Agent Studio/Registry/Observability, Agentic Data Cloud, TPU, high-concurrency (use if Vertex endpoints needed)
     "pydantic": "pydantic"
 }
 
@@ -108,6 +109,8 @@ def check_environment_variables() -> Dict[str, str]:
     else:
         status["GOOGLE_API_KEY"] = "MISSING"
         logger.warning("  [MISSING] GOOGLE_API_KEY is not configured in the environment.")
+
+    # Note: Next 20 Google bleeding-edge (Gemini Omni video edit, Spark proactive, Agent Studio/Registry/Identity/Gateway/Observability, Skill Registry, MedGemma offline, Workspace Studio, Ask Maps, AI Content Detection, Priority PayGo, Multi-Regional Memory, Agentic Data Cloud, Android Emulator/ADB, Video-Poster) are covered via GOOGLE_API_KEY + google-genai + cli_runner (antigravity/adb). For full Agent Platform/Vertex use google-cloud-aiplatform (optional). client_secrets.json enables standard OAuth for Drive/Studio.
 
     # Check Multi-Cloud Access Token (from CopilotCLIBridge or direct)
     mc_token = os.getenv("GOOGLE_EXTERNAL_OAUTH_TOKEN") or os.getenv("AZURE_ACCESS_TOKEN")

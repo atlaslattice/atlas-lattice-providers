@@ -36,7 +36,9 @@ ALLOWED_EXECUTABLES: Dict[str, str] = {
     "powershell": "powershell.exe",    # Windows PowerShell for Copilot integrations (14,12,19,20, etc.)
     "pwsh": "pwsh.exe",                # PowerShell 7+ if installed
     "cmd": "cmd.exe",                  # Fallback for some Windows tasks
-    "adb": "adb",                      # Android Debug Bridge for Google AI Studio Android Vibe Coding (19)
+    "adb": "adb",                      # Android Debug Bridge for Google AI Studio Android Vibe Coding + Emulator Integration (19,60)
+    "emulator": "emulator",            # Android Emulator direct for Google AI Studio Emulator Integration (60)
+    "antigravity-harness": "antigravity",  # Alias for self-hosted Antigravity Agent Harness SDK (45)
 }
 
 # Recommended: restrict python to specific safe scripts only in production
@@ -116,17 +118,19 @@ class SecureCLIRunner:
                     "error": "PowerShell invocations must use safe predefined commands or explicit -Command with validated content."
                 }
 
-        # Special handling for Antigravity CLI (Google I/O 2026 #1: agent-first, sandboxed execution, credential masking, hardened Git)
-        if command_name == "antigravity":
-            # Antigravity provides its own sandboxing; we still enforce no shell and log for provenance.
-            # Assume it supports --sandbox, --mask-creds, etc. via args.
-            logger.info("Antigravity CLI invoked with built-in sandboxing/credential masking/hardened Git (Google I/O 2026).")
+        # Special handling for Antigravity CLI (Google I/O 2026 #1 + #46: agent-first, sandboxed, credential masking, hardened Git + self-hosted harness)
+        if command_name in ("antigravity", "antigravity-harness"):
+            # Antigravity provides its own sandboxing/credential/Git policies per I/O; harness for local SDK control of sandboxes.
+            # We enforce no shell=True + full provenance/ledger.
+            logger.info("Antigravity CLI/Harness invoked (sandboxed, masked creds, hardened Git policies per Google I/O 2026). Self-hosted mode for local agents.")
 
-        # Special handling for ADB (Google AI Studio Android Vibe Coding #19)
-        if command_name == "adb":
-            if arguments and not any(arg in ["devices", "logcat", "shell", "install"] for arg in arguments[:1]):
-                logger.warning("ADB invocation restricted to safe commands (devices, logcat, shell, install) for security.")
-                # Allow but warn; in prod could stricter whitelist.
+        # Special handling for ADB + Emulator (Google AI Studio Android Vibe + Emulator Integration #19/#60)
+        if command_name in ("adb", "emulator"):
+            safe_adb = ["devices", "logcat", "shell", "install", "emu", "forward", "reverse", "pull", "push"]
+            if arguments and not any(arg in safe_adb for arg in arguments[:2]):
+                logger.warning("ADB/Emulator restricted to safe commands (devices, logcat, shell, install, emu, etc.) for Android unit tests after codegen.")
+            if command_name == "emulator":
+                logger.info("Android Emulator direct launch for in-browser/CLI testing (Google AI Studio integration).")
 
         # Build environment (inherit + optional overrides for cross-cloud)
         # Support prepared_env from agent_ms_cli_bridge for Google-MS token mapping
@@ -197,7 +201,7 @@ class SecureCLIRunner:
         """Return the MCP tool schema for this runner."""
         return {
             "name": "run_cli_command",
-            "description": "Securely execute allowlisted CLI tools (grok, lattice, gemini, approved python scripts) with full provenance and cross-cloud token support.",
+            "description": "Securely execute allowlisted CLI tools (grok, antigravity, antigravity-harness, adb, emulator, powershell, gemini, python-safe) with full provenance, Ledger, Lattice coords. Special for Google Antigravity (self-hosted harness, sandbox, Git policy) and Android Emulator/ADB (Vibe coding + unit tests).",
             "inputSchema": {
                 "type": "object",
                 "properties": {

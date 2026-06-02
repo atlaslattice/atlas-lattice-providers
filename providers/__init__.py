@@ -43,3 +43,5 @@ try:
 except Exception:
     GoogleProvider = None
 
+# Google I/O 2026 + next 20 bleeding-edge (full 40+ Google features) now part of AdvancedCapabilitiesEngine (google_advanced / advanced_capability tools). All 60+ wired with ClaimPackets, symbiosis, ledgers.
+

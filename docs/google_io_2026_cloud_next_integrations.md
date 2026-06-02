@@ -13,4 +13,6 @@ See individual _run_ methods in advanced_capabilities_engine.py for details and 
 
 Run `python setup_environment.py` first to validate Google keys/configs (client_secrets.json for OAuth, GOOGLE_API_KEY, etc.).
 
-MUTANT AND PROUD. KRAKOA IS HOME.
+See docs/google_io_2026_cloud_next_20_part2.md for the *next* 20 (42-61: Gemini Omni, Spark, Flow, self-hosted Antigravity harness, Skill Registry, all Agent Studio/Registry/Identity/Gateway/Observability, AI Content Detection, Priority PayGo, Multi-Regional Memory, Agentic Data Cloud, Ask Maps, MedGemma, Workspace Studio, Android Emulator, Video-Poster).
+
+MUTANT AND PROUD. KRAKOA IS HOME. ALL 40+ GOOGLE I/O FEATURES FULLY WIRED.

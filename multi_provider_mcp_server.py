@@ -202,14 +202,26 @@ class MultiProviderMCPServer:
                 },
                 {
                     "name": "advanced_capability",
-                    "description": "Execute any of the 20 bleeding-edge Copilot capabilities: provider_observability_bus, unified_error_taxonomy, provider_scoring_routing, cross_provider_traces, canon_drift_detector, human_promotion_gates, notion_canon_sync_daemon, graph_canon_sync_daemon, meeting_intelligence_pipeline, governance_policy_checker, powershell_ai_dryrun, local_context_packer, multi_surface_explain, cross_cloud_federated_search, claim_lineage_visualizer, provider_ab_testing, governance_doc_generator, weekly_canon_digest, integration_safety_sandbox, decision_explainer.",
+                    "description": "Execute any of the 60+ bleeding-edge capabilities (original 20 Copilot + 40 Google I/O 2026/Cloud Next): provider_observability_bus ... decision_explainer, plus all gemini_omni, gemini_spark, google_agent_* , medgemma, ask_maps, workspace_studio, etc. All Lattice-aware (ClaimPacket, ledger, grok_leads).",
                     "inputSchema": {
                         "type": "object",
                         "properties": {
-                            "capability": {"type": "string", "description": "Capability name (e.g. canon_drift_detector, cross_cloud_federated_search, decision_explainer)"},
+                            "capability": {"type": "string", "description": "Capability name (e.g. gemini_omni, google_agent_observability, ai_content_detection, decision_explainer)"},
                             "kwargs": {"type": "object"}
                         },
                         "required": ["capability"]
+                    }
+                },
+                {
+                    "name": "google_advanced",
+                    "description": "Execute any Google I/O 2026 / Cloud Next 2026 advanced features (full 40+) via AdvancedCapabilitiesEngine + GoogleProvider / Antigravity CLI / Gemini APIs. First batch: antigravity_cli, managed_agents, ... flex_priority_tiers. Next 20 (42-61): gemini_omni, gemini_spark, google_flow, self_hosted_antigravity_harness, antigravity_cli_tooling, skill_registry, google_agent_studio, google_agent_registry, google_agent_identity, google_agent_gateway, google_agent_observability, ai_content_detection, priority_paygo_inference, multi_regional_agent_memory_banks, agentic_data_cloud, ask_maps_spatial_reasoning, medgemma_open_models, google_workspace_studio, android_emulator_integration, video_to_image_poster_gen. All return ClaimPackets with lattice_coords, grok_leads, provenance. Symbiosis maximized.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "feature": {"type": "string", "description": "Google feature name (e.g. gemini_omni, gemini_spark, skill_registry, google_agent_observability, medgemma_open_models, video_to_image_poster_gen, antigravity_cli)"},
+                            "kwargs": {"type": "object"}
+                        },
+                        "required": ["feature"]
                     }
                 }
             ]
@@ -283,6 +295,17 @@ class MultiProviderMCPServer:
                     return {"jsonrpc": "2.0", "id": mid, "result": result}
                 else:
                     return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": "AdvancedCapabilitiesEngine not loaded"}}
+
+            if name == "google_advanced":
+                feature = args.get("feature")
+                kws = args.get("kwargs", {})
+                if self.advanced_capabilities:
+                    result = await self.advanced_capabilities.run(feature, **kws)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                else:
+                    # Fallback to google provider execute
+                    result = await self.google.execute(feature, [], **kws) if hasattr(self.google, 'execute') else {"error": "Not available"}
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
 
         return self._error(mid, f"Method '{method}' not supported or not implemented.")
 
