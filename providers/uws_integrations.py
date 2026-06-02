@@ -324,7 +324,8 @@ class UwsIntegrations:
     # ==================== Public Dispatch ====================
 
     async def run(self, integration: str, **kwargs) -> Dict[str, Any]:
-        key = integration.lower().replace("_", "-").replace(" ", "-")
+        # World-class dispatch normalize (consistent with project_engine): canonical keys use _ 
+        key = integration.lower().replace("-", "_").replace(" ", "_")
         method_name = f"_run_{key.replace('-', '_')}"
         method = getattr(self, method_name, None)
         if method:

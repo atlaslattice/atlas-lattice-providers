@@ -386,7 +386,8 @@ class GrokMaximumFeaturesEngine:
 
     # ==================== Public Dispatch ====================
     async def run(self, feature: str, **kwargs) -> Dict[str, Any]:
-        key = feature.lower().replace("_", "-").replace(" ", "-")
+        # World-class dispatch normalize fix (consistent across lattice): canonical registry keys use underscores
+        key = feature.lower().replace("-", "_").replace(" ", "_")
         method_name = f"_run_{key.replace('-', '_')}"
         method = getattr(self, method_name, None)
         if method:
