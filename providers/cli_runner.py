@@ -15,13 +15,148 @@ import json
 import asyncio
 import logging
 from typing import Dict, Any, List, Optional
+from dataclasses import dataclass, field
+import json
+from pathlib import Path
 
 logging.basicConfig(
     level=logging.INFO,
     stream=sys.stderr,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
-logger = logging.getLogger("secure_cli_runner_v1.2")
+logger = logging.getLogger("secure_cli_runner_v1.3-policy")
+
+# ============================================================
+# CommandPolicy — per-command policy for the upgraded runner
+# ============================================================
+@dataclass
+class CommandPolicy:
+    name: str
+    path: str  # full path or name resolved via PATH / sys.executable
+    max_args: int = 16
+    allow_args: Optional[List[str]] = None  # prefixes or exact; if None, all allowed (subject to max)
+    timeout_sec: int = 120
+    max_stdout_bytes: int = 256_000
+    max_stderr_bytes: int = 64_000
+    working_dir: Optional[str] = None
+    env: Optional[Dict[str, str]] = field(default_factory=dict)
+    description: str = ""
+
+# Default policies file location (editable, no code change)
+POLICIES_FILE = Path("config/command_policies.json")
+
+# Fallback built-in policies (used if file missing or for bootstrap)
+# These cover canonical grok/lattice + UWS/Alum + existing Windows/Google CLIs
+DEFAULT_POLICIES: List[CommandPolicy] = [
+    CommandPolicy(
+        name="grok",
+        path="grok",
+        max_args=32,
+        allow_args=["canon", "watch", "query", "apply", "diff", "sync", "help"],
+        timeout_sec=300,
+        description="Canonical Grok CLI (canon diff/sync, lattice ops, etc.)"
+    ),
+    CommandPolicy(
+        name="lattice",
+        path="lattice",
+        max_args=32,
+        allow_args=["query", "apply", "help"],
+        timeout_sec=120,
+        description="Lattice query/apply for Atlas Lattice ops"
+    ),
+    CommandPolicy(
+        name="uws",
+        path="uws",
+        max_args=64,
+        allow_args=None,  # full surface via UWS manifest; rely on --dry-run etc in special handling
+        timeout_sec=300,
+        max_stdout_bytes=1_000_000,
+        description="Universal Workspace CLI (UWS) - 12k-20k+ unified features (Google/MS/Apple/...)"
+    ),
+    CommandPolicy(
+        name="alum",
+        path="alum",
+        max_args=64,
+        allow_args=None,
+        timeout_sec=300,
+        max_stdout_bytes=1_000_000,
+        description="Aluminum OS unified command surface (kernel over UWS drivers)"
+    ),
+    CommandPolicy(
+        name="antigravity",
+        path="antigravity",
+        max_args=32,
+        allow_args=None,
+        timeout_sec=600,
+        description="Google Antigravity CLI (sandboxed agents, hardened Git)"
+    ),
+    CommandPolicy(
+        name="antigravity-harness",
+        path="antigravity",
+        max_args=32,
+        allow_args=None,
+        timeout_sec=600,
+        description="Self-hosted Antigravity Harness alias"
+    ),
+    CommandPolicy(
+        name="adb",
+        path="adb",
+        max_args=16,
+        allow_args=["devices", "logcat", "shell", "install", "emu", "forward", "reverse", "pull", "push"],
+        timeout_sec=120,
+        description="Android Debug Bridge (safe commands only)"
+    ),
+    CommandPolicy(
+        name="emulator",
+        path="emulator",
+        max_args=16,
+        allow_args=None,
+        timeout_sec=120,
+        description="Android Emulator for testing"
+    ),
+    CommandPolicy(
+        name="powershell",
+        path="powershell.exe",
+        max_args=32,
+        allow_args=["-Command"],
+        timeout_sec=60,
+        description="Windows PowerShell (safe via -Command or SAFE_POWERSHELL)"
+    ),
+    CommandPolicy(
+        name="pwsh",
+        path="pwsh.exe",
+        max_args=32,
+        allow_args=["-Command"],
+        timeout_sec=60,
+        description="PowerShell 7+"
+    ),
+    CommandPolicy(
+        name="python",
+        path=sys.executable,
+        max_args=8,
+        allow_args=["-c", "-m"],  # restrict further in execute
+        timeout_sec=60,
+        max_stdout_bytes=128_000,
+        description="Python (restricted to safe scripts or -c with care)"
+    ),
+    CommandPolicy(
+        name="cmd",
+        path="cmd.exe",
+        max_args=16,
+        allow_args=["/c"],
+        timeout_sec=30,
+        description="cmd.exe fallback (very restricted)"
+    ),
+    CommandPolicy(
+        name="gemini",
+        path="gemini",
+        max_args=16,
+        allow_args=None,
+        timeout_sec=120,
+        description="Local Gemini CLI (optional)"
+    ),
+    # Add more as needed for canonical / UWS
+]
 
 
 # ============================================================
@@ -61,38 +196,215 @@ SAFE_POWERSHELL_COMMANDS = {
 
 
 class SecureCLIRunner:
-    """Safely executes allowlisted CLI tools asynchronously. No shell=True ever."""
+    """
+    Policy-driven, safe async CLI execution. No shell=True ever.
+    Uses CommandPolicy for per-command control (args, timeout, output caps, env, cwd).
+    Supports loading from JSON policies file for easy editing.
+    """
 
-    def __init__(self, allowlist: Dict[str, str] = ALLOWED_EXECUTABLES):
-        self.allowlist = allowlist
+    def __init__(self, policies: Optional[List[CommandPolicy]] = None, policies_file: Optional[Path] = None):
+        self._policies: Dict[str, CommandPolicy] = {}
         self.execution_count = 0
+
+        # Load from file if provided / default, else use DEFAULT + merge with legacy ALLOWED
+        if policies is None:
+            policies = self._load_policies(policies_file or POLICIES_FILE)
+
+        for p in policies:
+            self._policies[p.name] = p
+
+        # Back-compat: if legacy ALLOWED_EXECUTABLES had extras not in policies, add minimal ones
+        for name, path in ALLOWED_EXECUTABLES.items():
+            if name not in self._policies:
+                self._policies[name] = CommandPolicy(name=name, path=path, description="Legacy allowlisted (auto-migrated)")
+
+    def _load_policies(self, path: Path) -> List[CommandPolicy]:
+        if path.exists():
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+                policies = []
+                for item in data.get("policies", []):
+                    policies.append(CommandPolicy(**item))
+                logger.info(f"Loaded {len(policies)} CommandPolicies from {path}")
+                return policies
+            except Exception as e:
+                logger.warning(f"Failed to load policies from {path}: {e}. Using defaults.")
+        # Ensure default file exists on first run for editing
+        self._write_default_policies_if_missing(path)
+        return DEFAULT_POLICIES
+
+    def _write_default_policies_if_missing(self, path: Path):
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            if not path.exists():
+                data = {
+                    "version": "1.3",
+                    "description": "Edit this file to add/override CommandPolicy for grok, lattice, uws, alum, etc. See Copilot upgrade spec.",
+                    "policies": [
+                        {
+                            "name": p.name,
+                            "path": p.path,
+                            "max_args": p.max_args,
+                            "allow_args": p.allow_args,
+                            "timeout_sec": p.timeout_sec,
+                            "max_stdout_bytes": p.max_stdout_bytes,
+                            "max_stderr_bytes": p.max_stderr_bytes,
+                            "working_dir": p.working_dir,
+                            "env": p.env or {},
+                            "description": p.description
+                        } for p in DEFAULT_POLICIES
+                    ]
+                }
+                path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                logger.info(f"Wrote default policies file to {path} (edit to customize)")
+        except Exception as e:
+            logger.warning(f"Could not write default policies: {e}")
+
+    def get_policy(self, name: str) -> Optional[CommandPolicy]:
+        return self._policies.get(name)
 
     async def execute(
         self,
         command_name: str,
         arguments: List[str],
-        timeout: Optional[float] = 120.0,
+        timeout: Optional[float] = None,
         env_overrides: Optional[Dict[str, str]] = None,
         prepared_env: Optional[Dict[str, str]] = None
     ) -> Dict[str, Any]:
         """
-        Execute an allowlisted command with full safety guarantees.
-
+        Execute a policy-governed command with full safety guarantees.
         - Never uses shell=True
-        - Captures stdout/stderr separately
-        - Supports optional per-invocation environment overrides (for cross-cloud tokens)
-        - Always returns structured result with provenance
+        - Policy-driven: max_args, allow_args prefixes, timeouts, output caps, cwd, env
+        - Captures stdout/stderr separately (truncated per policy)
+        - Supports overrides for cross-cloud
+        - Always returns structured result + provenance
         """
-        if command_name not in self.allowlist:
-            logger.warning(f"REJECTED: '{command_name}' not in allowlist")
+        policy = self.get_policy(command_name)
+        if not policy:
+            logger.warning(f"REJECTED: '{command_name}' has no CommandPolicy")
             return {
                 "status": "ERROR",
                 "exit_code": -1,
-                "error": f"Command '{command_name}' is not authorized for execution.",
-                "allowed_commands": list(self.allowlist.keys())
+                "error": f"Command '{command_name}' is not authorized (no policy).",
+                "allowed_commands": list(self._policies.keys())
             }
 
-        executable = self.allowlist[command_name]
+        if len(arguments) > policy.max_args:
+            return {"status": "ERROR", "exit_code": -1, "error": f"Too many arguments (max {policy.max_args})"}
+
+        if policy.allow_args is not None:
+            for a in arguments:
+                if not any(a == exact or a.startswith(prefix) for prefix in policy.allow_args for exact in [prefix] if not prefix.endswith("*")):  # simple prefix match
+                    if not any(a.startswith(p) for p in policy.allow_args):
+                        return {"status": "ERROR", "exit_code": -1, "error": f"Argument not allowed: {a}"}
+
+        executable = policy.path
+
+        # Legacy special handling (python, powershell, antigravity, uws/alum, grok, adb etc.) - keep for now, can move into policies later
+        if command_name == "python" and arguments:
+            script_name = arguments[0]
+            if script_name not in SAFE_PYTHON_SCRIPTS.values():
+                return {"status": "ERROR", "exit_code": -3, "error": "Only explicitly allowed python scripts may be executed."}
+
+        if command_name in ("powershell", "pwsh") and arguments:
+            cmd_or_script = arguments[0] if arguments else ""
+            if cmd_or_script in SAFE_POWERSHELL_COMMANDS:
+                arguments = ["-Command", SAFE_POWERSHELL_COMMANDS[cmd_or_script]] + arguments[1:]
+            elif "-Command" not in " ".join(arguments) and not any(a.startswith("-") for a in arguments):
+                return {"status": "ERROR", "exit_code": -3, "error": "PowerShell invocations must use safe predefined commands or explicit -Command with validated content."}
+
+        if command_name in ("antigravity", "antigravity-harness"):
+            logger.info("Antigravity CLI/Harness invoked (sandboxed, masked creds, hardened Git policies per Google I/O 2026).")
+
+        if command_name in ("adb", "emulator"):
+            safe_adb = ["devices", "logcat", "shell", "install", "emu", "forward", "reverse", "pull", "push"]
+            if arguments and not any(arg in safe_adb for arg in arguments[:2]):
+                logger.warning("ADB/Emulator restricted to safe commands...")
+
+        if command_name in ("uws", "alum"):
+            logger.info("UWS/Alum CLI invoked — Universal Workspace surface for ... 12k-20k+ features unified.")
+            if not any(a.startswith("--format") for a in arguments):
+                arguments = arguments + ["--format", "json"]
+            if any(word in " ".join(arguments).lower() for word in ["send", "create", "delete", "update", "write", "share"]) and "--dry-run" not in arguments:
+                logger.warning("UWS/Alum write operation detected — strongly recommend --dry-run first (per UWS spec and safety).")
+
+        # Build env: policy.env + prepared + overrides + legacy injections
+        env = dict(policy.env or {})
+        if prepared_env:
+            env.update(prepared_env)
+        if env_overrides:
+            env.update(env_overrides)
+        if command_name == "grok":
+            xai_key = os.getenv("XAI_API_KEY")
+            if xai_key:
+                env["XAI_API_KEY"] = xai_key
+        if command_name in ("uws", "alum"):
+            for key in ["GOOGLE_WORKSPACE_CLI_TOKEN", "GOOGLE_API_KEY", "UWS_MS_TOKEN", "UWS_MS_CLIENT_ID", "UWS_MS_TENANT_ID"]:
+                val = os.getenv(key)
+                if val:
+                    env[key] = val
+
+        effective_timeout = timeout if timeout is not None else policy.timeout_sec
+        cwd = policy.working_dir
+
+        logger.info(f"EXECUTING (policy): {executable} {' '.join(arguments)}")
+
+        try:
+            process = await asyncio.create_subprocess_exec(
+                executable,
+                *arguments,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=env,
+                cwd=cwd
+            )
+
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(),
+                timeout=effective_timeout
+            )
+            exit_code = process.returncode
+
+            self.execution_count += 1
+
+            # Truncate per policy
+            stdout = stdout[:policy.max_stdout_bytes]
+            stderr = stderr[:policy.max_stderr_bytes]
+
+            result = {
+                "status": "SUCCESS" if exit_code == 0 else "FAILED",
+                "exit_code": exit_code,
+                "stdout": stdout.decode("utf-8", errors="replace").strip(),
+                "stderr": stderr.decode("utf-8", errors="replace").strip(),
+                "command": command_name,
+                "arguments": arguments,
+                "execution_id": self.execution_count,
+                "policy": {"name": policy.name, "timeout": effective_timeout}
+            }
+
+            if exit_code != 0:
+                logger.warning(f"Command failed with exit code {exit_code}")
+
+            return result
+
+        except asyncio.TimeoutError:
+            logger.error(f"Command timed out after {effective_timeout}s: {command_name}")
+            try:
+                process.kill()
+            except Exception:
+                pass
+            return {
+                "status": "ERROR",
+                "exit_code": -4,
+                "error": f"Execution timed out after {effective_timeout} seconds"
+            }
+        except Exception as e:
+            logger.error(f"Subprocess failure: {e}")
+            return {
+                "status": "ERROR",
+                "exit_code": -2,
+                "error": f"Subprocess execution failed: {str(e)}"
+            }
 
         # Special handling for python scripts (security)
         if command_name == "python" and arguments:
@@ -220,34 +532,39 @@ class SecureCLIRunner:
             }
 
     def get_mcp_tool_definition(self) -> Dict[str, Any]:
-        """Return the MCP tool schema for this runner."""
+        """Standard MCP tool schema (shared by Gemini + Copilot sides, per Copilot upgrade spec)."""
         return {
             "name": "run_cli_command",
-            "description": "Securely execute allowlisted CLI tools including UWS/Alum (Universal Workspace CLI from atlaslattice UWS / Aluminum OS — unifies 12k-20k+ Google/MS/Apple/Android/Chrome features into functional OS for integrations), grok, antigravity, adb, emulator, powershell, gemini, python-safe. Full provenance, Ledger, Lattice coords, JSON output preferred. Special for UWS (dry-run writes, --format json, --page-all, provider abstraction), Google Antigravity (self-hosted harness, sandbox, Git policy) and Android Emulator/ADB (Vibe coding + unit tests).",
+            "description": "Run a vetted local CLI command (grok, lattice, uws, alum, etc.) under policy-driven security and return structured output. Canonical commands: grok canon diff/sync, lattice query/apply, uws/alum unified surfaces (17k+ features). Always prefer --dry-run for writes. JSON output preferred for agents.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
                     "command_name": {
                         "type": "string",
-                        "enum": list(self.allowlist.keys()),
-                        "description": "The allowed CLI executable to run."
+                        "description": "Logical command name (e.g. 'grok', 'lattice', 'uws', 'alum'). Must have a CommandPolicy."
                     },
                     "arguments": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "List of string arguments to pass to the executable."
+                        "description": "Command arguments, already tokenized. Models should use canonical subcommands (canon, query, etc.)."
                     },
                     "timeout": {
                         "type": "number",
-                        "description": "Optional timeout in seconds (default 120)"
+                        "description": "Optional timeout in seconds (overrides policy default)."
                     }
                 },
                 "required": ["command_name", "arguments"]
             }
         }
 
+    def list_policies(self) -> Dict[str, Any]:
+        return {
+            "count": len(self._policies),
+            "policies": {k: {"path": v.path, "max_args": v.max_args, "allow_args": v.allow_args, "description": v.description} for k, v in self._policies.items()}
+        }
 
-# Singleton for convenience
+
+# Singleton for convenience (loads default policies)
 _default_runner = SecureCLIRunner()
 
 

@@ -1,0 +1,116 @@
+{
+  "version": "1.3",
+  "description": "Policy-driven CommandPolicy config for SecureCLIRunner. Edit to customize allowed commands, arg prefixes, timeouts, output sizes, env for grok/lattice/uws/alum etc. This turns the runner into a canonical interop contract. See Copilot upgrade suggestions in session.",
+  "policies": [
+    {
+      "name": "grok",
+      "path": "grok",
+      "max_args": 32,
+      "allow_args": ["canon", "watch", "query", "apply", "diff", "sync", "help"],
+      "timeout_sec": 300,
+      "max_stdout_bytes": 256000,
+      "max_stderr_bytes": 64000,
+      "description": "Canonical Grok CLI (canon diff/sync for specs, lattice ops)"
+    },
+    {
+      "name": "lattice",
+      "path": "lattice",
+      "max_args": 32,
+      "allow_args": ["query", "apply", "help"],
+      "timeout_sec": 120,
+      "description": "Lattice query/apply for Atlas Lattice (12x12x12 coords, ClaimPackets)"
+    },
+    {
+      "name": "uws",
+      "path": "uws",
+      "max_args": 64,
+      "allow_args": null,
+      "timeout_sec": 300,
+      "max_stdout_bytes": 1000000,
+      "max_stderr_bytes": 256000,
+      "description": "Universal Workspace CLI (UWS) from atlaslattice - 12k-20k+ unified features (Google/MS/Apple/Android/Chrome) into Aluminum OS"
+    },
+    {
+      "name": "alum",
+      "path": "alum",
+      "max_args": 64,
+      "allow_args": null,
+      "timeout_sec": 300,
+      "max_stdout_bytes": 1000000,
+      "description": "Aluminum OS unified command surface (kernel over UWS drivers for provider abstraction)"
+    },
+    {
+      "name": "antigravity",
+      "path": "antigravity",
+      "max_args": 32,
+      "allow_args": null,
+      "timeout_sec": 600,
+      "description": "Google Antigravity CLI v2 (sandboxed agents, credential masking, hardened Git per I/O 2026)"
+    },
+    {
+      "name": "antigravity-harness",
+      "path": "antigravity",
+      "max_args": 32,
+      "allow_args": null,
+      "timeout_sec": 600,
+      "description": "Self-hosted Antigravity Agent Harness SDK alias"
+    },
+    {
+      "name": "adb",
+      "path": "adb",
+      "max_args": 16,
+      "allow_args": ["devices", "logcat", "shell", "install", "emu", "forward", "reverse", "pull", "push"],
+      "timeout_sec": 120,
+      "description": "Android Debug Bridge (restricted to safe commands for Vibe/Emulator testing)"
+    },
+    {
+      "name": "emulator",
+      "path": "emulator",
+      "max_args": 16,
+      "allow_args": null,
+      "timeout_sec": 120,
+      "description": "Android Emulator direct (for Google AI Studio integration)"
+    },
+    {
+      "name": "powershell",
+      "path": "powershell.exe",
+      "max_args": 32,
+      "allow_args": ["-Command"],
+      "timeout_sec": 60,
+      "description": "Windows PowerShell (safe via -Command or SAFE_POWERSHELL_COMMANDS)"
+    },
+    {
+      "name": "pwsh",
+      "path": "pwsh.exe",
+      "max_args": 32,
+      "allow_args": ["-Command"],
+      "timeout_sec": 60,
+      "description": "PowerShell 7+"
+    },
+    {
+      "name": "python",
+      "path": "python",
+      "max_args": 8,
+      "allow_args": ["-c", "-m"],
+      "timeout_sec": 60,
+      "max_stdout_bytes": 128000,
+      "description": "Python (restricted; use SAFE_PYTHON_SCRIPTS for prod)"
+    },
+    {
+      "name": "cmd",
+      "path": "cmd.exe",
+      "max_args": 16,
+      "allow_args": ["/c"],
+      "timeout_sec": 30,
+      "description": "cmd.exe (very restricted fallback)"
+    },
+    {
+      "name": "gemini",
+      "path": "gemini",
+      "max_args": 16,
+      "allow_args": null,
+      "timeout_sec": 120,
+      "description": "Local Gemini CLI (optional)"
+    }
+  ]
+}

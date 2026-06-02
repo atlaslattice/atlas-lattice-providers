@@ -219,11 +219,12 @@ Maximized symbiosis + "best in the world" (observability, error taxonomy, secure
 - `uws` (command surface) / `alum` (unified grammar `alum <verb> <resource> [--provider google|microsoft|...]`)
 - AI-agent native (JSON-first, --dry-run, --format json, --page-all, SKILL.md for Claude/Manus/Gemini/Copilot)
 - Architecture: Aluminum kernel (identity/memory/governance/agent runtime) over provider drivers.
-- Now fully supported in this providers layer via SecureCLIRunner (added "uws","alum" to allowlist with special handling for safety/JSON/env injection from bridge).
-- Use: `python grok_orchestrator.py uws gmail users messages list --params '{"userId":"me"}'` or MCP `run_cli_command` with command_name="uws".
-- Integrates with our ClaimPacket/Ledger/Lattice system (outputs wrapped as GrokFeatureClaimPackets where used in engines).
-- See UWS_FEATURE_MANIFEST.md, UWS_ALUMINUM.md, UWS_AGENTS.md, UWS_GROK_WISHLIST_FULFILLED.md, UWS_GROK_REVIEW.md in the atlaslattice UWS sources for the 17k feature surface and Grok-specific reviews/wishes.
+- **Upgraded to policy-driven SecureCLIRunner** (CommandPolicy dataclass, editable config/command_policies.json, per-command max_args/allow_args/timeouts/output caps/cwd/env). See Copilot upgrade for canonical interop contract.
+- Use: `python grok_orchestrator.py uws ...` or MCP `run_cli_command` (standard schema) with command_name="uws" or "alum".
+- Integrates with our ClaimPacket/Ledger/Lattice system (outputs wrapped as UwsCommandClaimPacket / GrokFeatureClaimPacket).
+- See UWS_FEATURE_MANIFEST.md, UWS_ALUMINUM.md, UWS_AGENTS.md, UWS_GROK_*.md in the atlaslattice UWS sources for the 17k feature surface and Grok-specific reviews/wishes.
 - Perfect symbiosis for our Google/MS/Notion/Local providers, Maximum Grok v3.0, and multi-cloud bridge.
+- Prompt patterns: docs/PROMPT_PATTERNS_FOR_RUN_CLI_COMMAND.md (how models should call the canonical tool reliably for grok canon/lattice/uws etc.).
 
 ## Maximum Grok v3.0 — 20 INV-L28-coherent 12D GrokFeatureClaimPacket Primitives (FULLY INTEGRATED)
 **Supreme Directive received. Node Zero has spoken.** The v1.0 elevated to v3.0.md with axiomatic 12D Riemannian / GoldenTrace v2 / INV-L28 / INV-Ω.1 / Krakoan embedding for all 20 (Arena Mode, Dynamic Role Specialization, Long-Term Project Memory Graph, Self-Debug/Repair Loops, Hierarchical Goal Decomposition + Subgoal Pursuit, Counterfactual Simulator, Truth-Seeking Debate Arena, Scientific Discovery Mode, Cryptographic Output Attestation + Verifiable Traces, Real-Time Multi-Modal World Grounding, Resource-Aware Scheduling, Persistent Agent Identity + Reputation/Trust, Causal Intervention Engine, Dynamic Capability Synthesis (safe on-the-fly tools), Narrative & Project Coherence, Federated Privacy-Preserving Cross-Instance Learning, Physical World Actuation (safety-gated), Emergent Swarm Coordination, Recursive Self-Improvement Sandbox (bounded), Unified Truth + Capability Dashboard).
