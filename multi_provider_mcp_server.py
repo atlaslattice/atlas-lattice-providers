@@ -153,6 +153,21 @@ class MultiProviderMCPServer:
             self.uws = None
             logger.warning(f"UWS integrations not loaded: {e}")
 
+        # Advanced Bullshit Olympics (E145 Tier 1 #1) - direct instance for MCP + high-stakes
+        try:
+            from providers.bullshit_olympics import BullshitOlympics as AdvancedBullshitOlympics
+            self.bullshit_olympics = AdvancedBullshitOlympics(
+                project_engine=self.project_engine,
+                advanced_engine=self.advanced_capabilities,
+                decision_ledger=None,
+                uws=self.uws,
+                simulate_default=True
+            )
+            logger.info("AdvancedBullshitOlympics (multi-round adversarial, 12D provenance) active.")
+        except Exception as e:
+            self.bullshit_olympics = None
+            logger.warning(f"Advanced Bullshit Olympics not loaded: {e}")
+
         # GrokOrchestrator as the strong central brain (E145 priority 1) - exposed for direct use + synthesis
         try:
             from grok_orchestrator import GrokOrchestrator
@@ -305,6 +320,31 @@ class MultiProviderMCPServer:
                         },
                         "required": ["feature"]
                     }
+                },
+                {
+                    "name": "bullshit_olympics",
+                    "description": "Advanced Bullshit Olympics (E145 Tier 1 #1 - highest leverage). Multi-round (3-5) adversarial critique using distinct personas (Contrarian, Reductio, EvidenceAuditor, InvariantEnforcer, OverclaimDetector...). Produces rich TruthClaimPacket with inv_l28_coherence_score, overall_verdict, critical_flaws, evidence_pack (real provenance from DecisionLedger + Notion RAG + UWS audit). Called automatically for high-stakes by orchestrator; callable directly here. Uses Grok (XAI) when available for real critique.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "target": {"type": "string", "description": "The thing to review (ClaimPacket JSON, plan text, UWS result, synthesis, feature output, etc.)"},
+                            "high_stakes": {"type": "boolean", "default": True},
+                            "evidence": {"type": "object", "description": "Optional extra evidence dict"}
+                        },
+                        "required": ["target"]
+                    }
+                },
+                {
+                    "name": "feature_synthesis",
+                    "description": "End-to-End Feature Synthesis Pipeline (E145 Tier 1 #4). 6-stage governed flow for 17k UWS + cross-provider features: Ingest (UWS/Notion/Graph) -> Cluster/Dedup -> Synthesize (multi-agent) -> Advanced Bullshit Olympics -> Human Gate (Teams) -> Promote to Canon (Notion + Ledger + ClaimPacket). The canonical way to turn raw surface into high-quality, reviewed canon. Returns full trace + final ClaimPacket.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "query": {"type": "string", "description": "What to synthesize (e.g. 'UWS 17k + Google 40 + v3.0 20 features')"},
+                            "kwargs": {"type": "object"}
+                        },
+                        "required": ["query"]
+                    }
                 }
             ]
             return {"jsonrpc": "2.0", "id": mid, "result": {"tools": tools}}
@@ -429,6 +469,33 @@ class MultiProviderMCPServer:
                             bs = await self.project_engine.run("bullshit_olympics", target=feature, high_stakes=True)
                             res["fallback_bullshit"] = bs
                     return {"jsonrpc": "2.0", "id": mid, "result": res}
+
+            if name == "bullshit_olympics":
+                target = args.get("target")
+                kws = {k: v for k, v in args.items() if k != "target"}
+                if self.bullshit_olympics:
+                    result = await self.bullshit_olympics.review(target, **kws)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                elif self.project_engine:
+                    result = await self.project_engine.run("bullshit_olympics", target=target, **kws)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": "Bullshit Olympics engine not available"}}
+
+            if name in ("feature_synthesis", "synthesize_features"):
+                q = args.get("query") or args.get("target") or "17k feature synthesis"
+                kws = {k: v for k, v in args.items() if k not in ("query", "target")}
+                # Prefer orchestrator if present (it has the full pipeline + gates + router)
+                if self.orchestrator:
+                    result = await self.orchestrator.run("feature_synthesis", query=q, **kws)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                # Direct
+                try:
+                    from pipelines.feature_synthesis import FeatureSynthesisPipeline
+                    pipe = FeatureSynthesisPipeline(simulate_default=True)
+                    result = await pipe.run(q, **kws)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                except Exception as e:
+                    return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": str(e)}}
 
         return self._error(mid, f"Method '{method}' not supported or not implemented.")
 

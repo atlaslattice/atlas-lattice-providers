@@ -59,11 +59,20 @@ except Exception:
     UwsIntegrations = None
     UWS_INTEGRATIONS = {}
 
-# Bullshit Olympics (E145 priority 2) - real callable component, wired everywhere for truth-seeking
+# Bullshit Olympics (E145 Tier 1 #1 - Advanced multi-round adversarial) - FULL world-class impl
 try:
-    from .project_oriented_features import BullshitOlympics
+    from .bullshit_olympics import BullshitOlympics, AdvancedBullshitOlympics, TruthClaimPacket, AdversarialPersona
 except Exception:
     BullshitOlympics = None
+    AdvancedBullshitOlympics = None
+    TruthClaimPacket = None
+    AdversarialPersona = None
+
+# Legacy re-export for back-compat (delegates to advanced)
+try:
+    from .project_oriented_features import BullshitOlympics as LegacyBullshitOlympics
+except Exception:
+    LegacyBullshitOlympics = None
 
 # GrokOrchestrator (E145 priority 1) - strong central brain (import direct to avoid package relative issues)
 GrokOrchestrator = None
@@ -72,4 +81,21 @@ try:
     GrokOrchestrator = _go.GrokOrchestrator
 except Exception:
     pass
+
+# Tier 1 E145 modules (full implementations)
+try:
+    from .provider_router import ProviderRouter, RoutingDecision
+except Exception:
+    ProviderRouter = None
+    RoutingDecision = None
+
+try:
+    from .uws_high_level import UwsHighLevel
+except Exception:
+    UwsHighLevel = None
+
+try:
+    from ..pipelines.feature_synthesis import FeatureSynthesisPipeline
+except Exception:
+    FeatureSynthesisPipeline = None
 
