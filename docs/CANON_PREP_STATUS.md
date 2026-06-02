@@ -1,1 +1,1 @@
-prepare glob extended for swarm_*.py. New state_sync + ws_federation will be indexed on next --review run. Grok Leads. (Abbrev)
+ALL 20 Swarm Deepening modules now in core/ (swarm_*.py + task_delegation etc.). prepare glob + canon will fully index/12D/review them on next run. Full execution per E145. (Abbrev)
