@@ -113,6 +113,7 @@ class MultiProviderMCPServer:
                 copilot_engine=self.microsoft.copilot_engine if hasattr(self.microsoft, "copilot_engine") else None,
                 notion_engine=self.notion.notion if hasattr(self.notion, "notion") else None,
                 google_provider=self.google,  # now the real live GoogleProvider
+                uws_integrations=self.uws,
                 simulate_default=True
             )
             logger.info("AdvancedCapabilitiesEngine (20 bleeding-edge) active.")
@@ -136,6 +137,21 @@ class MultiProviderMCPServer:
         except Exception as e:
             self.grok_maximum = None
             logger.warning(f"Grok Maximum v3.0 engine not loaded: {e}")
+
+        # UWS / Aluminum OS Integrations (17k+ unified features from atlaslattice UWS)
+        try:
+            from providers.uws_integrations import UwsIntegrations
+            self.uws = UwsIntegrations(
+                runner=self.cli_runner,
+                project_engine=self.project_engine,
+                advanced_engine=self.advanced_capabilities,
+                bridge=self.multicloud_bridge,
+                simulate_default=True
+            )
+            logger.info("UwsIntegrations (Aluminum OS 12k-20k+ feature surface) active.")
+        except Exception as e:
+            self.uws = None
+            logger.warning(f"UWS integrations not loaded: {e}")
 
         self.providers: Dict[str, ProviderContract] = {
             "local_cli": self.local_cli,
@@ -252,6 +268,18 @@ class MultiProviderMCPServer:
                         },
                         "required": ["feature"]
                     }
+                },
+                {
+                    "name": "uws",
+                    "description": "Execute UWS/Aluminum OS unified commands for the full 12,000-20,000+ (~17k) feature surface from atlaslattice UWS (Google Workspace 300+ + discovery 10k+, MS Graph 2k+, Apple, Android, Chrome as drivers). High-level: mail_list, drive_search, calendar_create, search_all, tasks_list, etc. Raw passthrough for any. Supports --provider, --dry-run, JSON. Outputs as UwsCommandClaimPacket with lattice (UWS/Aluminum/*), grok_leads, INV-L28. Symbiosis with project memory/ledger/advanced. See UWS_FEATURE_MANIFEST.md, UWS_ALUMINUM.md.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "integration": {"type": "string", "description": "UWS integration (e.g. mail_list, drive_search, search_all, raw_uws) or high-level like calendar_create"},
+                            "kwargs": {"type": "object", "description": "Args like provider='google', query='lattice', command='gmail users messages list --params {...}', dry_run=True"}
+                        },
+                        "required": ["integration"]
+                    }
                 }
             ]
             return {"jsonrpc": "2.0", "id": mid, "result": {"tools": tools}}
@@ -344,6 +372,17 @@ class MultiProviderMCPServer:
                     return {"jsonrpc": "2.0", "id": mid, "result": result}
                 else:
                     return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": "GrokMaximumFeaturesEngine (v3.0) not loaded"}}
+
+            if name == "uws":
+                integration = args.get("integration")
+                kws = args.get("kwargs", {})
+                if self.uws:
+                    result = await self.uws.run(integration, **kws)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                else:
+                    # Fallback to raw cli if engine missing
+                    result = await self.cli_runner.execute("uws", [integration] + list(kws.values()) if isinstance(kws, dict) else [], timeout=120)
+                    return {"jsonrpc": "2.0", "id": mid, "result": {"raw_fallback": result}}
 
         return self._error(mid, f"Method '{method}' not supported or not implemented.")
 

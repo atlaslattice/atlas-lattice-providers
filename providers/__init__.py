@@ -52,3 +52,10 @@ except Exception:
     GrokMaximumFeaturesEngine = None
     GROK_MAX_FEATURES = {}
 
+# UWS / Aluminum OS — Universal Workspace CLI + kernel for 12k-20k+ (~17k) unified features (Google/MS/Apple/etc. drivers)
+try:
+    from .uws_integrations import UwsIntegrations, UWS_INTEGRATIONS
+except Exception:
+    UwsIntegrations = None
+    UWS_INTEGRATIONS = {}
+
