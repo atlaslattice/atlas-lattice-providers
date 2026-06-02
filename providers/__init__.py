@@ -37,3 +37,9 @@ except Exception:
     AdvancedCapabilitiesEngine = None
     ADVANCED_CAPABILITIES = {}
 
+# Google Provider (now with full live Drive API + bridge token support)
+try:
+    from .provider_google import GoogleProvider
+except Exception:
+    GoogleProvider = None
+

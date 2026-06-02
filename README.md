@@ -54,7 +54,7 @@ This repo lives under the atlaslattice account as the source of truth for the ex
 | `cli_runner.py`            | Secure async execution (updated to new errors) | Core      |
 | `provider_local_cli.py`    | Local CLI execution provider                 | Implemented |
 | `provider_ms.py`           | Microsoft Graph + Azure OpenAI (stub + contract) | Skeleton  |
-| `provider_google.py`       | Google Workspace + Gemini (stub + contract)  | Skeleton  |
+| `provider_google.py`       | Google Drive/Workspace (full live API + bridge token handoff) | Production |
 | `provider_notion.py`       | Notion IP Archive canon feed                 | Implemented |
 | `multi_provider_mcp_server.py` | Unified MCP surface for Gemini + Copilot | Ready     |
 

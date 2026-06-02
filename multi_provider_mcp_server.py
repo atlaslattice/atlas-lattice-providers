@@ -58,7 +58,8 @@ class MultiProviderMCPServer:
         self.cli_runner = SecureCLIRunner()
         self.local_cli = LocalCLIProvider(runner=self.cli_runner)
         self.microsoft = MicrosoftProvider()
-        self.google = GoogleProvider()
+        # Pass the multicloud bridge so GoogleProvider can consume GOOGLE_EXTERNAL_OAUTH_TOKEN
+        self.google = GoogleProvider(bridge=self.multicloud_bridge)
         self.notion = NotionProvider()   # Real advanced engine wired in providers/notion/
 
         # Cross-cloud bridge for Google <-> Microsoft interop (token mapping, Copilot handoff)
