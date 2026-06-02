@@ -1,0 +1,1 @@
+Explicit rich librarian wrap in run_cycle (see source).

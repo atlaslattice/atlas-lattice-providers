@@ -1,0 +1,1 @@
+Enhanced _wrap_packet + fallback + __init__ for auto librarian detection + rich metatag injection (see source).
