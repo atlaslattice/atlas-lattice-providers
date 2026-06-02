@@ -1,0 +1,1 @@
+See full in repo at canon/index/predictive-psychohistory-seldon-warp4-2026-06-02.md (CANDIDATE warp4 seldon predictions on protos + foundation).

@@ -1,0 +1,1 @@
+See full external wiring map prep (design only, Asimov first, 3 KG placeholders).
