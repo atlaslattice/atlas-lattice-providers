@@ -23,13 +23,6 @@ This repo lives under the atlaslattice account as the source of truth for the ex
 **Providers Execute.**  
 **Everything is Observable, Error-Typed, and Decision-Ledgered.**
 
-## Core Philosophy (v1.2)
-
-**Grok Leads.**  
-**Lattice Routes.**  
-**Providers Execute.**  
-**Everything is Observable, Error-Typed, and Decision-Ledgered.**
-
 ## Key v1.2 Additions (from Copilot hardening pass)
 
 1. **Observable Providers**
