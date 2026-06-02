@@ -121,9 +121,9 @@ except Exception:
     context_offload = None
     context_hydrate = None
 
-# Try bullshit
-sys.path.insert(0, str(CANON_IMPL / "OpenAI" / "grok_bridge"))
+# Try bullshit (local or fallback)
 try:
+    sys.path.insert(0, str(NOTION_PKG / "grok_bridge"))
     from bullshit_olympics_runner import run_bullshit_olympics
 except Exception:
     def run_bullshit_olympics(target, ledger=None):
@@ -136,12 +136,8 @@ try:
 except Exception:
     openai = None
 
-# Grok orchestrator for #8 execution (optional import to avoid cycles)
-try:
-    sys.path.insert(0, str(CANON_IMPL / "Grokbrains"))
-    from grok_orchestrator import ask as grok_ask
-except Exception:
-    grok_ask = None
+# Grok orchestrator for #8 execution (optional; not required for provider layer)
+grok_ask = None
 
 NOTION_API_BASE = "https://api.notion.com/v1"
 NOTION_VERSION = "2022-06-28"
@@ -260,26 +256,10 @@ class NotionAdvancedIntegrationsEngine:
         """
         if os.getenv("NOTION_API_KEY") and os.getenv("OPENAI_API_KEY"):
             return
-        setup = CANON_IMPL / "config" / "setup_notion_openai.ps1"
-        if setup.exists():
-            try:
-                txt = setup.read_text(encoding="utf-8")
-                for line in txt.splitlines():
-                    if "$env:NOTION_API_KEY" in line and "=" in line:
-                        val = line.split("=", 1)[1].strip().strip('"')
-                        if val.startswith("ntn_"):
-                            os.environ["NOTION_API_KEY"] = val
-                    if "$env:OPENAI_API_KEY" in line and "=" in line:
-                        val = line.split("=", 1)[1].strip().strip('"')
-                        if val.startswith("sk-"):
-                            os.environ["OPENAI_API_KEY"] = val
-                if os.getenv("NOTION_API_KEY"):
-                    # Re-init base if needed
-                    if self.base and hasattr(self.base, "notion_key"):
-                        self.base.notion_key = os.getenv("NOTION_API_KEY")
-                        self.base.headers["Authorization"] = f"Bearer {self.base.notion_key}"
-            except Exception:
-                pass
+        # In the canonical providers/notion/ port we do not hard-depend on the KRAKOA setup ps1.
+        # Keys are expected via env or the caller's environment (OneDrive live runs use the original setup).
+        # Safe no-op here; production KRAKOA bootstrap still works when running from full tree.
+        pass
 
     def _emit(self, action_type: str, target: str, payload: Dict, lattice: Tuple[int,int,int], tags: Optional[List[str]] = None):
         if self.ledger:

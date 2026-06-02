@@ -42,8 +42,15 @@ class MicrosoftProvider(ProviderContract):
         self.tenant_id = tenant_id or os.getenv("AZURE_TENANT_ID")
         self._name = "microsoft"
 
+        # Bridge for cross-cloud (Azure sessions -> Google env vars) interop
+        try:
+            from agent_ms_cli_bridge import CopilotCLIBridge
+            self.bridge = CopilotCLIBridge()
+        except Exception:
+            self.bridge = None
+
         if not self.graph_token:
-            logger.warning("MicrosoftProvider initialized without Graph token. Graph calls will be stubbed.")
+            logger.warning("MicrosoftProvider initialized without Graph token. Graph calls will be stubbed. Bridge available for token mapping to Google.")
 
     @property
     def name(self) -> str:

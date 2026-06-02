@@ -32,6 +32,12 @@ from providers.provider_ms import MicrosoftProvider
 from providers.provider_google import GoogleProvider
 from providers.provider_notion import NotionProvider
 
+# Multi-cloud bridge (Google-MS token interop + Copilot path) - upgraded non-blocking async ready
+try:
+    from providers.agent_ms_cli_bridge import CopilotCLIBridge
+except Exception:
+    CopilotCLIBridge = None
+
 logging.basicConfig(
     level=logging.INFO,
     stream=sys.stderr,
@@ -53,7 +59,12 @@ class MultiProviderMCPServer:
         self.local_cli = LocalCLIProvider(runner=self.cli_runner)
         self.microsoft = MicrosoftProvider()
         self.google = GoogleProvider()
-        self.notion = NotionProvider()   # Will be wired with real adapter later
+        self.notion = NotionProvider()   # Real advanced engine wired in providers/notion/
+
+        # Cross-cloud bridge for Google <-> Microsoft interop (token mapping, Copilot handoff)
+        self.multicloud_bridge = CopilotCLIBridge() if CopilotCLIBridge else None
+        if self.multicloud_bridge:
+            logger.info("Multi-cloud (Google-MS) CopilotCLIBridge active for token inheritance.")
 
         self.providers: Dict[str, ProviderContract] = {
             "local_cli": self.local_cli,

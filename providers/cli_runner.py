@@ -53,7 +53,8 @@ class SecureCLIRunner:
         command_name: str,
         arguments: List[str],
         timeout: Optional[float] = 120.0,
-        env_overrides: Optional[Dict[str, str]] = None
+        env_overrides: Optional[Dict[str, str]] = None,
+        prepared_env: Optional[Dict[str, str]] = None
     ) -> Dict[str, Any]:
         """
         Execute an allowlisted command with full safety guarantees.
@@ -86,7 +87,8 @@ class SecureCLIRunner:
                 }
 
         # Build environment (inherit + optional overrides for cross-cloud)
-        env = os.environ.copy()
+        # Support prepared_env from agent_ms_cli_bridge for Google-MS token mapping
+        env = prepared_env if prepared_env is not None else os.environ.copy()
         if env_overrides:
             env.update(env_overrides)
             logger.info(f"Applied {len(env_overrides)} environment overrides for cross-cloud context")
