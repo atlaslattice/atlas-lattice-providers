@@ -128,7 +128,12 @@ This record is now queryable for analysis and replay.
 
 ---
 
-**Status**: v1.2 provider spine is fully wired and ready for orchestrator integration. Connected to atlaslattice GitHub for archival + adversarial review workflows.
+**Status**: v3.0 — Real NotionAdvancedIntegrationsEngine (20 patterns) now wired into NotionProvider. Connected to atlaslattice GitHub as the versioned, archivable, adversarial-reviewed canonical home for the provider layer (per E145 GROK CLI Build Spec v3.0 and Maximum_Grok_xAI_Feature_Spec_v3.0).
+
+See:
+- docs/E145_GROK_Maximum_Grok_CLI_Build_Spec_v3.0.md (full prioritized 40-feature roadmap, tiers, architecture, release gates)
+- docs/Maximum_Grok_xAI_Feature_Spec_v3.0.md (axiomatic 12D ClaimPacket elevation of every feature)
+- providers/notion/ (the ported advanced engine + adapter + deps — primary canon feed)
 
 **Next**: 
 - Wire real `record_event` + mirror/extract into MicrosoftProvider and GoogleProvider (Notion is primary canon feed).

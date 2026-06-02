@@ -1,0 +1,1 @@
+# Notion canon + advanced 20-pattern engine (canonical port from KRAKOA)\nfrom .notion_adapter import NotionSourceAdapter\ntry:\n    from .notion_advanced_integrations import NotionAdvancedIntegrationsEngine\nexcept:\n    NotionAdvancedIntegrationsEngine = None\n
