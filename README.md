@@ -128,7 +128,7 @@ This record is now queryable for analysis and replay.
 
 ---
 
-**Status**: v3.0 — Real NotionAdvancedIntegrationsEngine (20 patterns) + full **20 Advanced Microsoft Windows Copilot AI Integrations** + **E145 20 Project-Oriented Features** (atomic jobs, project memory graph, arena mode, bullshit olympics, CRDT collab, narrative coherence, hierarchical goals, counterfactual sim, self-improving skills, project dashboard, etc.) now wired.
+**Status**: v3.0 — Real NotionAdvancedIntegrationsEngine (20 patterns) + full **20 Advanced Microsoft Windows Copilot AI Integrations** + **E145 20 Project-Oriented Features** + **20 Bleeding-Edge Advanced Capabilities** (provider observability/telemetry bus, unified error taxonomy, scoring & routing, cross-provider traces, canon drift detectors, human promotion gates, continuous sync daemons for Notion/Graph, meeting intelligence pipeline, governance checker, PowerShell dry-run, local context packer, multi-surface explain, federated search, claim lineage, A/B testing, auto governance docs, weekly digest, safety sandbox, decision explainer) now wired.
 
 See:
 - docs/E145_Project_Oriented_Features_Build_Spec_v1.0.md

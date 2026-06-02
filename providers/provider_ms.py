@@ -242,7 +242,7 @@ class MicrosoftProvider(ProviderContract):
     def capabilities(self) -> Dict[str, Any]:
         caps = {
             "name": self.name,
-            "supports": ["search", "fetch", "extract_claims", "mirror", "execute"],
+            "supports": ["search", "fetch", "extract_claims", "mirror", "execute", "record_event"],
             "priority": 2,
             "description": "Microsoft Graph + Azure OpenAI + full 20 Advanced Windows Copilot integrations + E145 20 Project-Oriented Features (atomic jobs, memory graph, arena, bullshit olympics, CRDT collab, narrative coherence, etc.).",
             "requires": ["MS_GRAPH_TOKEN or azure-identity", "Azure OpenAI client (optional but recommended)"]
@@ -252,3 +252,10 @@ class MicrosoftProvider(ProviderContract):
         if self.project_engine:
             caps["e145_project_features"] = self.project_engine.list_features()
         return caps
+
+    async def record_event(self, kind: str, meta: Dict[str, Any]) -> None:
+        """Cap 1 observability - delegate to shared telemetry."""
+        from .provider_telemetry import default_telemetry
+        meta = meta or {}
+        meta.setdefault("provider", self.name)
+        await default_telemetry.record_event(self.name, kind, meta)

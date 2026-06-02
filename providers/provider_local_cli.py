@@ -73,18 +73,27 @@ class LocalCLIProvider(ProviderContract):
         """Primary capability of this provider."""
         env_overrides = kwargs.get("env_overrides")
         timeout = kwargs.get("timeout", 120.0)
+        prepared_env = kwargs.get("prepared_env")
         return await self.runner.execute(
             command_name=command,
             arguments=args,
             timeout=timeout,
-            env_overrides=env_overrides
+            env_overrides=env_overrides,
+            prepared_env=prepared_env
         )
 
     def capabilities(self) -> Dict[str, Any]:
         return {
             "name": self.name,
-            "supports": ["execute"],
+            "supports": ["execute", "record_event"],
             "priority": 1,
             "description": "Secure local CLI execution spine. Used by Grok, Lattice, Gemini, and Copilot agents.",
             "allowlisted_commands": list(self.runner.allowlist.keys())
         }
+
+    async def record_event(self, kind: str, meta: Dict[str, Any]) -> None:
+        """Cap 1 observability."""
+        from .provider_telemetry import default_telemetry
+        meta = meta or {}
+        meta.setdefault("provider", self.name)
+        await default_telemetry.record_event(self.name, kind, meta)

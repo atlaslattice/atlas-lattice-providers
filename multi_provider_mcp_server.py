@@ -83,6 +83,23 @@ class MultiProviderMCPServer:
             self.project_engine = None
             logger.warning(f"Project engine not loaded: {e}")
 
+        # 20 Bleeding-edge Advanced Capabilities Engine (observability, errors, drift, daemons, explainers, etc.)
+        try:
+            from providers.advanced_capabilities_engine import AdvancedCapabilitiesEngine
+            self.advanced_capabilities = AdvancedCapabilitiesEngine(
+                runner=self.cli_runner,
+                decision_ledger=None,
+                bridge=self.multicloud_bridge,
+                project_engine=self.project_engine,
+                copilot_engine=self.microsoft.copilot_engine if hasattr(self.microsoft, "copilot_engine") else None,
+                notion_engine=self.notion.notion if hasattr(self.notion, "notion") else None,
+                simulate_default=True
+            )
+            logger.info("AdvancedCapabilitiesEngine (20 bleeding-edge) active.")
+        except Exception as e:
+            self.advanced_capabilities = None
+            logger.warning(f"Advanced capabilities engine not loaded: {e}")
+
         self.providers: Dict[str, ProviderContract] = {
             "local_cli": self.local_cli,
             "microsoft": self.microsoft,
@@ -162,6 +179,18 @@ class MultiProviderMCPServer:
                         },
                         "required": ["feature"]
                     }
+                },
+                {
+                    "name": "advanced_capability",
+                    "description": "Execute any of the 20 bleeding-edge Copilot capabilities: provider_observability_bus, unified_error_taxonomy, provider_scoring_routing, cross_provider_traces, canon_drift_detector, human_promotion_gates, notion_canon_sync_daemon, graph_canon_sync_daemon, meeting_intelligence_pipeline, governance_policy_checker, powershell_ai_dryrun, local_context_packer, multi_surface_explain, cross_cloud_federated_search, claim_lineage_visualizer, provider_ab_testing, governance_doc_generator, weekly_canon_digest, integration_safety_sandbox, decision_explainer.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "capability": {"type": "string", "description": "Capability name (e.g. canon_drift_detector, cross_cloud_federated_search, decision_explainer)"},
+                            "kwargs": {"type": "object"}
+                        },
+                        "required": ["capability"]
+                    }
                 }
             ]
             return {"jsonrpc": "2.0", "id": mid, "result": {"tools": tools}}
@@ -225,6 +254,15 @@ class MultiProviderMCPServer:
                     # Fallback to microsoft execute
                     result = await self.microsoft.execute(feature, [], **kws)
                     return {"jsonrpc": "2.0", "id": mid, "result": result}
+
+            if name == "advanced_capability":
+                capability = args.get("capability")
+                kws = args.get("kwargs", {})
+                if self.advanced_capabilities:
+                    result = await self.advanced_capabilities.run(capability, **kws)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                else:
+                    return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": "AdvancedCapabilitiesEngine not loaded"}}
 
         return self._error(mid, f"Method '{method}' not supported or not implemented.")
 

@@ -30,3 +30,10 @@ except Exception:
     ProjectOrientedFeaturesEngine = None
     PROJECT_FEATURES = {}
 
+# 20 Bleeding-edge Advanced Copilot Capabilities
+try:
+    from .advanced_capabilities_engine import AdvancedCapabilitiesEngine, ADVANCED_CAPABILITIES
+except Exception:
+    AdvancedCapabilitiesEngine = None
+    ADVANCED_CAPABILITIES = {}
+

@@ -266,7 +266,7 @@ class NotionProvider(ProviderContract):
     def capabilities(self) -> Dict[str, Any]:
         caps = {
             "name": self.name,
-            "supports": ["search", "fetch", "extract_claims", "mirror", "execute"],
+            "supports": ["search", "fetch", "extract_claims", "mirror", "execute", "record_event"],
             "priority": 0,  # Highest — primary canon
             "description": "Sovereign 500+ unique-IP archive + 20 advanced frontier patterns (Notion as control-plane, secret hygiene, provenance RAG, etc.). Primary canon feed for Maximum Grok CNS.",
             "lattice_coords": self._lattice_coords,
@@ -277,6 +277,13 @@ class NotionProvider(ProviderContract):
         if self.engine:
             caps["engine"] = "NotionAdvancedIntegrationsEngine (v3.0 wired)"
         return caps
+
+    async def record_event(self, kind: str, meta: Dict[str, Any]) -> None:
+        """Cap 1 observability."""
+        from .provider_telemetry import default_telemetry
+        meta = meta or {}
+        meta.setdefault("provider", self.name)
+        await default_telemetry.record_event(self.name, kind, meta)
 
     # --- Convenience for direct advanced usage (orchestrator / CLI / A2A) ---
     def run_advanced(self, pattern: str, **kwargs) -> Dict[str, Any]:

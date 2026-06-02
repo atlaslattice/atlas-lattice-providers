@@ -95,6 +95,15 @@ class ProviderContract(ABC):
         """Optional health check. Override if provider has external dependencies."""
         return {"status": "healthy", "provider": self.name}
 
+    async def record_event(self, kind: str, meta: Dict[str, Any]) -> None:
+        """
+        Observability hook (cap 1: Provider observability & telemetry bus).
+        Providers should call this for operation_start, success, error, etc.
+        meta should include standardized keys: latency_ms, status, error_code, payload_bytes, etc.
+        """
+        # Default no-op; providers override or delegate to ProviderTelemetry
+        pass
+
 
 # Type alias for convenience
 Provider = ProviderContract
