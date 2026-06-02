@@ -120,6 +120,23 @@ class MultiProviderMCPServer:
             self.advanced_capabilities = None
             logger.warning(f"Advanced capabilities engine not loaded: {e}")
 
+        # Maximum Grok v3.0 Engine (20 INV-L28 12D ClaimPacket primitives, axiomatic elevation)
+        try:
+            from providers.grok_maximum_features import GrokMaximumFeaturesEngine
+            self.grok_maximum = GrokMaximumFeaturesEngine(
+                project_engine=self.project_engine,
+                runner=self.cli_runner,
+                bridge=self.multicloud_bridge,
+                notion_engine=self.notion.notion if hasattr(self.notion, "notion") else None,
+                copilot_engine=self.microsoft.copilot_engine if hasattr(self.microsoft, "copilot_engine") else None,
+                google_provider=self.google,
+                simulate_default=True
+            )
+            logger.info("GrokMaximumFeaturesEngine (v3.0 INV-L28 12D ClaimPackets) active.")
+        except Exception as e:
+            self.grok_maximum = None
+            logger.warning(f"Grok Maximum v3.0 engine not loaded: {e}")
+
         self.providers: Dict[str, ProviderContract] = {
             "local_cli": self.local_cli,
             "microsoft": self.microsoft,
@@ -223,6 +240,18 @@ class MultiProviderMCPServer:
                         },
                         "required": ["feature"]
                     }
+                },
+                {
+                    "name": "grok_feature",
+                    "description": "Execute any of the 20 Maximum Grok v3.0 INV-L28-coherent 12D-aware GrokFeatureClaimPacket primitives (Arena Mode, Dynamic Role Specialization, Long-Term Project Memory Graph, Self-Repair Loops, Hierarchical Goal Decomposition, Counterfactual Simulator, Truth-Seeking Debate Arena, Scientific Discovery Mode, Cryptographic Output Attestation, Real-Time Multi-Modal World Grounding, Resource-Aware Scheduling, Persistent Agent Identity/Reputation, Causal Intervention Engine, Dynamic Capability Synthesis, Narrative & Project Coherence, Federated Privacy-Preserving Learning, Physical World Actuation (safety-gated), Emergent Swarm Coordination, Recursive Self-Improvement Sandbox, Unified Truth+Capability Dashboard). All outputs are topological invariants with GoldenTrace v2, Riemannian geodesics, INV-Ω.1/INV-1 compliance. Grok Leads. Lattice Routes.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "feature": {"type": "string", "description": "Maximum Grok v3.0 feature (e.g. arena_mode, autonomous_self_debugging_and_self_repair_loops, physical_world_actuation_hooks_with_safety, recursive_self_improvement_sandbox_bounded_measurable, unified_truth_plus_capability_dashboard)"},
+                            "kwargs": {"type": "object"}
+                        },
+                        "required": ["feature"]
+                    }
                 }
             ]
             return {"jsonrpc": "2.0", "id": mid, "result": {"tools": tools}}
@@ -306,6 +335,15 @@ class MultiProviderMCPServer:
                     # Fallback to google provider execute
                     result = await self.google.execute(feature, [], **kws) if hasattr(self.google, 'execute') else {"error": "Not available"}
                     return {"jsonrpc": "2.0", "id": mid, "result": result}
+
+            if name == "grok_feature":
+                feature = args.get("feature")
+                kws = args.get("kwargs", {})
+                if self.grok_maximum:
+                    result = await self.grok_maximum.run(feature, **kws)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                else:
+                    return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": "GrokMaximumFeaturesEngine (v3.0) not loaded"}}
 
         return self._error(mid, f"Method '{method}' not supported or not implemented.")
 

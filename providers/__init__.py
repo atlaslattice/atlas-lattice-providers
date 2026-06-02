@@ -45,3 +45,10 @@ except Exception:
 
 # Google I/O 2026 + next 20 bleeding-edge (full 40+ Google features) now part of AdvancedCapabilitiesEngine (google_advanced / advanced_capability tools). All 60+ wired with ClaimPackets, symbiosis, ledgers.
 
+# Maximum Grok v3.0 — 20 INV-L28-coherent 12D-aware GrokFeatureClaimPacket primitives (axiomatic elevation)
+try:
+    from .grok_maximum_features import GrokMaximumFeaturesEngine, GROK_MAX_FEATURES
+except Exception:
+    GrokMaximumFeaturesEngine = None
+    GROK_MAX_FEATURES = {}
+
