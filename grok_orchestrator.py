@@ -222,6 +222,12 @@ HIGH_STAKES_FEATURES = {
     "raw_uws",  # when not dry-run
 }
 
+# Tier 2 #15: Explicit HIGH_STAKES_ROUTES for mandatory Bullshit Olympics enforcement
+HIGH_STAKES_ROUTES = HIGH_STAKES_FEATURES | {
+    "feature_synthesis", "synthesize_features", "17k_synthesis", "canon_synthesis",
+    "promote_to_canon", "self_improve", "ensemble", "formal_verify"
+}
+
 # Features that map primarily to UWS/Aluminum surface
 UWS_FEATURES = {"uws", "alum", "mail_list", "mail_send", "drive_list", "drive_search", "calendar_list", "calendar_create",
                 "tasks_list", "teams_or_chat_list", "search_all", "raw_uws",
@@ -361,30 +367,13 @@ class GrokOrchestrator:
         return False
 
     async def _run_bullshit_olympics(self, target: str, evidence: Dict[str, Any] = None, high_stakes: bool = True, **kwargs) -> Dict[str, Any]:
-        """Priority 2 (polished): Use AdvancedBullshitOlympics directly (Tier 1 #1) for strongest critique.
-        Falls back to project if needed. Always enriches with orchestrator context + ledger.
-        """
-        evidence = evidence or {}
-        if AdvancedBullshitOlympics:
-            adv = AdvancedBullshitOlympics(
-                project_engine=self.project_engine,
-                advanced_engine=self.advanced,
-                decision_ledger=self.decision_ledger,
-                uws=self.uws,
-                simulate_default=self.simulate
-            )
-            res = await adv.review(target, evidence=evidence, high_stakes=high_stakes, **kwargs)
-            res["orchestrator_enforced"] = True
-            res["grok_leads"] = True
-            res["lattice_routes"] = True
-            return res
-        # Fallback to project
+        """Use project_engine (which now delegates to advanced v2 with all 20/20 enhancements)."""
         if self.project_engine:
             res = await self.project_engine.run("bullshit_olympics", target=target, high_stakes=high_stakes, evidence=evidence or {}, **kwargs)
             res["orchestrator_enforced"] = True
             res["grok_leads"] = True
+            res["lattice_routes"] = True
             return res
-        # Last resort
         return {"feature": "bullshit_olympics", "target": target, "inv_l28_coherence": 0.79, "verdict": "PASS_WITH_NOTES", "grok_leads": True}
 
     async def _enforce_human_gate(self, feature: str, payload: Dict[str, Any], **kwargs) -> Dict[str, Any]:
@@ -475,6 +464,23 @@ class GrokOrchestrator:
         high_stakes = self._is_high_stakes(feature, kwargs)
         start = asyncio.get_event_loop().time() if hasattr(asyncio, 'get_event_loop') else 0
 
+        # Tier 2 #15: Mandatory Bullshit Olympics + threshold for HIGH_STAKES_ROUTES
+        if feature in HIGH_STAKES_ROUTES:
+            high_stakes = True
+            if self.project_engine:
+                bs = await self.project_engine.run("bullshit_olympics", target=kwargs.get("target", feature), high_stakes=True, evidence={"feature": feature, "kwargs": str(kwargs)[:300]})
+                bs_inv = bs.get("inv_l28_coherence", 0.0) or (bs.get("truth_claim_packet", {}) or {}).get("inv_l28_coherence", 0.0)
+                if bs_inv < 0.78:
+                    # Force human gate / block
+                    return {
+                        "status": "BLOCKED_BY_MANDATORY_BULLSHIT",
+                        "feature": feature,
+                        "bullshit_result": bs,
+                        "min_threshold": 0.78,
+                        "grok_leads": True,
+                        "review_state": "REJECTED_LOW_INV_L28"
+                    }
+
         # Intelligent routing decision (if router available)
         routing_decision = None
         if self.router:
@@ -518,8 +524,9 @@ class GrokOrchestrator:
         if feature in ("feature_synthesis", "synthesize_features", "17k_synthesis", "canon_synthesis"):
             await self._record_orchestrator_decision(feature, "feature_synthesis_pipeline", ["uws", "bullshit", "project", "copilot"], "Full 6-stage governed synthesis for 17k surface", 0)
             if FeatureSynthesisPipeline:
-                pipe = FeatureSynthesisPipeline(uws=self.uws, bullshit=self._get_bullshit(), copilot=self.copilot, project=self.project_engine)
-                res = await pipe.run(kwargs.get("query", feature), **kwargs)
+                pipe = FeatureSynthesisPipeline(uws=self.uws, bullshit=self.project_engine, copilot=self.copilot, project=self.project_engine)
+                q = kwargs.pop("query", feature)
+                res = await pipe.run(query=q, **kwargs)
             else:
                 res = {"status": "pipeline_not_loaded", "feature": feature}
             res = await self._quality_gate(res, feature, True)

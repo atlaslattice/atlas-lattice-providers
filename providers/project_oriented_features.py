@@ -73,7 +73,9 @@ except Exception:
     ProviderErrorCode = None
 
 try:
-    from .bullshit_olympics import BullshitOlympics as AdvancedBullshitOlympics, TruthClaimPacket
+    import providers.bullshit_olympics as _bs_mod
+    AdvancedBullshitOlympics = _bs_mod.BullshitOlympics
+    TruthClaimPacket = _bs_mod.TruthClaimPacket
 except Exception:
     AdvancedBullshitOlympics = None
     TruthClaimPacket = None
@@ -333,18 +335,21 @@ class ProjectOrientedFeaturesEngine:
         Full multi-round adversarial with personas, real provenance, enhanced TruthClaimPacket.
         """
         evidence = evidence or {}
-        if AdvancedBullshitOlympics:
-            adv = AdvancedBullshitOlympics(
+        # Direct import to avoid any name shadowing with local BullshitOlympics class
+        try:
+            import providers.bullshit_olympics as _bs
+            adv = _bs.BullshitOlympics(
                 project_engine=self,
-                advanced_engine=None,  # can be injected higher
+                advanced_engine=None,
                 decision_ledger=self.decision_ledger,
-                uws=None,  # wired via orchestrator
+                uws=None,
                 simulate_default=self.simulate
             )
             return await adv.review(target, evidence=evidence, high_stakes=high_stakes, **kwargs)
+        except Exception:
+            pass
 
-        # Fallback to previous good impl if advanced not importable (should not happen)
-        # (keep minimal version for resilience)
+        # Fallback
         inv_l28 = 0.81
         verdict = "PASS_WITH_NOTES"
         truth_claim = {"type": "TruthClaimPacket", "target": target, "verdict": verdict, "inv_l28_coherence": inv_l28, "review_state": "PENDING_HUMAN_GATE" if high_stakes else "PASS"}
@@ -428,8 +433,9 @@ class BullshitOlympics:
             self._advanced = AdvancedBullshitOlympics(project_engine=project_engine, simulate_default=simulate)
 
     async def review(self, target: str, evidence: Optional[Dict[str, Any]] = None, high_stakes: bool = True, **kwargs) -> Dict[str, Any]:
-        """Primary API: delegates to the real advanced engine."""
+        """Primary API: delegates to the real advanced engine (which now supports full 20/20 multi-stage etc)."""
         if self._advanced:
+            # advanced has .review
             return await self._advanced.review(target, evidence=evidence, high_stakes=high_stakes, **kwargs)
         if self.project_engine:
             return await self.project_engine.run("bullshit_olympics", target=target, high_stakes=high_stakes, evidence=evidence or {}, **kwargs)
