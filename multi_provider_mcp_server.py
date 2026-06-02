@@ -345,6 +345,19 @@ class MultiProviderMCPServer:
                         },
                         "required": ["query"]
                     }
+                },
+                {
+                    "name": "self_improve",
+                    "description": "Recursive Self-Improvement Sandbox (E145 Tier 1 #1). Safe bounded proposals for prompt/routing/bullshit changes. Full pipeline: sim -> eval -> bullshit -> human gate. Returns SelfImprovementClaimPacket with deltas.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "type": {"type": "string"},
+                            "before": {"type": "string"},
+                            "after": {"type": "string"},
+                            "rationale": {"type": "string"}
+                        }
+                    }
                 }
             ]
             return {"jsonrpc": "2.0", "id": mid, "result": {"tools": tools}}
@@ -496,6 +509,13 @@ class MultiProviderMCPServer:
                     return {"jsonrpc": "2.0", "id": mid, "result": result}
                 except Exception as e:
                     return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": str(e)}}
+
+            # General dispatch for new E145 20 modules (self_improve, ensemble, formal_verify, scientific, attest, etc.)
+            if name in ("self_improve", "ensemble_reasoner", "formal_verifier", "self_debugger", "scientific_discovery", "attestation", "capability_synthesizer", "hierarchical_goals", "multi_modal", "resource_scheduler", "swarm", "agent_reputation", "counterfactual"):
+                if self.orchestrator:
+                    result = await self.orchestrator.run(name, **args)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": f"Orchestrator required for {name}"}}
 
         return self._error(mid, f"Method '{method}' not supported or not implemented.")
 

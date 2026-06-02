@@ -99,3 +99,74 @@ try:
 except Exception:
     FeatureSynthesisPipeline = None
 
+# New E145 20 modules (Tier 1/2 full + foundations)
+try:
+    from ..core.self_improvement_sandbox import RecursiveSelfImprovementSandbox
+except Exception:
+    RecursiveSelfImprovementSandbox = None
+
+try:
+    from .ensemble_reasoner import MultiModelEnsembleReasoner
+except Exception:
+    MultiModelEnsembleReasoner = None
+
+try:
+    from .project_memory_graph import LongHorizonProjectMemoryGraph
+except Exception:
+    LongHorizonProjectMemoryGraph = None
+
+try:
+    from ..core.formal_verifier import FormalVerifier
+except Exception:
+    FormalVerifier = None
+
+try:
+    from .self_debugger import AutonomousSelfDebugger
+except Exception:
+    AutonomousSelfDebugger = None
+
+try:
+    from ..modes.scientific_discovery import ScientificDiscoveryMode
+except Exception:
+    ScientificDiscoveryMode = None
+
+try:
+    from ..core.attestation import CryptographicAttestation
+except Exception:
+    CryptographicAttestation = None
+
+try:
+    from ..core.capability_synthesizer import DynamicCapabilitySynthesizer
+except Exception:
+    DynamicCapabilitySynthesizer = None
+
+try:
+    from ..core.hierarchical_goal_decomposer import HierarchicalGoalDecompositionEngine
+except Exception:
+    HierarchicalGoalDecompositionEngine = None
+
+try:
+    from .multi_modal_grounding import MultiModalGroundingEngine
+except Exception:
+    MultiModalGroundingEngine = None
+
+try:
+    from .resource_scheduler import ResourceAwareIntelligentScheduler
+except Exception:
+    ResourceAwareIntelligentScheduler = None
+
+try:
+    from .swarm_coordinator import EmergentSwarmCoordinator
+except Exception:
+    EmergentSwarmCoordinator = None
+
+try:
+    from .agent_reputation import PersistentAgentReputationSystem
+except Exception:
+    PersistentAgentReputationSystem = None
+
+try:
+    from .decision_replay import CounterfactualSimulator
+except Exception:
+    CounterfactualSimulator = None
+

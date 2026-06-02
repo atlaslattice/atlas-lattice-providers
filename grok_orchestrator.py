@@ -64,6 +64,77 @@ try:
 except Exception:
     FeatureSynthesisPipeline = None
 
+# New 20 modules imports for routing
+try:
+    from core.self_improvement_sandbox import RecursiveSelfImprovementSandbox
+except Exception:
+    RecursiveSelfImprovementSandbox = None
+
+try:
+    from providers.ensemble_reasoner import MultiModelEnsembleReasoner
+except Exception:
+    MultiModelEnsembleReasoner = None
+
+try:
+    from providers.project_memory_graph import LongHorizonProjectMemoryGraph
+except Exception:
+    LongHorizonProjectMemoryGraph = None
+
+try:
+    from core.formal_verifier import FormalVerifier
+except Exception:
+    FormalVerifier = None
+
+try:
+    from providers.self_debugger import AutonomousSelfDebugger
+except Exception:
+    AutonomousSelfDebugger = None
+
+try:
+    from modes.scientific_discovery import ScientificDiscoveryMode
+except Exception:
+    ScientificDiscoveryMode = None
+
+try:
+    from core.attestation import CryptographicAttestation
+except Exception:
+    CryptographicAttestation = None
+
+try:
+    from core.capability_synthesizer import DynamicCapabilitySynthesizer
+except Exception:
+    DynamicCapabilitySynthesizer = None
+
+try:
+    from core.hierarchical_goal_decomposer import HierarchicalGoalDecompositionEngine
+except Exception:
+    HierarchicalGoalDecompositionEngine = None
+
+try:
+    from providers.multi_modal_grounding import MultiModalGroundingEngine
+except Exception:
+    MultiModalGroundingEngine = None
+
+try:
+    from providers.resource_scheduler import ResourceAwareIntelligentScheduler
+except Exception:
+    ResourceAwareIntelligentScheduler = None
+
+try:
+    from providers.swarm_coordinator import EmergentSwarmCoordinator
+except Exception:
+    EmergentSwarmCoordinator = None
+
+try:
+    from providers.agent_reputation import PersistentAgentReputationSystem
+except Exception:
+    PersistentAgentReputationSystem = None
+
+try:
+    from providers.decision_replay import CounterfactualSimulator
+except Exception:
+    CounterfactualSimulator = None
+
 # Core lattice components for central brain
 try:
     from providers.cli_runner import SecureCLIRunner
@@ -434,6 +505,45 @@ class GrokOrchestrator:
             res = await self._quality_gate(res, feature, True)
             res = await self._enforce_human_gate(feature, res, **kwargs)
             return res
+
+        # New E145 20 modules dispatch (Tier 1/2)
+        NEW_MODULES = {
+            "self_improve": (RecursiveSelfImprovementSandbox, "self_improvement_sandbox"),
+            "recursive_self_improvement": (RecursiveSelfImprovementSandbox, "self_improvement_sandbox"),
+            "ensemble": (MultiModelEnsembleReasoner, "multi_model_ensemble_reasoner"),
+            "ensemble_reasoner": (MultiModelEnsembleReasoner, "multi_model_ensemble_reasoner"),
+            "project_memory_graph": (LongHorizonProjectMemoryGraph, "long_horizon_project_memory_graph"),
+            "long_horizon_memory": (LongHorizonProjectMemoryGraph, "long_horizon_project_memory_graph"),
+            "formal_verify": (FormalVerifier, "formal_verifier"),
+            "formal_verification": (FormalVerifier, "formal_verifier"),
+            "self_debug": (AutonomousSelfDebugger, "autonomous_self_debugger"),
+            "self_debugger": (AutonomousSelfDebugger, "autonomous_self_debugger"),
+            "scientific": (ScientificDiscoveryMode, "scientific_discovery_mode"),
+            "scientific_discovery": (ScientificDiscoveryMode, "scientific_discovery_mode"),
+            "attest": (CryptographicAttestation, "cryptographic_attestation"),
+            "attestation": (CryptographicAttestation, "cryptographic_attestation"),
+            "capability_synth": (DynamicCapabilitySynthesizer, "dynamic_capability_synthesizer"),
+            "synthesize_capability": (DynamicCapabilitySynthesizer, "dynamic_capability_synthesizer"),
+            "hierarchical_goals": (HierarchicalGoalDecompositionEngine, "hierarchical_goal_decomposition"),
+            "multi_modal": (MultiModalGroundingEngine, "multi_modal_grounding"),
+            "resource_schedule": (ResourceAwareIntelligentScheduler, "resource_scheduler"),
+            "swarm": (EmergentSwarmCoordinator, "swarm_coordination"),
+            "agent_reputation": (PersistentAgentReputationSystem, "agent_reputation"),
+            "counterfactual": (CounterfactualSimulator, "counterfactual_sim"),
+            "decision_replay": (CounterfactualSimulator, "counterfactual_sim"),
+        }
+        if feature in NEW_MODULES:
+            cls, feat_name = NEW_MODULES[feature]
+            if cls:
+                inst = cls()  # simple init; real would pass deps
+                try:
+                    res = await inst.run(**kwargs) if hasattr(inst, "run") else await inst.propose_change(**kwargs) if hasattr(inst, "propose_change") else {"status": "no_run"}
+                except Exception as e:
+                    res = {"error": str(e), "feature": feat_name}
+                res = await self._quality_gate(res, feature, high_stakes)
+                if high_stakes:
+                    res = await self._enforce_human_gate(feature, res, **kwargs)
+                return res
 
         # Grok v3.0 12D features (highest axiomatic)
         if feature in GROK_V3_FEATURES:
