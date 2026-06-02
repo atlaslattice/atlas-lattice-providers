@@ -40,6 +40,14 @@ except ImportError:
     def build(*args, **kwargs): pass
     class HttpError(Exception): pass
 
+# Gemini (Generative AI) support - using the modern google-genai package
+try:
+    from google import genai
+    GENAI_AVAILABLE = True
+except ImportError:
+    GENAI_AVAILABLE = False
+    logger.warning("google-genai not installed. Run: pip install google-genai to enable Gemini AI features.")
+
 from provider_contract import ProviderContract
 from provider_errors import ProviderErrorCode, make_error
 
@@ -58,7 +66,9 @@ class GoogleProvider(ProviderContract):
         self.token_path = token_path
         self.service = None
         self.bridge = bridge or (CopilotCLIBridge() if CopilotCLIBridge else None)
+        self.gemini_model = None
         self._initialize_service()
+        self._initialize_gemini()  # separate from Drive OAuth; uses GOOGLE_API_KEY
 
     @property
     def name(self) -> str:
@@ -105,6 +115,26 @@ class GoogleProvider(ProviderContract):
                 logger.error(f"Failed to build Google Drive service: {e}")
         else:
             logger.warning("No valid credentials found. Google Drive service remains uninitialized (stub mode).")
+
+    def _initialize_gemini(self, api_key: Optional[str] = None):
+        """Initialize Gemini using the modern google-genai SDK.
+        Prefers GOOGLE_API_KEY env var. The user's key has been integrated via environment.
+        Uses a currently supported model (gemini-2.5-flash etc.).
+        """
+        if not GENAI_AVAILABLE:
+            return
+        key = api_key or os.getenv("GOOGLE_API_KEY")
+        if not key:
+            logger.warning("GOOGLE_API_KEY not set. Gemini AI features disabled. Set $env:GOOGLE_API_KEY=yourkey")
+            return
+        try:
+            self.gemini_client = genai.Client(api_key=key)
+            # Pick a reliable current model from the list returned by the user's key
+            self.gemini_model_name = "gemini-2.5-flash"
+            logger.info(f"Gemini client initialized with model {self.gemini_model_name}.")
+        except Exception as e:
+            logger.error(f"Failed to initialize modern Gemini client: {e}")
+            self.gemini_client = None
 
     # ============================================================
     # OBSERVABILITY (v1.2+ requirement, matches other providers)
@@ -227,18 +257,71 @@ class GoogleProvider(ProviderContract):
         source_metadata: Optional[Dict[str, Any]] = None,
         **kwargs
     ) -> List[Dict[str, Any]]:
-        """Extract claims (stub for now — wire to Gemini or Azure OpenAI in future)."""
+        """Extract high-quality ClaimPackets using Gemini when available.
+        Falls back to basic extraction if no model.
+        """
         if not content:
             return []
 
-        # Placeholder structured extraction
+        if GENAI_AVAILABLE and hasattr(self, 'gemini_client') and self.gemini_client:
+            try:
+                prompt = f"""You are a precise, sovereign claim extraction engine for a knowledge lattice.
+Extract a list of high-signal, atomic, verifiable claims from the content.
+For each claim produce:
+- claim_text (concise, standalone)
+- epistemic_class: one of "fact", "opinion", "hypothesis", "definition", "procedure"
+- tags: array of short keywords
+- confidence: float 0-1
+
+Return ONLY valid JSON with top-level key "claims" containing the array.
+Do not add any other text.
+
+Content to process:
+{content[:12000]}
+"""
+                model_name = getattr(self, 'gemini_model_name', 'gemini-2.5-flash')
+                response = self.gemini_client.models.generate_content(
+                    model=model_name,
+                    contents=prompt
+                )
+                text = getattr(response, "text", str(response)).strip()
+
+                # Robust JSON extraction
+                import json, re
+                if "```json" in text:
+                    text = text.split("```json", 1)[1].split("```", 1)[0]
+                elif "```" in text:
+                    text = text.split("```", 1)[1].split("```", 1)[0]
+
+                text = re.sub(r'^[^{[]*', '', text)
+                text = re.sub(r'[^}\]]*$', '', text)
+
+                data = json.loads(text)
+                claims = data.get("claims", []) if isinstance(data, dict) else data
+
+                for c in claims:
+                    if isinstance(c, dict):
+                        c.setdefault("source", {})
+                        c["source"]["provider"] = self.name
+                        c["source"].update(source_metadata or {})
+                        c.setdefault("epistemic_class", "fact")
+                        c.setdefault("tags", ["google", "gemini"])
+                        c.setdefault("confidence", 0.8)
+
+                await self.record_event("extract_claims", {"count": len(claims), "model": model_name})
+                return claims
+            except Exception as e:
+                logger.warning(f"Gemini claim extraction failed, falling back: {e}")
+
+        # Basic fallback
         claims = [{
-            "claim_text": content[:800],
+            "claim_text": content[:700],
             "epistemic_class": "raw",
-            "tags": ["google", "drive"],
-            "source": {"provider": self.name, **(source_metadata or {})}
+            "tags": ["google", "drive", "fallback"],
+            "source": {"provider": self.name, **(source_metadata or {})},
+            "confidence": 0.5
         }]
-        await self.record_event("extract_claims", {"count": len(claims)})
+        await self.record_event("extract_claims", {"count": len(claims), "fallback": True})
         return claims
 
     async def mirror(
@@ -278,16 +361,59 @@ class GoogleProvider(ProviderContract):
         status = "healthy" if self.service else "degraded"
         return {"status": status, "provider": self.name, "service_initialized": bool(self.service)}
 
+    async def generate(self, prompt: str, model: Optional[str] = None, **kwargs) -> Dict[str, Any]:
+        """General purpose generation using the modern Gemini client.
+        Used by higher-level engines for reasoning, extraction, summarization, etc.
+        """
+        if not GENAI_AVAILABLE or not hasattr(self, 'gemini_client') or not self.gemini_client:
+            return make_error(
+                ProviderErrorCode.PROVIDER_DOWN,
+                "Gemini client not initialized (set GOOGLE_API_KEY and pip install google-genai)",
+                self.name
+            )
+
+        model_name = model or getattr(self, 'gemini_model_name', 'gemini-2.5-flash')
+
+        async def _do_generate():
+            models_to_try = [model_name, "gemini-2.0-flash", "gemini-flash-latest", "gemini-pro-latest"]
+            last_err = None
+            for m in models_to_try:
+                try:
+                    response = self.gemini_client.models.generate_content(model=m, contents=prompt)
+                    text = getattr(response, "text", str(response))
+                    await self.record_event("generate", {"prompt_len": len(prompt), "model": m})
+                    return {
+                        "status": "SUCCESS",
+                        "provider": self.name,
+                        "text": text,
+                        "model": m
+                    }
+                except Exception as e:
+                    last_err = e
+                    if "high demand" in str(e).lower() or "503" in str(e):
+                        continue
+                    break
+            return make_error(ProviderErrorCode.INTERNAL_ERROR, str(last_err), self.name)
+
+        return await self._timed_operation("generate", _do_generate(), {"prompt_len": len(prompt)})
+
 
 if __name__ == "__main__":
     # Local developer verification block
-    # Simulating a multi-cloud bridge session by injecting a mock token
-    os.environ["GOOGLE_EXTERNAL_OAUTH_TOKEN"] = "ya29.a0AfB_y..."  # Replace with real token for actual testing
+    # Set your key before running:  $env:GOOGLE_API_KEY="your-key-here"
+    # The user's key was integrated into the runtime environment for this session.
 
     provider = GoogleProvider()
-    print(provider.capabilities())
+    print("Capabilities:", provider.capabilities())
 
-    # Example (will only succeed with a valid token)
-    # import asyncio
-    # result = asyncio.run(provider.search("index"))
-    # print(result)
+    import asyncio, os
+    async def test_gemini():
+        if not os.getenv("GOOGLE_API_KEY"):
+            print("Set GOOGLE_API_KEY env var to test live Gemini calls.")
+            return
+        gen = await provider.generate('Confirm Gemini API integration in the GoogleProvider for Maximum Grok.')
+        print('Generate status:', gen.get('status') if isinstance(gen, dict) else 'N/A')
+        claims = await provider.extract_claims('The provider now uses the integrated Gemini key for high-quality extraction.')
+        print('Extract count:', len(claims))
+
+    asyncio.run(test_gemini())
