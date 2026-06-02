@@ -66,6 +66,23 @@ class MultiProviderMCPServer:
         if self.multicloud_bridge:
             logger.info("Multi-cloud (Google-MS) CopilotCLIBridge active for token inheritance.")
 
+        # E145 Project-Oriented Features Engine (20 long-horizon features)
+        try:
+            from providers.project_oriented_features import ProjectOrientedFeaturesEngine
+            self.project_engine = ProjectOrientedFeaturesEngine(
+                project_id="atlas-lattice-default",
+                runner=self.cli_runner,
+                decision_ledger=None,
+                bridge=self.multicloud_bridge,
+                notion_engine=self.notion.notion if hasattr(self.notion, "notion") else None,  # rough
+                copilot_engine=self.microsoft.copilot_engine if hasattr(self.microsoft, "copilot_engine") else None,
+                simulate_default=True
+            )
+            logger.info("E145 ProjectOrientedFeaturesEngine active.")
+        except Exception as e:
+            self.project_engine = None
+            logger.warning(f"Project engine not loaded: {e}")
+
         self.providers: Dict[str, ProviderContract] = {
             "local_cli": self.local_cli,
             "microsoft": self.microsoft,
@@ -133,6 +150,18 @@ class MultiProviderMCPServer:
                         },
                         "required": ["integration"]
                     }
+                },
+                {
+                    "name": "project_feature",
+                    "description": "Execute any of the 20 E145 Project-Oriented Features (atomic jobs, memory graph, arena mode, bullshit olympics, hierarchical goals, narrative coherence, CRDT collab, counterfactual sim, self-improving skills, project dashboard, etc.). Optimized for long-horizon high-stakes projects.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "feature": {"type": "string", "description": "Feature name or number (e.g. atomic_job_control, bullshit_olympics, project_memory_graph, arena_mode, project_dashboard)"},
+                            "kwargs": {"type": "object"}
+                        },
+                        "required": ["feature"]
+                    }
                 }
             ]
             return {"jsonrpc": "2.0", "id": mid, "result": {"tools": tools}}
@@ -185,6 +214,17 @@ class MultiProviderMCPServer:
                 # Route through the microsoft provider's execute (which now dispatches to the 20 integrations engine)
                 result = await self.microsoft.execute(integration, arguments, **kws)
                 return {"jsonrpc": "2.0", "id": mid, "result": result}
+
+            if name == "project_feature":
+                feature = args.get("feature")
+                kws = args.get("kwargs", {})
+                if self.project_engine:
+                    result = await self.project_engine.run(feature, **kws)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                else:
+                    # Fallback to microsoft execute
+                    result = await self.microsoft.execute(feature, [], **kws)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
 
         return self._error(mid, f"Method '{method}' not supported or not implemented.")
 

@@ -128,14 +128,16 @@ This record is now queryable for analysis and replay.
 
 ---
 
-**Status**: v3.0 — Real NotionAdvancedIntegrationsEngine (20 patterns) + full **20 Advanced Microsoft Windows Copilot AI Integrations** (Graph search/delta, Outlook/Teams/Planner/Loop/Word/Excel/Power Automate, Azure OpenAI functions, full Windows local/PowerShell/Defender/Entra/clipboard/explorer/app control, etc.) now wired.
+**Status**: v3.0 — Real NotionAdvancedIntegrationsEngine (20 patterns) + full **20 Advanced Microsoft Windows Copilot AI Integrations** + **E145 20 Project-Oriented Features** (atomic jobs, project memory graph, arena mode, bullshit olympics, CRDT collab, narrative coherence, hierarchical goals, counterfactual sim, self-improving skills, project dashboard, etc.) now wired.
 
 See:
+- docs/E145_Project_Oriented_Features_Build_Spec_v1.0.md
 - docs/20_Microsoft_Windows_Copilot_Integrations.md
+- providers/project_oriented_features.py (the E145 engine + run() dispatch for all 20)
 - providers/microsoft_copilot_integrations.py (the engine + run() dispatch)
-- providers/provider_ms.py (execute() + capabilities now expose all 20)
+- providers/provider_ms.py (execute() + capabilities now expose Copilot 20 + Project 20)
 - providers/agent_ms_cli_bridge.py + cli_runner.py (cross-cloud tokens + PowerShell allowlist)
-- multi_provider_mcp_server.py (new `microsoft_copilot` tool)
+- multi_provider_mcp_server.py (new `microsoft_copilot` and `project_feature` tools)
 
 Connected to atlaslattice GitHub as the versioned, archivable, adversarial-reviewed canonical home for the provider layer (per E145 GROK CLI Build Spec v3.0 and Maximum_Grok_xAI_Feature_Spec_v3.0).
 

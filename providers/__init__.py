@@ -23,3 +23,10 @@ except Exception:
     MicrosoftCopilotIntegrations = None
     COPILOT_INTEGRATIONS = {}
 
+# E145 Project-Oriented 20 Features Engine
+try:
+    from .project_oriented_features import ProjectOrientedFeaturesEngine, PROJECT_FEATURES
+except Exception:
+    ProjectOrientedFeaturesEngine = None
+    PROJECT_FEATURES = {}
+

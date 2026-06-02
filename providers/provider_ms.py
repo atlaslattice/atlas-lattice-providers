@@ -63,8 +63,24 @@ class MicrosoftProvider(ProviderContract):
             logger.warning(f"MicrosoftCopilotIntegrations not available: {e}")
             self.copilot_engine = None
 
+        # E145 Project-Oriented Features Engine (20 long-horizon project features)
+        try:
+            from .project_oriented_features import ProjectOrientedFeaturesEngine
+            self.project_engine = ProjectOrientedFeaturesEngine(
+                project_id="default-atlas-project",
+                runner=None,
+                decision_ledger=None,
+                bridge=self.bridge,
+                notion_engine=None,  # injected later
+                copilot_engine=self.copilot_engine,
+                simulate_default=True
+            )
+        except Exception as e:
+            logger.warning(f"ProjectOrientedFeaturesEngine not available: {e}")
+            self.project_engine = None
+
         if not self.graph_token:
-            logger.warning("MicrosoftProvider initialized without Graph token. Graph calls will be stubbed. Bridge available for token mapping to Google. Copilot 20 integrations available in simulate mode.")
+            logger.warning("MicrosoftProvider initialized without Graph token. Graph calls will be stubbed. Bridge available for token mapping to Google. Copilot 20 + Project 20 integrations available in simulate mode.")
 
     @property
     def name(self) -> str:
@@ -188,13 +204,21 @@ class MicrosoftProvider(ProviderContract):
 
     async def execute(self, command: str, args: List[str], **kwargs) -> Dict[str, Any]:
         """
-        Microsoft Copilot surfaces (the 20 advanced integrations).
+        Microsoft Copilot surfaces (the 20 advanced integrations) + E145 Project-Oriented Features (20 long-horizon).
         Examples:
           execute("graph_file_search", ["query here"])
-          execute("powershell_ai_scripting", ["get system info"])
-          execute("outlook_draft", ["subject", "body", "to@example.com"])
-          execute("copilot_local_app_control", ["notepad"])
+          execute("atomic_job_control", ["moon-party-harvest", "start"])
+          execute("bullshit_olympics", ["last major decision"])
+          execute("project_dashboard")
         """
+        # Prefer project engine for E145 features
+        if self.project_engine and command in [k.replace("-", "_") for k in self.project_engine.list_features()["features"].keys()]:
+            try:
+                result = await self.project_engine.run(command, **kwargs)
+                return {"status": "SUCCESS", "provider": self.name, "feature": command, "result": result, "source": "e145_project_engine"}
+            except Exception as e:
+                return {"status": "ERROR", "provider": self.name, "feature": command, "error": str(e)}
+
         if self.copilot_engine:
             # command is the integration name, args[0] can be primary arg
             integration = command
@@ -211,7 +235,7 @@ class MicrosoftProvider(ProviderContract):
 
         return {
             "status": "ERROR",
-            "error": "MicrosoftCopilotIntegrations not wired. Route to LocalCLIProvider or provide the engine.",
+            "error": "No suitable engine (project/copilot) wired for command. Route to LocalCLIProvider.",
             "provider": self.name
         }
 
@@ -220,9 +244,11 @@ class MicrosoftProvider(ProviderContract):
             "name": self.name,
             "supports": ["search", "fetch", "extract_claims", "mirror", "execute"],
             "priority": 2,
-            "description": "Microsoft Graph + Azure OpenAI + full 20 Advanced Windows Copilot integrations (Graph search/delta, Outlook/Teams/Planner/Loop/Word/Excel, Power Automate, Azure OpenAI functions, Windows local context, PowerShell, Defender, Entra, clipboard, explorer, app control).",
+            "description": "Microsoft Graph + Azure OpenAI + full 20 Advanced Windows Copilot integrations + E145 20 Project-Oriented Features (atomic jobs, memory graph, arena, bullshit olympics, CRDT collab, narrative coherence, etc.).",
             "requires": ["MS_GRAPH_TOKEN or azure-identity", "Azure OpenAI client (optional but recommended)"]
         }
         if self.copilot_engine:
             caps["copilot_integrations"] = self.copilot_engine.list_integrations()
+        if self.project_engine:
+            caps["e145_project_features"] = self.project_engine.list_features()
         return caps
