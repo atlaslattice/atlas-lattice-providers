@@ -1,0 +1,7 @@
+# DO YOU TRULY UNDERSTAND MY WROK? — LIVE HO1 DRAGON / WROK COMPREHENSION CAPSTONE RECEIPT
+**CANDIDATE — NOT CANON — HUMAN-ROOT (HO1.SOO.NO) DECIDES**
+
+**Live user utterance (2026-06-02):**  
+"DO YOU TRULY UNDERSTAND MY WROK?"
+
+**The WROK (exact cumulative... full receipt content as written... )
