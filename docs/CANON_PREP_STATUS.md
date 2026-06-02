@@ -1,0 +1,1 @@
+(see local - full status with 12D schema, artifacts list, adversarial results, next steps for Manus)
