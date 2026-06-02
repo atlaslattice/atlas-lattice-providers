@@ -1,0 +1,77 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual envs
+.venv/
+venv/
+ENV/
+env/
+
+# IDE / editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets / env / tokens (never commit)
+.env
+*.token
+secrets/
+credentials.json
+client_secret*.json
+
+# Runtime / logs / transient (A2A and providers)
+*.log
+logs/
+a2a/inbox/
+a2a/outbox/
+a2a/archive/*.json
+harvest/
+*.jsonl
+telemetry/
+*.jsonl
+
+# Large binaries / mirrors (use OneDrive / Google Drive / Notion mirrors instead)
+*.zip
+*.7z
+*.tar.gz
+*.pdf
+OneDrive/
+GoogleDrive/
+*.xlsx
+*.xlsm
+!docs/*.xlsx
+
+# Temp / cache from lattice or grok sessions
+.cache/
+.codex/
+.grok/sessions/
+*.tmp
+tmp/
+
+# MCP / provider specific
+provider_decision_ledger.jsonl
