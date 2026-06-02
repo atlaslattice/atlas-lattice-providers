@@ -163,7 +163,9 @@ class GrokMaximumFeaturesEngine:
         # Emit for unified observability
         try:
             from .provider_telemetry import default_telemetry
-            default_telemetry.record_event("grok_maximum", action_type, {"target": target, "lattice": lattice, **payload})
+            rec = default_telemetry.record_event("grok_maximum", action_type, {"target": target, "lattice": lattice, **payload})
+            if asyncio.iscoroutine(rec):
+                asyncio.create_task(rec)
         except Exception:
             pass
 

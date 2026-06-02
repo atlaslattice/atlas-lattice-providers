@@ -75,15 +75,14 @@ class MultiProviderMCPServer:
         self.cli_runner = SecureCLIRunner()
         self.local_cli = LocalCLIProvider(runner=self.cli_runner)
         self.microsoft = MicrosoftProvider()
+        # Cross-cloud bridge for Google <-> Microsoft interop (token mapping, Copilot handoff) - create FIRST
+        self.multicloud_bridge = CopilotCLIBridge() if CopilotCLIBridge else None
+        if self.multicloud_bridge:
+            logger.info("Multi-cloud (Google-MS) CopilotCLIBridge active for token inheritance.")
         # Pass the multicloud bridge so GoogleProvider can consume GOOGLE_EXTERNAL_OAUTH_TOKEN
         # Gemini API key is picked from GOOGLE_API_KEY env (user's key integrated)
         self.google = GoogleProvider(bridge=self.multicloud_bridge)
         self.notion = NotionProvider()   # Real advanced engine wired in providers/notion/
-
-        # Cross-cloud bridge for Google <-> Microsoft interop (token mapping, Copilot handoff)
-        self.multicloud_bridge = CopilotCLIBridge() if CopilotCLIBridge else None
-        if self.multicloud_bridge:
-            logger.info("Multi-cloud (Google-MS) CopilotCLIBridge active for token inheritance.")
 
         # E145 Project-Oriented Features Engine (20 long-horizon features)
         try:
@@ -146,12 +145,26 @@ class MultiProviderMCPServer:
                 project_engine=self.project_engine,
                 advanced_engine=self.advanced_capabilities,
                 bridge=self.multicloud_bridge,
+                copilot_engine=self.microsoft.copilot_engine if hasattr(self.microsoft, "copilot_engine") else None,
                 simulate_default=True
             )
             logger.info("UwsIntegrations (Aluminum OS 12k-20k+ feature surface) active.")
         except Exception as e:
             self.uws = None
             logger.warning(f"UWS integrations not loaded: {e}")
+
+        # GrokOrchestrator as the strong central brain (E145 priority 1) - exposed for direct use + synthesis
+        try:
+            from grok_orchestrator import GrokOrchestrator
+            self.orchestrator = GrokOrchestrator(
+                project_id="atlas-lattice-mcp-orchestrated",
+                simulate_default=True,
+                enforce_human_gates=True
+            )
+            logger.info("GrokOrchestrator (central brain: routing + ledger + bullshit + gates) active as primary entrypoint.")
+        except Exception as e:
+            self.orchestrator = None
+            logger.warning(f"Orchestrator not loaded (will use direct engines): {e}")
 
         self.providers: Dict[str, ProviderContract] = {
             "local_cli": self.local_cli,
@@ -280,6 +293,18 @@ class MultiProviderMCPServer:
                         },
                         "required": ["integration"]
                     }
+                },
+                {
+                    "name": "grok_orchestrate",
+                    "description": "THE STRONG CENTRAL BRAIN (E145 priority 1 highest). Routes any feature (Grok v3.0 20 + E145 20 + UWS 17k+ + Advanced 60+) through unified decision ledger, INV-L28 quality gates, mandatory Bullshit Olympics (priority 2) for high-stakes, and mandatory Teams Adaptive Card human promotion gates (priority 5). Maximizes symbiosis across entire lattice: v3 arena -> project E145 + bullshit + uws data + copilot gate + ledger. All high-stakes (physical, self-improve, writes, promotions, canon) go through full pipeline. Use this as primary entry for coherence instead of fragmented direct calls. Returns rich ClaimPacket.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "feature": {"type": "string", "description": "Any feature across lattice e.g. arena_mode, bullshit_olympics, uws:drive_search, physical_world_actuation_hooks_with_safety, project_memory_graph, mail_send (high-stakes auto-enforces gates)"},
+                            "kwargs": {"type": "object"}
+                        },
+                        "required": ["feature"]
+                    }
                 }
             ]
             return {"jsonrpc": "2.0", "id": mid, "result": {"tools": tools}}
@@ -383,6 +408,27 @@ class MultiProviderMCPServer:
                     # Fallback to raw cli if engine missing
                     result = await self.cli_runner.execute("uws", [integration] + list(kws.values()) if isinstance(kws, dict) else [], timeout=120)
                     return {"jsonrpc": "2.0", "id": mid, "result": {"raw_fallback": result}}
+
+            if name == "grok_orchestrate":
+                feature = args.get("feature")
+                kws = args.get("kwargs", {})
+                if self.orchestrator:
+                    result = await self.orchestrator.run(feature, **kws)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                else:
+                    # Fallback synthesis via grok_max + project + bullshit if orchestrator missing
+                    if self.grok_maximum:
+                        res = await self.grok_maximum.run(feature, **kws)
+                    elif self.project_engine:
+                        res = await self.project_engine.run(feature, **kws)
+                    else:
+                        res = {"error": "No orchestrator or engines", "feature": feature}
+                    # Force bullshit + gate in fallback for high-stakes
+                    if feature and any(h in feature.lower() for h in ["physical", "self_improve", "arena", "bullshit", "write"]):
+                        if self.project_engine:
+                            bs = await self.project_engine.run("bullshit_olympics", target=feature, high_stakes=True)
+                            res["fallback_bullshit"] = bs
+                    return {"jsonrpc": "2.0", "id": mid, "result": res}
 
         return self._error(mid, f"Method '{method}' not supported or not implemented.")
 

@@ -59,3 +59,17 @@ except Exception:
     UwsIntegrations = None
     UWS_INTEGRATIONS = {}
 
+# Bullshit Olympics (E145 priority 2) - real callable component, wired everywhere for truth-seeking
+try:
+    from .project_oriented_features import BullshitOlympics
+except Exception:
+    BullshitOlympics = None
+
+# GrokOrchestrator (E145 priority 1) - strong central brain (import direct to avoid package relative issues)
+GrokOrchestrator = None
+try:
+    import grok_orchestrator as _go
+    GrokOrchestrator = _go.GrokOrchestrator
+except Exception:
+    pass
+
