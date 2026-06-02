@@ -135,6 +135,26 @@ try:
 except Exception:
     CounterfactualSimulator = None
 
+# OpenAI-grade Phase 1 modules (and future)
+try:
+    from providers.openai import (
+        StructuredOutputSchemaSpine,
+        ToolPassportFunctionCalling,
+        OpenAITracingToGoldenTrace,
+        EvalsBullshitOlympicsBridge,
+        WorkloadIdentitySecretsHygiene,
+        ResponsesAPISpine,
+    )
+except Exception:
+    StructuredOutputSchemaSpine = None
+    ToolPassportFunctionCalling = None
+    OpenAITracingToGoldenTrace = None
+    EvalsBullshitOlympicsBridge = None
+    WorkloadIdentitySecretsHygiene = None
+    ResponsesAPISpine = None
+    ResponsesAPISpine = None
+    ResponsesAPISpine = None
+
 # Core lattice components for central brain
 try:
     from providers.cli_runner import SecureCLIRunner
@@ -544,6 +564,29 @@ class GrokOrchestrator:
                 if high_stakes:
                     res = await self._enforce_human_gate(feature, res, **kwargs)
                 return res
+
+        # OpenAI-grade modules (Phase 1 foundational + future)
+        if feature.startswith(("openai_", "structured_output", "tool_passport", "openai_trace", "evals_bullshit", "workload_secrets")):
+            inst = None
+            if "structured" in feature and StructuredOutputSchemaSpine:
+                inst = StructuredOutputSchemaSpine(simulate=self.simulate)
+            elif "tool_passport" in feature and ToolPassportFunctionCalling:
+                inst = ToolPassportFunctionCalling(simulate=self.simulate)
+            elif "trace" in feature or "golden" in feature and OpenAITracingToGoldenTrace:
+                inst = OpenAITracingToGoldenTrace(simulate=self.simulate)
+            elif "evals" in feature and EvalsBullshitOlympicsBridge:
+                inst = EvalsBullshitOlympicsBridge(simulate=self.simulate)
+            elif "secrets" in feature or "workload" in feature and WorkloadIdentitySecretsHygiene:
+                inst = WorkloadIdentitySecretsHygiene(simulate=self.simulate)
+            elif "responses" in feature and ResponsesAPISpine:
+                inst = ResponsesAPISpine(simulate=self.simulate)
+
+            if inst and hasattr(inst, "run"):
+                res = await inst.run(operation=kwargs.pop("operation", "run"), **kwargs)
+            else:
+                res = {"status": "openai_module_not_available", "feature": feature}
+            res = await self._quality_gate(res, feature, high_stakes)
+            return res
 
         # Grok v3.0 12D features (highest axiomatic)
         if feature in GROK_V3_FEATURES:

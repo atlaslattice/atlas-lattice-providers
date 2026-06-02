@@ -181,6 +181,27 @@ class MultiProviderMCPServer:
             self.orchestrator = None
             logger.warning(f"Orchestrator not loaded (will use direct engines): {e}")
 
+        # OpenAI-grade modules (Phase 1)
+        try:
+            from providers.openai import (
+                StructuredOutputSchemaSpine,
+                ToolPassportFunctionCalling,
+                OpenAITracingToGoldenTrace,
+                EvalsBullshitOlympicsBridge,
+                WorkloadIdentitySecretsHygiene,
+                ResponsesAPISpine,
+            )
+            self.openai_structured = StructuredOutputSchemaSpine(simulate_default=True)
+            self.openai_tool_passport = ToolPassportFunctionCalling(simulate_default=True)
+            self.openai_trace = OpenAITracingToGoldenTrace(simulate_default=True)
+            self.openai_evals = EvalsBullshitOlympicsBridge(simulate_default=True)
+            self.openai_secrets = WorkloadIdentitySecretsHygiene(simulate_default=True)
+            self.openai_responses = ResponsesAPISpine(simulate_default=True)
+            logger.info("OpenAI-grade Phase 1+ modules active (structured, tool_passport, trace, evals, secrets, responses).")
+        except Exception as e:
+            self.openai_structured = self.openai_tool_passport = self.openai_trace = self.openai_evals = self.openai_secrets = self.openai_responses = None
+            logger.warning(f"OpenAI-grade modules not fully loaded: {e}")
+
         self.providers: Dict[str, ProviderContract] = {
             "local_cli": self.local_cli,
             "microsoft": self.microsoft,
@@ -358,6 +379,80 @@ class MultiProviderMCPServer:
                             "rationale": {"type": "string"}
                         }
                     }
+                },
+                {
+                    "name": "openai_structured",
+                    "description": "02_Structured_Output_Schema_Spine (OpenAI Phase 1). Strict JSON schema enforcement for ClaimPacket, ToolPassport, PublicReleaseClass. Compile to OpenAI tool schemas. Validates all OpenAI outputs before lattice emission.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "operation": {"type": "string", "enum": ["validate_claim", "register_tool_passport", "get_openai_tools"]},
+                            "raw_output": {"type": "object"},
+                            "passport": {"type": "object"}
+                        }
+                    }
+                },
+                {
+                    "name": "openai_tool_passport",
+                    "description": "03_ToolPassport_Function_Calling (OpenAI Phase 1). Register governed ToolPassports and execute calls from OpenAI with ActionLedger emission and safety gates.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "operation": {"type": "string"},
+                            "tool_name": {"type": "string"},
+                            "arguments": {"type": "object"}
+                        }
+                    }
+                },
+                {
+                    "name": "openai_trace",
+                    "description": "06_OpenAI_Tracing_To_GoldenTrace (OpenAI Phase 1). Map OpenAI trace/thread/run IDs into immutable ActionLedger + GoldenTrace v2 receipts for full auditability.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "openai_trace_id": {"type": "string"},
+                            "openai_thread_id": {"type": "string"},
+                            "openai_run_id": {"type": "string"},
+                            "payload": {"type": "object"}
+                        }
+                    }
+                },
+                {
+                    "name": "openai_evals",
+                    "description": "07_Evals_Bullshit_Olympics_Bridge (OpenAI Phase 1). Turn Grok Bullshit Olympics adversarial reviews into OpenAI Eval datasets and use them as powerful graders.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "operation": {"type": "string"},
+                            "name": {"type": "string"},
+                            "items": {"type": "array"},
+                            "eval_name": {"type": "string"},
+                            "item_id": {"type": "string"},
+                            "output": {"type": "string"}
+                        }
+                    }
+                },
+                {
+                    "name": "openai_secrets",
+                    "description": "20_Workload_Identity_Secrets_Hygiene (OpenAI Phase 1). Env-only checks, workload identity recommendations, secret hygiene for OpenAI + lattice keys.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "operation": {"type": "string"}
+                        }
+                    }
+                },
+                {
+                    "name": "openai_responses",
+                    "description": "01_Responses_API_Spine (OpenAI Phase 2). Unified OpenAI Responses API surface for the entire lattice. Every flow goes through native request/response with ClaimPacket + ActionLedger emission.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "model": {"type": "string"},
+                            "input": {"type": "string"},
+                            "tools": {"type": "array"}
+                        }
+                    }
                 }
             ]
             return {"jsonrpc": "2.0", "id": mid, "result": {"tools": tools}}
@@ -516,6 +611,43 @@ class MultiProviderMCPServer:
                     result = await self.orchestrator.run(name, **args)
                     return {"jsonrpc": "2.0", "id": mid, "result": result}
                 return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": f"Orchestrator required for {name}"}}
+
+            # OpenAI-grade Phase 1 tools dispatch
+            if name == "openai_structured":
+                if self.openai_structured:
+                    result = await self.openai_structured.run(**args)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": "OpenAI structured spine not loaded"}}
+
+            if name == "openai_tool_passport":
+                if self.openai_tool_passport:
+                    result = await self.openai_tool_passport.run(**args)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": "OpenAI tool passport not loaded"}}
+
+            if name == "openai_trace":
+                if self.openai_trace:
+                    result = await self.openai_trace.run(**args)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": "OpenAI trace bridge not loaded"}}
+
+            if name == "openai_evals":
+                if self.openai_evals:
+                    result = await self.openai_evals.run(**args)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": "OpenAI evals bridge not loaded"}}
+
+            if name == "openai_secrets":
+                if self.openai_secrets:
+                    result = await self.openai_secrets.run(**args)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": "OpenAI secrets hygiene not loaded"}}
+
+            if name == "openai_responses":
+                if self.openai_responses:
+                    result = await self.openai_responses.run(**args)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": "OpenAI responses spine not loaded"}}
 
         return self._error(mid, f"Method '{method}' not supported or not implemented.")
 

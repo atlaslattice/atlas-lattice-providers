@@ -170,3 +170,24 @@ try:
 except Exception:
     CounterfactualSimulator = None
 
+# OpenAI-grade modules (Phase 1 foundational + more to come)
+try:
+    from .openai import (
+        StructuredOutputSchemaSpine,
+        ToolPassportFunctionCalling,
+        OpenAITracingToGoldenTrace,
+        EvalsBullshitOlympicsBridge,
+        WorkloadIdentitySecretsHygiene,
+        ToolPassport,
+        ResponsesAPISpine,
+    )
+except Exception:
+    StructuredOutputSchemaSpine = None
+    ToolPassportFunctionCalling = None
+    OpenAITracingToGoldenTrace = None
+    EvalsBullshitOlympicsBridge = None
+    WorkloadIdentitySecretsHygiene = None
+    ToolPassport = None
+    ResponsesAPISpine = None
+    ResponsesAPISpine = None
+
