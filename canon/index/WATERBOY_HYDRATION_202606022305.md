@@ -1,0 +1,1 @@
+Latest Waterboy hydration receipt (script auto-written). Includes isotonic_solid seed + all prior 10T/warp4 gifts. See full output in terminal log and master/CANON for details. Librarian indexed post-run with rich envelope.
