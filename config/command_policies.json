@@ -111,6 +111,23 @@
       "allow_args": null,
       "timeout_sec": 120,
       "description": "Local Gemini CLI (optional)"
+    },
+    {
+      "name": "git",
+      "path": "git.exe",
+      "max_args": 16,
+      "allow_args": ["status", "add", "commit", "push", "pull", "log", "diff", "clone", "checkout", "branch", "--version"],
+      "timeout_sec": 120,
+      "max_stdout_bytes": 256000,
+      "description": "Git for canonical atlaslattice mirroring (scoped to projects/atlas-lattice-providers; safe ops only for canon/claims/ledgers sync + adversarial archive)"
+    },
+    {
+      "name": "gh",
+      "path": "gh.exe",
+      "max_args": 16,
+      "allow_args": ["repo", "issue", "pr", "api", "auth", "--version"],
+      "timeout_sec": 120,
+      "description": "GitHub CLI for advanced mirror (issues/PRs for adversarial review, api for file ops on canon)"
     }
   ]
 }

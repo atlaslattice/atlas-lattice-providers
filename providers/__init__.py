@@ -59,6 +59,27 @@ except Exception:
     UwsIntegrations = None
     UWS_INTEGRATIONS = {}
 
+# Canon mirror + Sheldon/Grok/GPTBrain RAG ingestion pathways (activated for max efficiency + notion mirroring/adversarial)
+try:
+    from .notion.notion_advanced_integrations import NotionAdvancedIntegrationsEngine as SheldonGrokGPTBrainEngine  # alias for brain ingest
+except Exception:
+    SheldonGrokGPTBrainEngine = None
+
+# Context packer + memory graph + router for efficiency in brains/mirror
+try:
+    from .context_packer import AdvancedContextPacker
+except Exception:
+    AdvancedContextPacker = None
+try:
+    from .project_memory_graph import LongHorizonProjectMemoryGraph
+except Exception:
+    LongHorizonProjectMemoryGraph = None
+try:
+    from .provider_router import ProviderRouter, RoutingDecision
+except Exception:
+    ProviderRouter = None
+    RoutingDecision = None
+
 # Bullshit Olympics (E145 Tier 1 #1 - Advanced multi-round adversarial) - FULL world-class impl
 try:
     from .bullshit_olympics import BullshitOlympics, AdvancedBullshitOlympics, TruthClaimPacket, AdversarialPersona

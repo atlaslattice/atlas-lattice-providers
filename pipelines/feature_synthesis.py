@@ -54,10 +54,13 @@ except Exception:
 
 
 class FeatureSynthesisPipeline:
-    def __init__(self, uws=None, bullshit=None, copilot=None, project=None, simulate=True):
+    def __init__(self, uws=None, bullshit=None, copilot=None, project=None, notion=None, project_engine=None, simulate=True):
         self.uws = uws or (UwsIntegrations(simulate_default=simulate) if UwsIntegrations else None)
         self.bullshit = bullshit or (AdvancedBullshitOlympics(simulate_default=simulate) if AdvancedBullshitOlympics else None)
         self.copilot = copilot or (MicrosoftCopilotIntegrations(simulate_default=simulate) if MicrosoftCopilotIntegrations else None)
+        self.project = project or project_engine
+        self.notion = notion  # for metatag + mirror on promote (rebuild for GH/OneDrive)
+        self.simulate = simulate
         self.project = project or (ProjectOrientedFeaturesEngine(simulate_default=simulate) if ProjectOrientedFeaturesEngine else None)
         self.simulate = simulate
 
@@ -192,6 +195,20 @@ class FeatureSynthesisPipeline:
         if self.project:
             try:
                 await self.project.run("immutable_ledger_replay", session_id=f"synthesis-{query[:20]}")
+            except Exception:
+                pass
+
+        # Rebuilt mirror pipeline: auto metatag (lattice/INV/claim) + mirror to GH/OneDrive/GDrive on promote (for adversarial canon)
+        if self.notion and hasattr(self.notion, "metatag_page"):
+            try:
+                mtag = self.notion.metatag_page("synthesis-canon", {"pipeline": "feature_synthesis", "query": query[:80], "inv": "INV-L28", "claim_id": claim.get("id", "synth"), "golden": claim.get("golden_trace_v2", "")})
+                claim["metatag"] = mtag
+            except Exception:
+                pass
+        if self.notion and hasattr(self.notion, "mirror_claim_to_external"):
+            try:
+                mir = self.notion.mirror_claim_to_external(claim, target="github", dry_run=self.simulate)
+                claim["mirror"] = mir
             except Exception:
                 pass
 

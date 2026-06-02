@@ -72,7 +72,7 @@ class NotionProvider(ProviderContract):
     - Direct engine.run("control-plane" | "rag" | "secret" | ...)
     """
 
-    def __init__(self, notion_adapter: Any = None, engine: Any = None, simulate: bool = True):
+    def __init__(self, notion_adapter: Any = None, engine: Any = None, simulate: bool = True, **symbiosis):
         self._name = "notion_ip_archive"
         self._lattice_coords = "(0,2,0)"  # Source Surface lane
 
@@ -84,15 +84,22 @@ class NotionProvider(ProviderContract):
             except Exception as e:
                 logger.warning(f"Failed to instantiate real NotionSourceAdapter: {e}")
 
-        # Advanced Engine (the 20-pattern frontier substrate)
+        # Advanced Engine (the 20-pattern frontier substrate) - pass all symbiosis (runner, google, memory, packer, pipeline, orchestrator) for brains/mirror/max eff
         self.engine = engine
         if self.engine is None and NotionAdvancedIntegrationsEngine:
             try:
                 self.engine = NotionAdvancedIntegrationsEngine(
                     base_adapter=self.adapter,
-                    simulate_default=simulate
+                    simulate_default=simulate,
+                    runner=symbiosis.get("runner"),
+                    google_provider=symbiosis.get("google_provider"),
+                    ms_provider=symbiosis.get("ms_provider"),
+                    memory_graph=symbiosis.get("memory_graph"),
+                    context_packer=symbiosis.get("context_packer"),
+                    feature_pipeline=symbiosis.get("feature_pipeline"),
+                    orchestrator=symbiosis.get("orchestrator")
                 )
-                logger.info("NotionAdvancedIntegrationsEngine wired successfully (20 patterns).")
+                logger.info("NotionAdvancedIntegrationsEngine wired successfully (20 patterns + full Sheldon/Grok/GPTBrain + mirror).")
             except Exception as e:
                 logger.warning(f"Failed to instantiate advanced engine: {e}")
                 self.engine = None

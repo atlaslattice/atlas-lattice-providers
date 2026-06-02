@@ -152,6 +152,15 @@ def check_environment_variables() -> Dict[str, str]:
         status["NOTION_API_KEY"] = "MISSING"
         logger.info("  [INFO] NOTION_API_KEY missing (Notion advanced features limited).")
 
+    # Optional for real GH/OneDrive/GDrive mirroring pipelines + adversarial canon (git/gh use GITHUB_TOKEN or gh auth)
+    gh_token = os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN")
+    if gh_token:
+        status["GITHUB_TOKEN"] = "PRESENT"
+        logger.info("  [OK] GITHUB_TOKEN present — real github mirror via git/gh + MCP grok_com_github push_files possible for canon/adversarial.")
+    else:
+        status["GITHUB_TOKEN"] = "OPTIONAL"
+        logger.info("  [INFO] GITHUB_TOKEN optional — mirroring uses local git (projects/atlas-lattice-providers) + sim; MCP or gh auth for full external push.")
+
     return status
 
 def main():

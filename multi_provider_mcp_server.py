@@ -169,6 +169,7 @@ class MultiProviderMCPServer:
             logger.warning(f"Advanced Bullshit Olympics not loaded: {e}")
 
         # GrokOrchestrator as the strong central brain (E145 priority 1) - exposed for direct use + synthesis
+        # Pass full symbiosis (memory, packer, pipeline, runner, providers) so brains/mirror/activation use max efficiency + real metatag/mirror
         try:
             from grok_orchestrator import GrokOrchestrator
             self.orchestrator = GrokOrchestrator(
@@ -176,7 +177,12 @@ class MultiProviderMCPServer:
                 simulate_default=True,
                 enforce_human_gates=True
             )
+            # Enhance notion in orchestrator with mcp-level providers for real drive mirrors
+            if hasattr(self.orchestrator, "notion_engine") and self.orchestrator.notion_engine:
+                self.orchestrator.notion_engine.google_provider = self.google
+                self.orchestrator.notion_engine.ms_provider = self.microsoft
             logger.info("GrokOrchestrator (central brain: routing + ledger + bullshit + gates) active as primary entrypoint.")
+            logger.info("Notion brains/mirror wired with full providers for Sheldon/Grok/GPTBrain + GH/OneDrive/GDrive pipelines.")
         except Exception as e:
             self.orchestrator = None
             logger.warning(f"Orchestrator not loaded (will use direct engines): {e}")
@@ -453,6 +459,40 @@ class MultiProviderMCPServer:
                             "tools": {"type": "array"}
                         }
                     }
+                },
+                {
+                    "name": "notion_mirror",
+                    "description": "Mirror ClaimPacket to GitHub/OneDrive/GoogleDrive from Notion canon. Supports metatag sync. For adversarial review + multi-cloud mirror (primary Notion canon).",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "claim": {"type": "object"},
+                            "target": {"type": "string", "enum": ["github", "onedrive", "gdrive"]},
+                            "tags": {"type": "object"}
+                        }
+                    }
+                },
+                {
+                    "name": "ingest_brain",
+                    "description": "Ingest Sheldonbrain RAG, GrokBrain, GPTBrain pathways using Notion RAG + OpenAI structured + pipeline. Activate for maximum efficiency ingestion.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "brain_name": {"type": "string"},
+                            "query": {"type": "string"}
+                        }
+                    }
+                },
+                {
+                    "name": "metatag_notion",
+                    "description": "Metatag Notion page with lattice metadata (lattice_coords, epistemic, INV tags, bullshit, provenance) for canon mirroring and review.",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "page_id": {"type": "string"},
+                            "tags": {"type": "object"}
+                        }
+                    }
                 }
             ]
             return {"jsonrpc": "2.0", "id": mid, "result": {"tools": tools}}
@@ -648,6 +688,29 @@ class MultiProviderMCPServer:
                     result = await self.openai_responses.run(**args)
                     return {"jsonrpc": "2.0", "id": mid, "result": result}
                 return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": "OpenAI responses spine not loaded"}}
+
+            if name in ("notion_mirror", "mirror_notion"):
+                if self.notion and hasattr(self.notion, "engine") and self.notion.engine:
+                    claim = args.get("claim", {})
+                    target = args.get("target", "github")
+                    result = self.notion.engine.mirror_claim_to_external(claim, target, **args)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": "Notion engine not available for mirror"}}
+
+            if name in ("ingest_brain", "brain_ingest"):
+                if self.notion and hasattr(self.notion, "engine") and self.notion.engine:
+                    brain = args.get("brain_name", args.get("query", "sheldonbrain"))
+                    result = self.notion.engine.ingest_brain(brain, **args)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": "Notion engine not available for brain ingest"}}
+
+            if name in ("metatag_notion", "metatag"):
+                if self.notion and hasattr(self.notion, "engine") and self.notion.engine:
+                    page = args.get("page_id", "")
+                    tags = args.get("tags", {})
+                    result = self.notion.engine.metatag_page(page, tags)
+                    return {"jsonrpc": "2.0", "id": mid, "result": result}
+                return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32603, "message": "Notion engine not available for metatag"}}
 
         return self._error(mid, f"Method '{method}' not supported or not implemented.")
 

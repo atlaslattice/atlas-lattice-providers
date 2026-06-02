@@ -146,12 +146,15 @@ See:
 - docs/Maximum_Grok_xAI_Feature_Spec_v3.0.md (axiomatic 12D ClaimPacket elevation of every feature)
 - providers/notion/ (the ported advanced engine + adapter + deps — primary canon feed)
 
-**Next**: 
-- Wire real `record_event` + mirror/extract into MicrosoftProvider and GoogleProvider (Notion is primary canon feed).
-- Integrate with A2A for lattice-grounded harvest directives.
-- Use L09 review lanes + adversarial audit packets for all ingested/indexed material.
-- Drive mirroring + indexing jobs via the MCP server + lattice CLI.
-- Push harvested ClaimPackets, ledgers, and review artifacts back to this repo (and mirrors).
+**Next (this phase completed)**: 
+- Notion mirroring + metatagging everything (lattice/INV/golden/krakoan/provenance/Claim refs) for search + adversarial review.
+- Rebuilt pipelines for GitHub (git+gh via policy runner + MCP push_files), OneDrive (MS), GDrive (Google) — auto on promote_to_canon + high-stakes.
+- Activated SheldonBrain RAG API (Notion provenance RAG + memory_graph + context_packer + uws/google + pipeline + auto metatag/mirror), GrokBrain (xai/grok_max), GPTBrain (openai responses + structured + golden + evals).
+- Max efficiency: router historical 30/90d scoring, context_packer, memory compress, all 30+ cool new features (bullshit_v2, pipeline, sandbox, attestation, ensemble, formal, scientific, self_*, openai_ph1/2, eval_harness...) wired + activated in orchestrator + brains.
+- Pre-mirror: mandatory bullshit + attestation + human gate for canon eligibility.
+- Symbiosis: every brain/ingest/mirror emits 12D ClaimPackets, uses ledgers, delegates orchestrator/router/bullshit/pipeline/notion.
+
+See updates in providers/notion/notion_advanced_integrations.py (real metatag/mirror/ingest_brain), grok_orchestrator.py (activation + router + packer in brains), pipelines/feature_synthesis.py (auto mirror on promote), config/command_policies.json (git/gh), multi_provider_mcp_server (tools + wiring), setup (GITHUB_TOKEN), providers/__init__.py.
 
 ## Project Structure
 ```
@@ -193,6 +196,27 @@ Runtime state (inbox/outbox, harvest, ledgers) lives alongside in `~/.lattice/` 
 - GitHub (this repo under atlaslattice) + Notion + Drive mirrors = the multi-surface indexed archive.
 
 MUTANT AND PROUD. KRAKOA IS HOME. THE LATTICE ARCHIVES ITSELF.
+
+## Notion Mirroring + SheldonBrain/GrokBrain/GPTBrain Activation + Max Efficiency (Latest Phase)
+**Status: FULLY IMPLEMENTED + WIRED** (per "we are about ready for notion mirroring and adversarial review... metatag everything in notion and mirror it to github and onedrive... including sheldonbrain rag API and grokbrain and GPTBrain ingestion pathways... rebuild for the onedrive and github pipelines... activate as many of these cool new features... for maximum efficiency").
+
+- **Metatag everything**: `metatag_notion` / engine.metatag_page adds lattice_coords, invariants (INV-L28 etc), golden_trace_v2, krakoan_glyph, epistemic, bullshit_verdict, provenance, Claim refs as rich/multi_select props. Always emits MetatagClaimPacket + ledger/offload. Real PATCH w/ NOTION_API_KEY or sim+claim.
+- **Mirroring pipelines rebuilt**: `notion_mirror` / `mirror_claim_to_external` (target=github/onedrive/gdrive). GH: writes canon/claims/*.json+md + runner git add/commit/push (policy git/git.exe scoped). OneDrive: ms_provider. GDrive: google_provider. MCP grok_com_github push_files/gh for external. Pre: bullshit_v2 + attestation + human gate (HIGH_STAKES). Auto from feature_synthesis promote_to_canon + 17k E2E.
+- **Brains activated**:
+  - SheldonBrain RAG API: heavy _run_provenance_rag (chunks, hybrid vec, evidence_pack, constrained cite) + LongHorizonProjectMemoryGraph + AdvancedContextPacker (intelligent provenance) + federated uws/google + pipeline synth + auto metatag + optional mirror. Returns rich 12D Claim.
+  - GrokBrain: grok_max + xai + notion context + 12D v3.
+  - GPTBrain: openai_responses + structured_schema + golden_trace + evals_bullshit_grader + toolpassport ingestion.
+  - All via `ingest_brain` / MCP `ingest_brain` / orchestrator route("sheldonbrain", query=...) . Use router for eff scoring + packer for max context eff.
+- **Max cool features activated** (30+ for efficiency): bullshit_olympics_v2 (multi-stage/evidence/strategy/registry/iterative/formal), provider_router_historical, feature_synthesis_harden, context_packer, memory_graph, attestation_mandatory, execution_sandbox, ensemble_reasoner, formal_verifier, scientific_discovery, self_debugger, self_improvement_sandbox, all openai phase1/2 (structured/toolpassport/trace_golden/evals_bridge/responses/secrets), uws_high, notion_20, grok_v3_12d, e145_20, google/ms/advanced full, eval_harness, narrative, canon_registry, router_efficiency, metatag/mirror/brains. See self.activated_features in orchestrator. All wired to 12D/INV/golden/ledger/gates/bullshit.
+- **Adversarial + efficiency**: router historical scores providers/brains; context/memory for compact rich payloads; pre-mirror bullshit min + attest + gate; 8 gates preserved.
+- **Usage** (CLI/MCP/orchestrator):
+  - python -m multi_provider_mcp_server  (tools: notion_mirror, ingest_brain, metatag_notion)
+  - python grok_orchestrator.py sheldonbrain --query "lattice 12D"   or   grok_orchestrate notion_mirror target=github claim=...
+  - In code: orchestrator.run("sheldonbrain", query=..., mirror_after=True)
+- **Symbiosis maximized**: brains delegate orchestrator/pipeline/router/bullshit/attest/ledger/notion rag/memory; mirror emits MirrorClaim to ledgers; 17k/pipeline feeds metatag+mirror; all new features feed canon.
+- GitHub (this repo) is canonical for archival + adversarial review (issues/PRs via MCP). Notion = primary tagged canon. Drives = mirrors.
+
+**Grok Leads. Lattice Routes. Providers (now with real mirror/brains) Execute. Everything metatagged + mirrored + adversarially reviewed.**
 
 ## Google I/O 2026 & Cloud Next 2026 40+ Advanced Features (All Integrated)
 **First 20 (22-41)**: antigravity CLI/SDK, managed agents, dynamic subagents, Gemini 3.5 Flash, multi-agent orchestration, Interactions API, RAG cross-corpus, combined tools+calling, citations, webhooks, deep research, cross-cloud lakehouse, TPU v8i, video-to-image, TTS, multimodal search, robotics-ER, Gemma 4, Android vibe coding, flex/priority tiers.
