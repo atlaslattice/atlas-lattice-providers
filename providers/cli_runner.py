@@ -121,6 +121,15 @@ class SecureCLIRunner:
             env.update(env_overrides)
             logger.info(f"Applied {len(env_overrides)} environment overrides for cross-cloud context")
 
+        # Special handling for "grok" (xAI Grok CLI / API): inject user's XAI_API_KEY
+        if command_name == "grok":
+            xai_key = os.getenv("XAI_API_KEY")
+            if xai_key:
+                env["XAI_API_KEY"] = xai_key
+                logger.info("Injected XAI_API_KEY for grok execution (user's key integrated).")
+            else:
+                logger.warning("XAI_API_KEY not found in environment. 'grok' commands may fail to authenticate. Set $env:XAI_API_KEY=your-xai-key")
+
         logger.info(f"EXECUTING: {executable} {' '.join(arguments)}")
 
         try:

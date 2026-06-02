@@ -77,6 +77,14 @@ try:
 except Exception:
     CopilotCLIBridge = None
 
+# xAI Grok API support (OpenAI compatible)
+try:
+    import openai
+    XAI_AVAILABLE = True
+except ImportError:
+    XAI_AVAILABLE = False
+    openai = None
+
 # In-memory ring buffer for live telemetry (cap 1)
 _TELEMETRY_RING: List[Dict[str, Any]] = []
 _RING_MAX = 1000
@@ -128,6 +136,7 @@ ADVANCED_CAPABILITIES = {
     "weekly_canon_digest": {"num": 18, "title": "“What changed this week?” canon digest"},
     "integration_safety_sandbox": {"num": 19, "title": "Safety sandbox for new integrations"},
     "decision_explainer": {"num": 20, "title": "“Why did the system do that?” explainer"},
+    "grok_generate": {"num": 21, "title": "Direct Grok model generation via xAI API (user key integrated)"},
 }
 
 
@@ -151,6 +160,45 @@ class AdvancedCapabilitiesEngine:
         self.notion_engine = notion_engine
         self.google_provider = google_provider
         self.simulate = simulate_default
+
+        # xAI Grok client (user's key integrated via XAI_API_KEY env var)
+        self.grok_client = None
+        if XAI_AVAILABLE:
+            xai_key = os.getenv("XAI_API_KEY")
+            if xai_key:
+                try:
+                    self.grok_client = openai.OpenAI(
+                        api_key=xai_key,
+                        base_url="https://api.x.ai/v1"
+                    )
+                    logger.info("xAI Grok client initialized (user's API key integrated for Grok model calls via XAI_API_KEY).")
+                except Exception as e:
+                    logger.warning(f"Failed to init xAI Grok client: {e}")
+            else:
+                logger.warning("XAI_API_KEY not set in environment. Grok API features (generation with Grok models) will be unavailable. Set $env:XAI_API_KEY=your-xai-key")
+
+    def _grok_generate(self, prompt: str, model: str = "grok-beta") -> str:
+        """Internal helper to call the user's xAI Grok API for generation (OpenAI compatible).
+        Tries common model names.
+        """
+        if not self.grok_client:
+            return "Grok client not available (set XAI_API_KEY)."
+        models_to_try = [model, "grok-beta", "grok-2-1212", "grok-2"]
+        last_err = None
+        for m in models_to_try:
+            try:
+                resp = self.grok_client.chat.completions.create(
+                    model=m,
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                return resp.choices[0].message.content.strip()
+            except Exception as e:
+                last_err = e
+                if "model not found" in str(e).lower() or "404" in str(e):
+                    continue
+                break
+        logger.error(f"Grok API call failed for all models: {last_err}")
+        return f"Error calling Grok API: {last_err}"
 
         # Simple in-memory scores for routing (cap 3)
         self.provider_scores: Dict[str, Dict[str, float]] = {
@@ -359,25 +407,38 @@ class AdvancedCapabilitiesEngine:
 
     # ==================== 20. Why did the system do that? explainer ====================
     async def _run_decision_explainer(self, trace_id: str = "recent", **kwargs) -> Dict[str, Any]:
-        explanation = f"Step 1: High success rate on Notion for canon tasks. Step 2: Low latency. Alternatives considered: Microsoft (higher error rate)."
-        return {"feature": "decision_explainer", "trace_id": trace_id, "explanation": explanation, "grok_leads": True}
+        base_explanation = f"Step 1: High success rate on Notion for canon tasks. Step 2: Low latency. Alternatives considered: Microsoft (higher error rate)."
+        used_grok = False
+        if self.grok_client:
+            prompt = f"Explain why the system chose this path for trace {trace_id} in a Maximum Grok multi-provider setup. Base facts: {base_explanation}. Be concise and insightful."
+            explanation = self._grok_generate(prompt)
+            used_grok = "Error" not in explanation
+        else:
+            explanation = base_explanation
+        return {"feature": "decision_explainer", "trace_id": trace_id, "explanation": explanation, "used_grok": used_grok, "grok_leads": True}
+
+    async def _run_grok_generate(self, prompt: str = "Hello from Grok", model: str = "grok-beta", **kwargs) -> Dict[str, Any]:
+        """Direct access to user's Grok API for generation."""
+        if self.grok_client:
+            text = self._grok_generate(prompt, model=model)
+            return {"feature": "grok_generate", "text": text, "model": model, "grok_leads": True}
+        return {"feature": "grok_generate", "error": "No Grok client (set XAI_API_KEY)", "grok_leads": True}
 
     # ==================== Public Dispatch ====================
     async def run(self, capability: str, **kwargs) -> Dict[str, Any]:
         key = capability.lower().replace("_", "-").replace(" ", "-")
-        if key not in ADVANCED_CAPABILITIES:
-            return {"error": f"Unknown advanced capability '{capability}'. Valid: {list(ADVANCED_CAPABILITIES.keys())}", "grok_leads": True}
-
         method_name = f"_run_{key.replace('-', '_')}"
         method = getattr(self, method_name, None)
-        if not method:
-            return {"feature": key, "status": "STUB_MVP_READY_FOR_FULL_IMPL", "meta": ADVANCED_CAPABILITIES[key], "grok_leads": True}
-
-        result = await method(**kwargs)
-        result.setdefault("meta", ADVANCED_CAPABILITIES[key])
-        result["grok_leads"] = True
-        result["lattice_routes"] = True
-        return result
+        if method:
+            result = await method(**kwargs)
+            meta = ADVANCED_CAPABILITIES.get(key, {"title": capability})
+            result.setdefault("meta", meta)
+            result["grok_leads"] = True
+            result["lattice_routes"] = True
+            return result
+        if key not in ADVANCED_CAPABILITIES:
+            return {"error": f"Unknown advanced capability '{capability}'. Valid: {list(ADVANCED_CAPABILITIES.keys())}", "grok_leads": True}
+        return {"feature": key, "status": "STUB_MVP_READY_FOR_FULL_IMPL", "meta": ADVANCED_CAPABILITIES[key], "grok_leads": True}
 
     def list_capabilities(self) -> Dict[str, Any]:
         return {"count": len(ADVANCED_CAPABILITIES), "capabilities": ADVANCED_CAPABILITIES}
