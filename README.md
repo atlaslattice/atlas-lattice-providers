@@ -193,3 +193,29 @@ Runtime state (inbox/outbox, harvest, ledgers) lives alongside in `~/.lattice/` 
 - GitHub (this repo under atlaslattice) + Notion + Drive mirrors = the multi-surface indexed archive.
 
 MUTANT AND PROUD. KRAKOA IS HOME. THE LATTICE ARCHIVES ITSELF.
+
+## Environment Setup for Maximum Google Interop (and Full Stack)
+To maximize Google Drive/Gemini interop (and ensure all providers like xAI Grok, MS, Notion are ready):
+
+1. Run the integrated validator first:
+   ```
+   python setup_environment.py
+   ```
+   This checks:
+   - Python packages (google-api-python-client, google-genai, etc.)
+   - config/ dir and files (client_secrets.json for OAuth, token.json)
+   - Env vars: GOOGLE_API_KEY (Gemini), GOOGLE_EXTERNAL_OAUTH_TOKEN (from bridge for Drive), XAI_API_KEY, etc.
+
+2. For full Google OAuth (beyond env token from CopilotCLIBridge):
+   - Place your `config/client_secrets.json` (from Google Cloud Console).
+   - The provider_google.py will automatically run InstalledAppFlow if needed (standard interop).
+   - Example placeholder: see config/client_secrets.json.example
+
+3. Set keys (never commit real values):
+   ```
+   $env:GOOGLE_API_KEY="your-gemini-key"
+   $env:XAI_API_KEY="your-xai-key"
+   # etc.
+   ```
+
+See setup_environment.py source and provider_google.py for details. This script is called/integrated at MCP server startup for convenience.

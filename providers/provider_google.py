@@ -79,9 +79,10 @@ class GoogleProvider(ProviderContract):
     # ============================================================
     def _initialize_service(self):
         """
-        Dynamically initializes the Google Drive API client using either:
-        1. The inherited multi-cloud environment token (GOOGLE_EXTERNAL_OAUTH_TOKEN) prepared by CopilotCLIBridge
+        Dynamically initializes the Google Drive API client using:
+        1. The inherited multi-cloud environment token (GOOGLE_EXTERNAL_OAUTH_TOKEN) prepared by CopilotCLIBridge (preferred)
         2. A local saved user credentials token (token.json)
+        3. Full standard OAuth flow using config/client_secrets.json (maximizes Google interop; see setup_environment.py)
         """
         if not GOOGLE_AVAILABLE:
             logger.warning("Google client libraries not available. Provider will run in degraded/stub mode.")
@@ -107,6 +108,24 @@ class GoogleProvider(ProviderContract):
             except Exception as e:
                 logger.warning(f"Failed to load local token file: {e}")
 
+        # Option 3: Full OAuth flow using client_secrets.json (standard Google interop per Gemini/setup script)
+        # Allows first-time auth or service accounts. Creates token.json for reuse.
+        client_secrets_path = "config/client_secrets.json"
+        if not creds and os.path.exists(client_secrets_path):
+            try:
+                from google_auth_oauthlib.flow import InstalledAppFlow
+                logger.info(f"Attempting standard OAuth flow using {client_secrets_path} for full Google Drive interop...")
+                scopes = ['https://www.googleapis.com/auth/drive.readonly', 'https://www.googleapis.com/auth/drive.file']
+                flow = InstalledAppFlow.from_client_secrets_file(client_secrets_path, scopes)
+                # For dev: local server. For prod/headless: use run_console() or service account.
+                creds = flow.run_local_server(port=0)
+                # Persist token for future runs (matches token_path)
+                with open(self.token_path, 'w') as token_file:
+                    token_file.write(creds.to_json())
+                logger.info(f"OAuth successful. Token saved to {self.token_path} for reuse.")
+            except Exception as e:
+                logger.error(f"Failed OAuth flow with client_secrets.json: {e}")
+
         if creds:
             try:
                 self.service = build('drive', 'v3', credentials=creds)
@@ -114,7 +133,7 @@ class GoogleProvider(ProviderContract):
             except Exception as e:
                 logger.error(f"Failed to build Google Drive service: {e}")
         else:
-            logger.warning("No valid credentials found. Google Drive service remains uninitialized (stub mode).")
+            logger.warning("No valid credentials found. Google Drive service remains uninitialized (stub mode). Run 'python setup_environment.py' or set tokens.")
 
     def _initialize_gemini(self, api_key: Optional[str] = None):
         """Initialize Gemini using the modern google-genai SDK.

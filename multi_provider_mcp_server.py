@@ -19,11 +19,28 @@ import sys
 import json
 import asyncio
 import logging
+import subprocess
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
 # Ensure local providers/ package is importable when running the script directly
 sys.path.insert(0, str(Path(__file__).parent))
+
+# Integrate Environment Setup & Validation (as recommended for maximizing Google interop)
+# Run the validator early. It will log status but we continue even if incomplete (for flexibility).
+try:
+    import setup_environment
+    logging.getLogger("env_setup").info("Running integrated environment validation (setup_environment.py)...")
+    # Call checks without full sys.exit for server startup
+    deps_ok = setup_environment.check_dependencies()
+    config_ok = setup_environment.check_configuration_files()
+    env_status = setup_environment.check_environment_variables()
+    if deps_ok and config_ok and env_status.get("GOOGLE_API_KEY", "").startswith("PRESENT"):
+        logging.getLogger(__name__).info("Environment validation PASSED for multi-cloud/Google features.")
+    else:
+        logging.getLogger(__name__).warning("Environment validation INCOMPLETE. Run 'python setup_environment.py' for full report and fixes before production use.")
+except ImportError:
+    logging.getLogger(__name__).info("setup_environment.py not found or importable; skipping integrated validation. Run it manually for Google interop readiness.")
 
 from providers.provider_contract import ProviderContract
 from providers.cli_runner import SecureCLIRunner
@@ -59,6 +76,7 @@ class MultiProviderMCPServer:
         self.local_cli = LocalCLIProvider(runner=self.cli_runner)
         self.microsoft = MicrosoftProvider()
         # Pass the multicloud bridge so GoogleProvider can consume GOOGLE_EXTERNAL_OAUTH_TOKEN
+        # Gemini API key is picked from GOOGLE_API_KEY env (user's key integrated)
         self.google = GoogleProvider(bridge=self.multicloud_bridge)
         self.notion = NotionProvider()   # Real advanced engine wired in providers/notion/
 
