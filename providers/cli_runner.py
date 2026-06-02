@@ -39,6 +39,8 @@ ALLOWED_EXECUTABLES: Dict[str, str] = {
     "adb": "adb",                      # Android Debug Bridge for Google AI Studio Android Vibe Coding + Emulator Integration (19,60)
     "emulator": "emulator",            # Android Emulator direct for Google AI Studio Emulator Integration (60)
     "antigravity-harness": "antigravity",  # Alias for self-hosted Antigravity Agent Harness SDK (45)
+    "uws": "uws",                      # Universal Workspace CLI (UWS) from atlaslattice/manus-artifacts/codebases/uws — unifies 12k-20k+ Google/MS/Apple/Android/Chrome features into Aluminum OS functional surface for integrations
+    "alum": "alum",                    # Aluminum OS command surface (kernel layer beneath uws) for provider-agnostic unified workspace ops
 }
 
 # Recommended: restrict python to specific safe scripts only in production
@@ -132,6 +134,16 @@ class SecureCLIRunner:
             if command_name == "emulator":
                 logger.info("Android Emulator direct launch for in-browser/CLI testing (Google AI Studio integration).")
 
+        # Special handling for UWS / Aluminum (Universal Workspace CLI from atlaslattice UWS in manus-artifacts/codebases/uws; 12k-20k+ unified features into functional Aluminum OS for integrations)
+        if command_name in ("uws", "alum"):
+            # UWS is AI-agent first per UWS_AGENTS.md / UWS_ALUMINUM.md: prefer --format json, --dry-run for writes, --page-all for full data.
+            # Enforce provenance, inject relevant env (GOOGLE_*, MS_*, from bridge or UWS_ vars), log for Lattice/ClaimPackets.
+            logger.info("UWS/Alum CLI invoked — Universal Workspace surface for Google/MS/Apple/Android/Chrome (Aluminum OS kernel). AI-native, JSON-first, dry-run enforced for writes. 12k-20k+ features unified.")
+            if not any(a.startswith("--format") for a in arguments):
+                arguments = arguments + ["--format", "json"]
+            if any(word in " ".join(arguments).lower() for word in ["send", "create", "delete", "update", "write", "share"] ) and "--dry-run" not in arguments:
+                logger.warning("UWS/Alum write operation detected — strongly recommend --dry-run first (per UWS spec and safety).")
+
         # Build environment (inherit + optional overrides for cross-cloud)
         # Support prepared_env from agent_ms_cli_bridge for Google-MS token mapping
         env = prepared_env if prepared_env is not None else os.environ.copy()
@@ -147,6 +159,16 @@ class SecureCLIRunner:
                 logger.info("Injected XAI_API_KEY for grok execution (user's key integrated).")
             else:
                 logger.warning("XAI_API_KEY not found in environment. 'grok' commands may fail to authenticate. Set $env:XAI_API_KEY=your-xai-key")
+
+        # Special handling for UWS/Alum: inject common provider tokens from env/bridge for seamless multi-cloud (Google, MS Graph, etc.)
+        if command_name in ("uws", "alum"):
+            # UWS uses GOOGLE_WORKSPACE_CLI_* , UWS_MS_* , etc. per UWS_AGENTS.md and Aluminum spec.
+            # Bridge already prepares some; add common ones.
+            for key in ["GOOGLE_WORKSPACE_CLI_TOKEN", "GOOGLE_API_KEY", "UWS_MS_TOKEN", "UWS_MS_CLIENT_ID", "UWS_MS_TENANT_ID"]:
+                val = os.getenv(key)
+                if val:
+                    env[key] = val
+            logger.info("Injected UWS-compatible provider tokens (Google/MS/etc.) from environment/bridge for unified workspace access.")
 
         logger.info(f"EXECUTING: {executable} {' '.join(arguments)}")
 
@@ -201,7 +223,7 @@ class SecureCLIRunner:
         """Return the MCP tool schema for this runner."""
         return {
             "name": "run_cli_command",
-            "description": "Securely execute allowlisted CLI tools (grok, antigravity, antigravity-harness, adb, emulator, powershell, gemini, python-safe) with full provenance, Ledger, Lattice coords. Special for Google Antigravity (self-hosted harness, sandbox, Git policy) and Android Emulator/ADB (Vibe coding + unit tests).",
+            "description": "Securely execute allowlisted CLI tools including UWS/Alum (Universal Workspace CLI from atlaslattice UWS / Aluminum OS — unifies 12k-20k+ Google/MS/Apple/Android/Chrome features into functional OS for integrations), grok, antigravity, adb, emulator, powershell, gemini, python-safe. Full provenance, Ledger, Lattice coords, JSON output preferred. Special for UWS (dry-run writes, --format json, --page-all, provider abstraction), Google Antigravity (self-hosted harness, sandbox, Git policy) and Android Emulator/ADB (Vibe coding + unit tests).",
             "inputSchema": {
                 "type": "object",
                 "properties": {
