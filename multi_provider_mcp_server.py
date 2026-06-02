@@ -94,6 +94,7 @@ class MultiProviderMCPServer:
                 project_engine=self.project_engine,
                 copilot_engine=self.microsoft.copilot_engine if hasattr(self.microsoft, "copilot_engine") else None,
                 notion_engine=self.notion.notion if hasattr(self.notion, "notion") else None,
+                google_provider=self.google,  # now the real live GoogleProvider
                 simulate_default=True
             )
             logger.info("AdvancedCapabilitiesEngine (20 bleeding-edge) active.")

@@ -140,6 +140,7 @@ class AdvancedCapabilitiesEngine:
         project_engine: Optional[ProjectOrientedFeaturesEngine] = None,
         copilot_engine: Optional[MicrosoftCopilotIntegrations] = None,
         notion_engine: Optional[NotionAdvancedIntegrationsEngine] = None,
+        google_provider: Any = None,
         simulate_default: bool = True
     ):
         self.runner = runner or (SecureCLIRunner() if SecureCLIRunner else None)
@@ -148,6 +149,7 @@ class AdvancedCapabilitiesEngine:
         self.project_engine = project_engine
         self.copilot_engine = copilot_engine
         self.notion_engine = notion_engine
+        self.google_provider = google_provider
         self.simulate = simulate_default
 
         # Simple in-memory scores for routing (cap 3)
@@ -315,6 +317,10 @@ class AdvancedCapabilitiesEngine:
             results.append({"provider": "notion", "hits": await self.notion_engine.run("rag-provenance", query=query)})
         if self.copilot_engine:
             results.append({"provider": "microsoft", "hits": await self.copilot_engine.run("graph_file_search", query=query)})
+        if self.google_provider:
+            # Use the live production GoogleProvider (now with real Drive API)
+            google_res = await self.google_provider.search(query)
+            results.append({"provider": "google", "hits": google_res})
         return {"feature": "cross_cloud_federated_search", "query": query, "results": results, "grok_leads": True}
 
     # ==================== 15. Claim lineage visualizer ====================
