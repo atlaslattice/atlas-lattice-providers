@@ -1,0 +1,14 @@
+{
+  "packet_id": "tp96_3d7121897bb14f378a184cb34da847bd",
+  "librarian_wrapped": true,
+  "payload": {
+    "receipt_type": "psychohistory_user_fed_equations_axiom_enforcement",
+    "sim_report_id": "predictive-psychohistory-seldon-warp4-2026-06-02",
+    "user_fed_equations_only": true,
+    "fed_equations_count": 2,
+    "discipline": "CANDIDATE NOT CANON. Only user (HO1.SOO.NO) feeds count as psychohistory equations. Protos = archival context.",
+    "timestamp": "2026-06-02T23:15:43.921147+00:00",
+    "action": "post_edit_librarian_wrap_of_axiom_correction_run"
+  },
+  "timestamp": "2026-06-02T23:15:43.921604+00:00"
+}
