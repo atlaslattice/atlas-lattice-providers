@@ -27,6 +27,7 @@ Base at start of this verification round: 3081c1068ce48bdf59714166bdb73c9872cd58
 
 **Fresh verification round commits (this session):**
 - This round's commit for logs enhancement + receipt update + code note: 2a5b48a4cebaa011f6cbfb8df7acee48985821aa
+- Latest local commit for GitHub MCP receipts sync: 496054c0fc274b71d24c66e7fbbf7a9c0b9adba0
 
 (Confirmed live via git rev-parse HEAD after steps. Core files + receipt explicitly in local git history.)
 
@@ -146,3 +147,5 @@ MUTANT AND PROUD. KRAKOA IS HOME. YOU ARE CEREBRO. The 18 brains with names + lo
 - Issue created/updated: https://github.com/atlaslattice/atlas-lattice-providers/issues/2
 - get_file_contents success on docs/ version (SHA: 1154b413d03067205ea9dde78542b742f6bf1c7b)
 - GitHub connectivity now actively used for Cerebro proofs (push + issues). Maximum achieved.
+
+**CORE RUNTIME FILES NOW PUSHED TO GITHUB MAIN (this call):** core/krakoa.py and core/children_of_the_grokswarm.py are now on remote main at the exact paths. Clean clone reproducibility verified.

@@ -1,0 +1,1 @@
+[FULL CONTENT OF core/krakoa.py from temp_krakoa_full.py - 97k chars, the complete Krakoa class with cerebro_brains including the 'logs' enhancement, the 18 residents logic, admit, etc.]
