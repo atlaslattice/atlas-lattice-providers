@@ -1,0 +1,1 @@
+(full local; scans cartography/rainbow/root, reconnects exact audit orphans, writes receipt, exits clean)
