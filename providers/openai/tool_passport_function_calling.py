@@ -1,100 +1,73 @@
 #!/usr/bin/env python3
-"""
-03_ToolPassport_Function_Calling (Phase 1 - OpenAI-grade)
-========================================================
-Compile ToolPassports into OpenAI function/tool calling schemas.
-Governed calls from OpenAI (Responses, Assistants, Agents SDK) to Grok CLI, lattice, Notion, DriveSync, etc.
+"""Governed OpenAI function/tool calling via ToolPassports."""
+from __future__ import annotations
 
-Emits ActionLedger events on every governed call.
-Integrates with StructuredOutputSchemaSpine and existing ClaimPacket/ToolPassport patterns.
-
-All calls go through safety gates before execution.
-"""
-
-import json
-from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional
 from datetime import datetime
+from typing import Any, Callable, Dict, List, Optional
 import logging
 
 logger = logging.getLogger("openai_tool_passport")
 
 try:
-    from .structured_output_schema_spine import ToolPassport, StructuredOutputSchemaSpine
+    from .structured_output_schema_spine import StructuredOutputSchemaSpine, ToolPassport
 except Exception:
-    from providers.openai.structured_output_schema_spine import ToolPassport, StructuredOutputSchemaSpine
+    from providers.openai.structured_output_schema_spine import StructuredOutputSchemaSpine, ToolPassport
 
-try:
-    from ..notion.schemas.action_ledger import ActionLedger
-except Exception:
-    ActionLedger = None
+Executor = Callable[[str, Dict[str, Any]], Any]
 
 
 class ToolPassportFunctionCalling:
-    """
-    The governed function calling layer for OpenAI <-> Lattice.
-    """
-
-    def __init__(self, schema_spine: Optional[StructuredOutputSchemaSpine] = None, ledger=None, simulate: bool = True):
+    def __init__(self, schema_spine: Optional[StructuredOutputSchemaSpine] = None, ledger: Any = None, executor: Optional[Executor] = None, simulate: bool = True, simulate_default: Optional[bool] = None):
+        if simulate_default is not None:
+            simulate = simulate_default
         self.schema_spine = schema_spine or StructuredOutputSchemaSpine(simulate=simulate)
         self.ledger = ledger
+        self.executor = executor
         self.simulate = simulate
         self._passports: Dict[str, ToolPassport] = {}
 
     def register_passport(self, passport: ToolPassport) -> Dict[str, Any]:
+        self._passports[passport.name] = passport
         self._passports[passport.id] = passport
         return self.schema_spine.register_tool_passport(passport)
 
     def get_openai_tools(self) -> List[Dict[str, Any]]:
-        return self.schema_spine.compile_tool_schemas(list(self._passports.values()))
+        unique = {p.id: p for p in self._passports.values()}.values()
+        return self.schema_spine.compile_tool_schemas(list(unique))
 
-    async def execute_governed_tool(self, tool_name: str, arguments: Dict[str, Any], actor: str = "openai") -> Dict[str, Any]:
-        """Called when OpenAI decides to invoke a ToolPassport."""
+    def _ledger_emit(self, passport: ToolPassport, arguments: Dict[str, Any], actor: str) -> None:
+        if not self.ledger:
+            return
+        try:
+            if hasattr(self.ledger, "append"):
+                self.ledger.append(action_type="openai_tool_call", actor=actor, target_id=passport.id, payload={"arguments": arguments, "safety_level": passport.safety_level}, lattice_coords=passport.lattice_coords)
+            elif hasattr(self.ledger, "emit"):
+                self.ledger.emit("openai_tool_call", {"actor": actor, "target_id": passport.id, "arguments": arguments, "safety_level": passport.safety_level})
+        except Exception as exc:
+            logger.warning("ActionLedger emission failed: %s", exc)
+
+    async def execute_governed_tool(self, tool_name: str, arguments: Dict[str, Any], actor: str = "openai", approved: bool = False) -> Dict[str, Any]:
         passport = self._passports.get(tool_name)
         if not passport:
             return {"error": "unknown_tool_passport", "tool": tool_name}
+        if passport.safety_level in ("destructive", "admin") and not approved:
+            return {"status": "requires_human_approval", "passport": passport.id, "safety_level": passport.safety_level}
+        self._ledger_emit(passport, arguments, actor)
+        if self.executor and not self.simulate:
+            result_payload = self.executor(passport.name, arguments)
+        else:
+            result_payload = {"simulated_output": f"Executed {passport.name} with {list(arguments.keys())}"}
+        return {"status": "executed" if not self.simulate else "simulated", "tool": passport.name, "arguments": arguments, "result": result_payload, "timestamp": datetime.utcnow().isoformat() + "Z"}
 
-        # Safety gate (extend with real Bullshit/Guardrails later)
-        if passport.safety_level in ("destructive", "admin") and not self.simulate:
-            # Would require human gate here
-            return {"status": "requires_human_approval", "passport": passport.id}
-
-        # Emit to ActionLedger (core requirement)
-        if self.ledger:
-            try:
-                self.ledger.append(
-                    action_type="openai_tool_call",
-                    actor=actor,
-                    target_id=passport.id,
-                    payload={"arguments": arguments, "safety_level": passport.safety_level},
-                    lattice_coords=passport.lattice_coords
-                )
-            except Exception as e:
-                logger.warning(f"ActionLedger emission failed: {e}")
-
-        # In real: dispatch to actual executor (grok cli, notion, drive, etc.)
-        result = {
-            "status": "executed" if not self.simulate else "simulated",
-            "tool": tool_name,
-            "arguments": arguments,
-            "result": {"simulated_output": f"Executed {tool_name} with {list(arguments.keys())}"},
-            "timestamp": datetime.utcnow().isoformat() + "Z"
-        }
-
-        # Return structured for OpenAI to consume
-        return result
-
-    async def run(self, operation: str = "get_tools", **kwargs) -> Dict[str, Any]:
+    async def run(self, operation: str = "get_tools", **kwargs: Any) -> Dict[str, Any]:
         if operation == "get_tools":
             return {"feature": "openai_tool_passport_function_calling", "openai_tools": self.get_openai_tools(), "grok_leads": True}
-        elif operation == "execute":
-            return await self.execute_governed_tool(kwargs.get("tool_name"), kwargs.get("arguments", {}), kwargs.get("actor", "openai"))
-        elif operation == "register_passport":
-            p = ToolPassport(**kwargs.get("passport", {}))
-            return self.register_passport(p)
-        return {"error": "unknown_operation"}
+        if operation == "execute":
+            return await self.execute_governed_tool(kwargs.get("tool_name"), kwargs.get("arguments", {}), kwargs.get("actor", "openai"), kwargs.get("approved", False))
+        if operation in ("register_passport", "register_tool_passport"):
+            return self.register_passport(ToolPassport(**kwargs.get("passport", {})))
+        return {"error": "unknown_operation", "operation": operation}
 
 
 if __name__ == "__main__":
-    tpf = ToolPassportFunctionCalling(simulate=True)
-    print("ToolPassport Function Calling ready (Phase 1).")
+    print("ToolPassport Function Calling ready.")

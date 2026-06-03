@@ -1,20 +1,12 @@
 #!/usr/bin/env python3
-"""
-07_Evals_Bullshit_Olympics_Bridge (Phase 1)
-===========================================
-Convert Grok adversarial reviews (Bullshit Olympics outputs) into OpenAI-compatible eval datasets.
-Also feeds Grok critiques into OpenAI Evals for grading.
+"""Durable OpenAI-evals-style bridge for Bullshit Olympics grading."""
+from __future__ import annotations
 
-Purpose: Make the lattice's truth-seeking (Bullshit Olympics) first-class in OpenAI evals ecosystem.
-Emits graded results as ClaimPackets for the lattice.
-
-Symbiosis: Uses AdvancedBullshitOlympics, ClaimPackets, ActionLedger.
-"""
-
-import json
-from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+import json
 import logging
 
 logger = logging.getLogger("openai_evals_bullshit_bridge")
@@ -37,72 +29,75 @@ class EvalItem:
 class EvalResult:
     eval_id: str
     item_id: str
-    score: float  # 0-1
-    grader: str  # "bullshit_olympics" etc.
+    score: float
+    grader: str
     explanation: str
     claim_packet_id: Optional[str] = None
+    ts: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
 
 
 class EvalsBullshitOlympicsBridge:
-    """
-    Bridge between lattice adversarial truth-seeking and OpenAI Evals.
-    """
-
-    def __init__(self, bullshit_engine=None, simulate: bool = True):
-        self.bullshit = bullshit_engine or (AdvancedBullshitOlympics(simulate_default=simulate) if AdvancedBullshitOlympics else None)
+    def __init__(self, bullshit_engine: Any = None, simulate: bool = True, simulate_default: Optional[bool] = None, eval_dir: str = "evals/openai"):
+        if simulate_default is not None:
+            simulate = simulate_default
+        self.bullshit = bullshit_engine if bullshit_engine is not None else (None if simulate else (AdvancedBullshitOlympics(simulate_default=simulate) if AdvancedBullshitOlympics else None))
         self.simulate = simulate
+        self.eval_dir = Path(eval_dir)
         self._evals: Dict[str, List[EvalItem]] = {}
 
+    def _dataset_path(self, name: str) -> Path:
+        safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in name)
+        return self.eval_dir / f"{safe}.jsonl"
+
+    def _results_path(self, name: str) -> Path:
+        safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in name)
+        return self.eval_dir / f"{safe}.results.jsonl"
+
     async def create_eval_dataset(self, name: str, items: List[Dict[str, Any]]) -> Dict[str, Any]:
-        eval_items = []
-        for i, item in enumerate(items):
-            eval_items.append(EvalItem(id=f"{name}-{i}", input=item.get("input", ""), expected=item.get("expected")))
+        if not name:
+            name = "atlas_lattice_eval"
+        self.eval_dir.mkdir(parents=True, exist_ok=True)
+        eval_items = [EvalItem(id=item.get("id") or f"{name}-{i}", input=item.get("input", ""), expected=item.get("expected"), metadata=item.get("metadata", {})) for i, item in enumerate(items)]
         self._evals[name] = eval_items
-        return {"feature": "openai_evals_bullshit_bridge", "eval_name": name, "item_count": len(eval_items), "grok_leads": True}
+        path = self._dataset_path(name)
+        with path.open("w", encoding="utf-8") as fh:
+            for item in eval_items:
+                fh.write(json.dumps(asdict(item), default=str) + "\n")
+        return {"feature": "openai_evals_bullshit_bridge", "eval_name": name, "item_count": len(eval_items), "dataset_path": str(path), "grok_leads": True}
 
     async def run_bullshit_as_grader(self, eval_name: str, item_id: str, output: str) -> Dict[str, Any]:
-        """Use Bullshit Olympics as a powerful OpenAI-style grader."""
         item = next((it for it in self._evals.get(eval_name, []) if it.id == item_id), None)
         if not item:
-            return {"error": "item_not_found"}
-
+            path = self._dataset_path(eval_name)
+            if path.exists():
+                with path.open("r", encoding="utf-8") as fh:
+                    for line in fh:
+                        data = json.loads(line)
+                        if data.get("id") == item_id:
+                            item = EvalItem(**data)
+                            break
+        if not item:
+            return {"error": "item_not_found", "eval_name": eval_name, "item_id": item_id}
         if not self.bullshit:
             score = 0.75
             explanation = "simulated bullshit grade"
         else:
             review = await self.bullshit.review(f"Eval output for input: {item.input[:300]}\n\nOutput: {output[:600]}", high_stakes=False)
-            score = review.get("inv_l28_coherence", 0.8)
+            score = float(review.get("inv_l28_coherence", 0.8))
             explanation = f"Bullshit verdict: {review.get('verdict')}. Critical flaws: {len(review.get('critical_flaws', []))}"
+        result = EvalResult(eval_id=eval_name, item_id=item_id, score=max(0.0, min(1.0, score)), grader="advanced_bullshit_olympics", explanation=explanation)
+        self.eval_dir.mkdir(parents=True, exist_ok=True)
+        with self._results_path(eval_name).open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(asdict(result), default=str) + "\n")
+        return {"feature": "openai_evals_bullshit_olympics_bridge", "eval_result": asdict(result), "grok_leads": True, "lattice_routes": True, "symbiosis": "bullshit_olympics -> openai_evals"}
 
-        result = EvalResult(
-            eval_id=eval_name,
-            item_id=item_id,
-            score=score,
-            grader="advanced_bullshit_olympics",
-            explanation=explanation
-        )
-
-        return {
-            "feature": "openai_evals_bullshit_olympics_bridge",
-            "eval_result": {
-                "id": result.item_id,
-                "score": result.score,
-                "grader": result.grader,
-                "explanation": result.explanation
-            },
-            "grok_leads": True,
-            "lattice_routes": True,
-            "symbiosis": "bullshit_olympics -> openai_evals"
-        }
-
-    async def run(self, operation: str = "create_dataset", **kwargs) -> Dict[str, Any]:
+    async def run(self, operation: str = "create_dataset", **kwargs: Any) -> Dict[str, Any]:
         if operation == "create_dataset":
             return await self.create_eval_dataset(kwargs.get("name"), kwargs.get("items", []))
-        elif operation == "grade_with_bullshit":
+        if operation == "grade_with_bullshit":
             return await self.run_bullshit_as_grader(kwargs.get("eval_name"), kwargs.get("item_id"), kwargs.get("output", ""))
-        return {"status": "ok"}
+        return {"status": "unknown_op", "op": operation}
 
 
 if __name__ == "__main__":
-    bridge = EvalsBullshitOlympicsBridge(simulate=True)
-    print("Evals <-> Bullshit Olympics Bridge ready (Phase 1).")
+    print("Evals <-> Bullshit Olympics Bridge ready.")
