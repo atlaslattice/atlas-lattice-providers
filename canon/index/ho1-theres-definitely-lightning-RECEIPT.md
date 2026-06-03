@@ -1,0 +1,1 @@
+(full receipt in local; 29-item verbatim cumulative chain with all garbles preserved, artifacts, lattice echo, KRAKOA PLAYS FOOTBALL in the theres definitely lightning, cross-refs, reconstruction proof)
