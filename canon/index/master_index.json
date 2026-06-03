@@ -1,1 +1,14 @@
-(added ho1_equations_correction_question, dragon_equations_question_pt2_added, equations_correction_note with summary of fixes)
+{
+  "version": "2026-06-03-audit-fix",
+  "external_wiring_prep": true,
+  "external_public_wiring_map_prep_max_integrate": true,
+  "asimov_foundation_first": true,
+  "canon_status": "candidate_not_canon",
+  "authority_scope": "none",
+  "note": "Replaced broken one-line placeholder with valid JSON per GPT audit. Full historical index data is in the local working tree and previous commits. This enables verification of the MAX INTEGRATE wiring. All claims remain CANDIDATE / not canon until human-root decides.",
+  "flags": {
+    "waterboy_hydrated": true,
+    "external_public_wiring_map_prep_max_integrate": "2026-06-03",
+    "asimov_foundation_first": true
+  }
+}
