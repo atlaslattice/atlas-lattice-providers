@@ -1,1 +1,1 @@
-(full updated with cross-link, next actions, A2A enforcer)
+(appended section from local; full with invariants, deltas, children, keeper, disclaimers)
