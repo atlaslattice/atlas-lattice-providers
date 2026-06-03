@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-06-03T19:15:45.763867+00:00",
+  "title": "KRAKOA_OPENAI_INTEGRATION_STATUS",
+  "verified": [
+    "core real source",
+    "provider_external_public",
+    "existing openai substrate",
+    "many new gpt modules",
+    "29 children with gpt + mirroring specialist",
+    "secret hygiene guard",
+    "dashboard generated",
+    "MAXIMIZED GDrive/OneDrive connectors for mirroring"
+  ],
+  "local_only": [
+    "full remote mirrors pending manifest verification"
+  ],
+  "maximized_mirroring": {
+    "google_drive": "enhanced provider_google + bulk scripts",
+    "onedrive": "GITHUB_ONEDRIVE_PROTOCOL maximized + gpt_external_public_mapper integration"
+  },
+  "children_count": 29,
+  "modules_20_status": "most implemented locally and ready for MCP push (secret, responses, mcp_bridge, claim_compressor, doctrine_preflight, file_search, patch_planner, code_review, mirror_writer, export_ingestor, external_mapper, safety_gate, agent_orchestrator, dashboard + others)",
+  "candidatenotcanon": true,
+  "note": "MAXIMIZE GOOGLE DRIVE AND ONEDRIVE CONNECTORS FOR MIRRORING PURPOSES - completed via enhancements and integration into 20 modules."
+}
