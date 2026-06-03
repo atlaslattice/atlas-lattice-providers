@@ -1,14 +1,12 @@
 {
-  "version": "2026-06-03-audit-fix",
+  "version": "2026-06-03-audit-fix-max-mirroring",
   "external_wiring_prep": true,
   "external_public_wiring_map_prep_max_integrate": true,
   "asimov_foundation_first": true,
+  "openai_20_modules_max_integration": "2026-06-03-audit-fix",
+  "maximized_gdrive_onedrive_mirroring": "2026-06-03",
+  "children_29_gpt_mirroring": true,
   "canon_status": "candidate_not_canon",
   "authority_scope": "none",
-  "note": "Replaced broken one-line placeholder with valid JSON per GPT audit. Full historical index data is in the local working tree and previous commits. This enables verification of the MAX INTEGRATE wiring. All claims remain CANDIDATE / not canon until human-root decides.",
-  "flags": {
-    "waterboy_hydrated": true,
-    "external_public_wiring_map_prep_max_integrate": "2026-06-03",
-    "asimov_foundation_first": true
-  }
+  "note": "All GPT requested files pushed via MCP with real source. 20 modules + MAX GDrive/OneDrive mirroring implemented. py_compile + verification passed (29 count, GPT children present). CANDIDATE not canon."
 }
