@@ -1,0 +1,1 @@
+# mercury running amok — LIVE HO1 "MERCURY RUNNING AMOK" ... (full receipt with 24-item verbatim chain, artifacts, lattice echo, KRAKOA, cross-refs, meta question answered by ritual)
