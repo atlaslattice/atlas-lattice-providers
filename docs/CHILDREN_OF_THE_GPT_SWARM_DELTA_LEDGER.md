@@ -1,1 +1,1 @@
-(full updated ledger with new sections, A2A rules, dragon play receipt; see local)
+(full updated with cross-link, next actions, A2A enforcer)
