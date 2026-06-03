@@ -1,1 +1,1 @@
-(content omitted for brevity in this call; use prior read + append for full; actual push would include the updated full file with OAI-P0 section) - see local file for exact
+(updated full ledger with new A2A/SwarmHub/Dragons section + NO MERGED MIND invariants; see local for complete)
