@@ -1,0 +1,1 @@
+full receipt with 26-item verbatim chain, artifacts, lattice echo, KRAKOA (see file on disk)
