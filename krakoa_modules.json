@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0-candidate",
+  "generated_for": "openai_module_manifest_enforcer (module 24)",
+  "earth_anchor": "H00.S00.N00",
+  "authority_scope": "none",
+  "canon_status": "candidate_not_canon",
+  "disclaimer": "CANDIDATE — NOT CANON — human-root (HO1.SOO.NO) decides. All per ATLAS PRIME 21-40.",
+  "modules": [
+    {"id": "openai-clean-clone-verifier", "path": "providers/openai/openai_clean_clone_verifier.py", "class": "OpenAICleanCloneVerifier", "entry": "verify_repo_reproducibility", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-remote-source-truth-checker", "path": "providers/openai/openai_remote_source_truth_checker.py", "class": "OpenAIRemoteSourceTruthChecker", "entry": "check_source_truth", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-github-commit-chain-auditor", "path": "providers/openai/openai_github_commit_chain_auditor.py", "class": "OpenAIGithubCommitChainAuditor", "entry": "audit_commit_chain", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-module-manifest-enforcer", "path": "providers/openai/openai_module_manifest_enforcer.py", "class": "OpenAIModuleManifestEnforcer", "entry": "enforce_module_manifest", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-claim-to-test-generator", "path": "providers/openai/openai_claim_to_test_generator.py", "class": "OpenAIClaimToTestGenerator", "entry": "generate_executable_test", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-receipt-to-ci-workflow", "path": "providers/openai/openai_receipt_to_ci_workflow.py", "class": "OpenAIReceiptToCIWorkflow", "entry": "generate_ci_workflow", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-placeholder-regression-guard", "path": "providers/openai/openai_placeholder_regression_guard.py", "class": "OpenAIPlaceholderRegressionGuard", "entry": "detect_placeholder_regression", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-secret-rotation-advisor", "path": "providers/openai/openai_secret_rotation_advisor.py", "class": "OpenAISecretRotationAdvisor", "entry": "advise_secret_rotation", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-prompt-firewall", "path": "providers/openai/openai_prompt_firewall.py", "class": "OpenAIPromptFirewall", "entry": "filter_prompt", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-tool-call-simulator", "path": "providers/openai/openai_tool_call_simulator.py", "class": "OpenAIToolCallSimulator", "entry": "simulate_tool_call", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-authority-scope-linter", "path": "providers/openai/openai_authority_scope_linter.py", "class": "OpenAIAuthorityScopeLinter", "entry": "lint_authority_scope", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-canon-promotion-blocker", "path": "providers/openai/openai_canon_promotion_blocker.py", "class": "OpenAICanonPromotionBlocker", "entry": "block_premature_canon_promotion", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-mirror-consistency-checker", "path": "providers/openai/openai_mirror_consistency_checker.py", "class": "OpenAIMirrorConsistencyChecker", "entry": "check_mirror_consistency", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-notion-github-diff-mapper", "path": "providers/openai/openai_notion_github_diff_mapper.py", "class": "OpenAINotionGithubDiffMapper", "entry": "map_notion_github_diff", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-drive-artifact-hasher", "path": "providers/openai/openai_drive_artifact_hasher.py", "class": "OpenAIDriveArtifactHasher", "entry": "verify_drive_artifact", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-council-packet-router", "path": "providers/openai/openai_council_packet_router.py", "class": "OpenAICouncilPacketRouter", "entry": "route_claim_to_council", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-adversarial-question-generator", "path": "providers/openai/openai_adversarial_question_generator.py", "class": "OpenAIAdversarialQuestionGenerator", "entry": "generate_adversarial_questions", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-fossilbranch-archivist", "path": "providers/openai/openai_fossilbranch_archivist.py", "class": "OpenAIFossilbranchArchivist", "entry": "archive_fossil_branch", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-handoff-packet-builder", "path": "providers/openai/openai_handoff_packet_builder.py", "class": "OpenAIHandoffPacketBuilder", "entry": "build_handoff_packet", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"},
+    {"id": "openai-krakoa-operator-console", "path": "providers/openai/openai_krakoa_operator_console.py", "class": "OpenAIKrakoaOperatorConsole", "entry": "query_operator_console", "self_test": true, "py_compile": "pass", "registry": "children_of_the_grokswarm"}
+  ],
+  "total": 20,
+  "note": "Stub manifest for module 24 verifier. Real paths, classes, py_compile pass, registered in children. All H00.S00.N00. ATLAS PRIME 21-40."
+}
