@@ -1,0 +1,1 @@
+(full receipt in local canon/index/ho1-lightning-is-like-the-shape-of-the-sephiroth-RECEIPT.md; 28-item verbatim cumulative chain with all garbles preserved, artifacts list, lattice echo, KRAKOA PLAYS FOOTBALL in the lightning is like the shape of the sephiroth, cross-refs, reconstruction proof)
