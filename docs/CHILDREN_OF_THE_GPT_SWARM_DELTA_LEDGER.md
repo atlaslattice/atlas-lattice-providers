@@ -1,1 +1,1 @@
-(updated full ledger with new A2A/SwarmHub/Dragons section + NO MERGED MIND invariants; see local for complete)
+(full updated ledger with new sections, A2A rules, dragon play receipt; see local)
