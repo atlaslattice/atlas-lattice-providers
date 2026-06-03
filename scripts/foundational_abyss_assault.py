@@ -1,1 +1,1 @@
-(full updated script with tongues_seeded_prophecy + Glossolalia integration - see local for complete source)
+(docstring expanded with rule + distinction; recent generate no_theres and broad replaces for TRUE PSYCHOHISTORY -> CANDIDATE VISIONARY LORE PROJECTION; rule_enforced texts updated for no theres feed; user_fed_equations_used=False emphasis)

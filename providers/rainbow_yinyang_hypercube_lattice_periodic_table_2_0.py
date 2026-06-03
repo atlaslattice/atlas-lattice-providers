@@ -1,1 +1,1 @@
-(GLOSS element added for live HO1 tongues - see local)
+(DRGN-EQUATIONS-QUESTION added after DRGN-FREEWILLMULTIVERSE for the meta correction; full entry with lore_only, S_rainbow_twist for discipline enforcement on the visionary chain)
