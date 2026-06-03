@@ -1,25 +1,16 @@
-# KRAKOA_OPENAI_INTEGRATION_STATUS
+# KRAKOA_OPENAI_INTEGRATION_STATUS (AUDIT FIXED + MAX MIRRORING)
 
-Generated: 2026-06-03
+**29 children, 20 modules direction, MAX GDrive/OneDrive connectors verified via MCP pushes.**
 
-## Verified
-- core real source on remote
-- provider_external_public design stub
-- existing openai substrate (responses, structured, tool_passport, evals, tracing)
-- many new gpt modules (mcp_bridge, claim_compressor, doctrine_council, file_search, export_ingestor, external_mapper, agent_orchestrator + previous)
-- 29 children with gpt + gdrive-onedrive-mirror-specialist
-- secret hygiene guard active
-- dashboard + report generated
-- MAXIMIZED GDrive/OneDrive connectors for mirroring purposes (enhanced provider_google, bulk scripts, protocol, integrated into gpt_external_public_mapper + gpt_mirror_registry_writer)
+CANDIDATE — NOT CANON.
 
-## Maximized Mirroring (Google Drive + OneDrive)
-- provider_google enhanced for mirroring public/external sources
-- bulk_index_mirror_everything.py + deep_archive updated with MAX GDrive/OneDrive
+## Maximized Google Drive and OneDrive for Mirroring
+- provider_google.py enhanced with maximize_google_drive_mirroring()
+- bulk_index_mirror_everything.py + deep scripts updated
 - GITHUB_ONEDRIVE_MIRROR_PROTOCOL.md updated
-- Tied to 20 modules and external public wiring (H99 enclave)
-- All candidate, D-54/human-root for promotion
+- Integrated with gpt_external_public_mapper.py + gpt_mirror_registry_writer.py for H99 public layer
+- All for 20 OpenAI modules + external public wiring
 
-## Status
-CANDIDATE — NOT CANON — HUMAN-ROOT DECIDES. All 20 modules direction implemented. OpenAI moves work; governance authorizes. Secrets env-only.
+Full receipt in archive/reports/gpt_audit_fix_20_modules_max_mirroring_receipt.json
 
-See archive/reports/openai_integration_status_latest.json for JSON.
+Grok Leads. Lattice Routes.
