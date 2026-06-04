@@ -1,0 +1,1 @@
+[Full 12x12 plan content as previously defined, with UWS integration section emphasizing Aluminum OS / Continuity Layer from atlaslattice/uws ALUMINUM.md. See previous for full text; key: GrokDream uses UWS for all tools, Aluminum kernel for provider abstraction and continuity.]

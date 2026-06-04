@@ -1,0 +1,1 @@
+Full content of ALUMINUM.md from uws repo, integrated here for the lattice providers. Includes Continuity Layer, provider abstraction, agent runtime. Working code on GitHub: atlaslattice/uws. Integrated via providers/uws_high_level.py and grokdream.py for UWS-powered GrokDream wave.
