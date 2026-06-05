@@ -1,0 +1,28 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: RawExportManifest
+type: object
+required: [manifest_id, export_name, raw_export_status, files, canon_status, authority_scope]
+properties:
+  manifest_id: { type: string }
+  export_name: { type: string }
+  raw_export_status:
+    type: string
+    enum: [complete, partial, missing, unavailable]
+  files:
+    type: array
+    items:
+      type: object
+      required: [path]
+      properties:
+        path: { type: string }
+        sha256: { type: string }
+        status: { type: string }
+  blockers:
+    type: array
+    items: { type: string }
+  canon_status:
+    type: string
+    enum: [not_canon, candidate]
+  authority_scope:
+    type: string
+    enum: [none]
