@@ -1,0 +1,75 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://atlaslattice.local/schemas/eight_gates_packet.schema.yaml
+title: EightGatesPacket
+type: object
+required:
+  - artifact_id
+  - artifact_path
+  - artifact_type
+  - gate_results
+  - final_status
+  - blockers
+  - next_action
+  - generated_at
+  - generated_by
+  - canon_status
+  - authority_scope
+properties:
+  artifact_id:
+    type: string
+  artifact_path:
+    type: string
+  artifact_type:
+    type: string
+  gate_results:
+    type: object
+    required:
+      - source_gate
+      - hash_gate
+      - status_gate
+      - secret_gate
+      - overclaim_gate
+      - repro_gate
+      - review_gate
+      - human_root_gate
+    properties:
+      source_gate: { $ref: '#/$defs/gate_result' }
+      hash_gate: { $ref: '#/$defs/gate_result' }
+      status_gate: { $ref: '#/$defs/gate_result' }
+      secret_gate: { $ref: '#/$defs/gate_result' }
+      overclaim_gate: { $ref: '#/$defs/gate_result' }
+      repro_gate: { $ref: '#/$defs/gate_result' }
+      review_gate: { $ref: '#/$defs/gate_result' }
+      human_root_gate: { $ref: '#/$defs/gate_result' }
+  final_status:
+    type: string
+    enum: [PASS, WARN, BLOCKED]
+  blockers:
+    type: array
+    items:
+      type: string
+  next_action:
+    type: string
+  generated_at:
+    type: string
+  generated_by:
+    type: string
+  canon_status:
+    type: string
+    enum: [not_canon, candidate, reviewed, ratified, canon]
+  authority_scope:
+    type: string
+    enum: [none, proposed, human_approved]
+$defs:
+  gate_result:
+    type: object
+    required: [pass, notes]
+    properties:
+      pass:
+        type: boolean
+      notes:
+        type: string
+      findings:
+        type: array
+        items:
+          type: string
