@@ -1,0 +1,21 @@
+manifest_id: public_candidate_bundle_0001
+status: CANDIDATE
+canon_status: not_canon
+deployment_status: not_deployed
+authority_scope: none
+files:
+  - path: public_candidate_bundle_0001/README.md
+    status: present
+  - path: public_candidate_bundle_0001/PR_CHECKLIST.md
+    status: present
+  - path: public_candidate_bundle_0001/docs/ontology/H04_COMPUTATION_SUBSTRATES.md
+    status: planned
+  - path: public_candidate_bundle_0001/schemas/H04_node_schema.yaml
+    status: planned
+  - path: public_candidate_bundle_0001/toy_graph/toy_graph_public_safe.json
+    status: planned
+blockers:
+  - H04 ontology materialization pending
+  - hash manifest pending
+  - Eight Gates run pending
+keeper: The bundle is a shelf, not a crown.
