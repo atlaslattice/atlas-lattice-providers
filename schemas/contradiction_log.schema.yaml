@@ -1,0 +1,22 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: ContradictionLog
+type: object
+required: [log_id, contradiction, affected_claims, status, canon_status, authority_scope]
+properties:
+  log_id: { type: string }
+  contradiction: { type: string }
+  affected_claims:
+    type: array
+    items: { type: string }
+  evidence:
+    type: array
+    items: { type: string }
+  status:
+    type: string
+    enum: [open, reviewing, resolved, superseded]
+  canon_status:
+    type: string
+    enum: [not_canon, candidate]
+  authority_scope:
+    type: string
+    enum: [none]
