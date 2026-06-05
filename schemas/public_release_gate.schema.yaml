@@ -1,0 +1,23 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: PublicReleaseGate
+type: object
+required: [release_id, artifact_paths, eight_gates_passed, human_root_approved, canon_status, authority_scope]
+properties:
+  release_id: { type: string }
+  artifact_paths:
+    type: array
+    items: { type: string }
+  eight_gates_passed: { type: boolean }
+  human_root_approved: { type: boolean }
+  blockers:
+    type: array
+    items: { type: string }
+  public_release_status:
+    type: string
+    enum: [internal, candidate_public, public_review, released]
+  canon_status:
+    type: string
+    enum: [not_canon, candidate, reviewed, ratified, canon]
+  authority_scope:
+    type: string
+    enum: [none, proposed, human_approved]
