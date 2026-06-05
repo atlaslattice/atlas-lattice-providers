@@ -1,0 +1,49 @@
+name: Eight Gates Failure
+about: Report or track a failed Eight Gates check
+title: "Eight Gates failure: <artifact>"
+labels: [eight-gates, candidate, blocker]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this when an artifact fails Source, Hash, Status, Secret, Overclaim, Repro, Review, or Human-root gates.
+  - type: input
+    id: artifact_path
+    attributes:
+      label: Artifact path
+      placeholder: docs/example.md
+    validations:
+      required: true
+  - type: dropdown
+    id: failed_gate
+    attributes:
+      label: Failed gate
+      options:
+        - Source Gate
+        - Hash Gate
+        - Status Gate
+        - Secret Gate
+        - Overclaim Gate
+        - Repro Gate
+        - Review Gate
+        - Human-root Gate
+    validations:
+      required: true
+  - type: textarea
+    id: findings
+    attributes:
+      label: Findings
+      description: Paste eight_gates_packet findings or concise blocker summary.
+    validations:
+      required: true
+  - type: checkboxes
+    id: non_authority
+    attributes:
+      label: Non-authority confirmation
+      options:
+        - label: This issue does not claim canon.
+          required: true
+        - label: This issue does not claim deployment.
+          required: true
+        - label: Human-root holds promotion authority.
+          required: true
