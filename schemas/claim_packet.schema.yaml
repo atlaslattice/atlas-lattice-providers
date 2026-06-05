@@ -1,0 +1,20 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: ClaimPacket
+type: object
+required: [claim_id, claim_text, canon_status, authority_scope, source]
+properties:
+  claim_id: { type: string }
+  claim_text: { type: string }
+  source: { type: string }
+  evidence_ids:
+    type: array
+    items: { type: string }
+  review_state:
+    type: string
+    enum: [PENDING_REVIEW, REVIEWED, CONTRADICTED, SUPERSEDED, QUARANTINED]
+  canon_status:
+    type: string
+    enum: [not_canon, candidate, reviewed, ratified, canon]
+  authority_scope:
+    type: string
+    enum: [none, proposed, human_approved]
