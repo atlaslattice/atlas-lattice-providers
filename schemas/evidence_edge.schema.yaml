@@ -1,0 +1,18 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: EvidenceEdge
+type: object
+required: [edge_id, from_artifact, to_claim, relation, canon_status, authority_scope]
+properties:
+  edge_id: { type: string }
+  from_artifact: { type: string }
+  to_claim: { type: string }
+  relation:
+    type: string
+    enum: [supports, contradicts, derived_from, supersedes, reviewed_by, gated_by, implemented_as, preserved_as, quarantined_as]
+  citation: { type: string }
+  canon_status:
+    type: string
+    enum: [not_canon, candidate, reviewed, ratified, canon]
+  authority_scope:
+    type: string
+    enum: [none, proposed, human_approved]
