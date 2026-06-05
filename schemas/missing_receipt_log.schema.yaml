@@ -1,0 +1,20 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: MissingReceiptLog
+type: object
+required: [log_id, artifact_path, missing_receipt_type, severity, canon_status, authority_scope]
+properties:
+  log_id: { type: string }
+  artifact_path: { type: string }
+  missing_receipt_type:
+    type: string
+    enum: [source, hash, review, mirror, human_root, test, clean_clone]
+  severity:
+    type: string
+    enum: [low, medium, high, blocker]
+  next_action: { type: string }
+  canon_status:
+    type: string
+    enum: [not_canon, candidate]
+  authority_scope:
+    type: string
+    enum: [none]
