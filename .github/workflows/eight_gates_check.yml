@@ -1,0 +1,50 @@
+name: Eight Gates Check
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  eight-gates:
+    name: Eight Gates Candidate Safety Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Collect changed files
+        id: files
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "${{ github.base_ref }}" --depth=1
+            git diff --name-only "origin/${{ github.base_ref }}"...HEAD > changed_files.txt
+          else
+            git ls-files > changed_files.txt
+          fi
+          grep -E '\.(py|md|json|ya?ml|txt)$' changed_files.txt > scan_files.txt || true
+          cat scan_files.txt
+
+      - name: Run Eight Gates
+        shell: bash
+        run: |
+          if [ ! -s scan_files.txt ]; then
+            echo "No candidate text/code files to scan."
+            exit 0
+          fi
+          python core/eight_gates.py $(cat scan_files.txt) --out archive/reports/eight_gates_packet.json
+
+      - name: Upload Eight Gates packet
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eight-gates-packet
+          path: archive/reports/eight_gates_packet.json
+          if-no-files-found: ignore
