@@ -1,0 +1,21 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: SourcePassport
+type: object
+required: [source_passport_id, source_type, source_location, raw_export_status, canon_status, authority_scope]
+properties:
+  source_passport_id: { type: string }
+  source_type: { type: string }
+  source_location: { type: string }
+  source_owner: { type: string }
+  captured_at: { type: string }
+  captured_by: { type: string }
+  raw_export_status:
+    type: string
+    enum: [complete, partial, missing, unavailable, not_applicable]
+  sha256: { type: string }
+  canon_status:
+    type: string
+    enum: [not_canon, candidate, reviewed, ratified, canon]
+  authority_scope:
+    type: string
+    enum: [none, proposed, human_approved]
