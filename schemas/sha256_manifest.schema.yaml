@@ -1,0 +1,22 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: Sha256Manifest
+type: object
+required: [manifest_id, generated_at, entries, canon_status, authority_scope]
+properties:
+  manifest_id: { type: string }
+  generated_at: { type: string }
+  entries:
+    type: array
+    items:
+      type: object
+      required: [path, sha256]
+      properties:
+        path: { type: string }
+        sha256: { type: string }
+        bytes: { type: integer }
+  canon_status:
+    type: string
+    enum: [not_canon, candidate]
+  authority_scope:
+    type: string
+    enum: [none]
