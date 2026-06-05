@@ -1,0 +1,19 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: ArtifactNode
+type: object
+required: [artifact_id, title, artifact_path, artifact_status, canon_status, authority_scope]
+properties:
+  artifact_id: { type: string }
+  title: { type: string }
+  artifact_path: { type: string }
+  artifact_status:
+    type: string
+    enum: [RAW, PARSED, CLAIM, CANDIDATE, REVIEWED, CONTRADICTED, SUPERSEDED, QUARANTINED, RATIFIED, CANON, DEPLOYED]
+  canon_status:
+    type: string
+    enum: [not_canon, candidate, reviewed, ratified, canon]
+  authority_scope:
+    type: string
+    enum: [none, proposed, human_approved]
+  source_passport_id: { type: string }
+  sha256: { type: string }
