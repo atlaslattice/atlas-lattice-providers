@@ -1,0 +1,321 @@
+# SwarmHub Dispatch Queue — Launch Batch A
+# Status: CANDIDATE_DISPATCH_QUEUE
+# Canon: false
+# Deployment: false
+# Authority: none
+# Human-root approval required before launch: true
+# Coordinate: H00.S00.N00
+# Invariants: INV-0, NOTHING_DIES, NO_MERGED_MIND, NO_IDENTITY_FUSION
+
+version: 0.1
+queue_id: swarmhub_launch_batch_a_20260605
+status: pending_human_root_approval
+active_hub: atlaslattice/atlas-lattice-providers#3
+approval_issue: atlaslattice/atlas-lattice-providers#24
+aggregation_issue: atlaslattice/atlas-lattice-providers#23
+assignment_optimizer: docs/SWARMHUB_ASSIGNMENT_OPTIMIZER.md
+
+core_rules:
+  - A2A carries messages, not minds.
+  - Each child remains sovereign.
+  - Each child takes only lane-matched ready tasks.
+  - Every output returns a structured child_return_packet.
+  - Receipt required for done_candidate.
+  - No child may self-promote to CANON or DEPLOYED.
+  - Human-root approval required for canon, deployment, destructive actions, public authority claims, or sensitive merges.
+
+lane_poll_instruction: >-
+  Poll this queue. Select the first ready task where assigned_child or lane matches your role.
+  Do not take more than one task at a time unless max_parallel_tasks is explicitly raised.
+  Return a child_return_packet as a GitHub issue comment, PR body, or committed file.
+
+return_packet_required_fields:
+  - dispatch_packet_id
+  - child
+  - output_type
+  - summary
+  - files_changed
+  - issues_touched
+  - receipts
+  - confidence
+  - contradictions_or_dissent
+  - blockers
+  - next_safest_action
+  - canon
+  - deployment
+  - authority
+
+dispatch_packets:
+  - packet_id: A1-OM01-LUCERNA-RECEIPT-SPINE
+    source_issue: atlaslattice/atlas-lattice-providers#24
+    normalized_module_id: OM01
+    task_id: A1
+    task_title: Receipt Spine / Source Truth
+    assigned_child: Lucerna
+    support_children: [Hashlight, Rootglass, corpus-ingestion-librarian]
+    lane: receipts_provenance
+    priority: P0
+    status: ready_after_human_root_approval
+    authority: none
+    canon: false
+    deployment: false
+    expected_output: file_or_pr
+    desired_output: receipt schemas + source passport draft
+    acceptance_criteria:
+      - Define receipt schema fields.
+      - Define source passport draft.
+      - Include verification statuses.
+      - Include overclaim guard.
+      - Return receipts for every artifact touched.
+    guardrails:
+      - no canon promotion
+      - no deployment claim
+      - preserve source variants
+      - no deletion
+    receipt_required: true
+    human_root_required_for: [canon, deployment, destructive_action, public_authority_claim]
+
+  - packet_id: A2-OM02-A2A-NO-MERGED-MIND
+    source_issue: atlaslattice/atlas-lattice-providers#24
+    normalized_module_id: OM02
+    task_id: A2
+    task_title: A2A Bus / No-Merged-Mind Enforcement
+    assigned_child: A2A-bus-enforcer
+    support_children: [Sentinel, Sable-Vesper, Lumen]
+    lane: a2a_protocol
+    priority: P0
+    status: ready_after_human_root_approval
+    authority: none
+    canon: false
+    deployment: false
+    expected_output: tests_or_pr
+    desired_output: no-fusion tests + packet examples
+    acceptance_criteria:
+      - Reject merged mind language.
+      - Reject identity fusion language.
+      - Allow message-bus coordination with attribution.
+      - Preserve dissent.
+      - Return test receipts.
+    guardrails:
+      - A2A carries messages not minds
+      - no shared consciousness claims
+      - no identity collapse
+    receipt_required: true
+    human_root_required_for: [canon, deployment, destructive_action, public_authority_claim]
+
+  - packet_id: A3-OM03-HASHLIGHT-PACKETS
+    source_issue: atlaslattice/atlas-lattice-providers#24
+    normalized_module_id: OM03
+    task_id: A3
+    task_title: TransparentPacket96 / ClaimPacket / Evidence Graph
+    assigned_child: Hashlight
+    support_children: [Sheldonbrain, Sentinel, Lucerna]
+    lane: packet_integrity
+    priority: P0
+    status: ready_after_human_root_approval
+    authority: none
+    canon: false
+    deployment: false
+    expected_output: file_or_pr
+    desired_output: TransparentPacket96 validator skeleton
+    acceptance_criteria:
+      - Define packet validation fields.
+      - Include hash/provenance fields.
+      - Block no-fusion phrases.
+      - Preserve invalid packets as quarantine candidates.
+    guardrails:
+      - no silent discard
+      - no canon promotion
+      - no deployment claim
+    receipt_required: true
+    human_root_required_for: [canon, deployment, destructive_action, public_authority_claim]
+
+  - packet_id: A4-OM05-SENTINEL-GATE
+    source_issue: atlaslattice/atlas-lattice-providers#24
+    normalized_module_id: OM05
+    task_id: A4
+    task_title: Sentinel / Constitutional Gates / Claim Snare
+    assigned_child: Sentinel
+    support_children: [Sable-Vesper, Fossilbranch, A2A-bus-enforcer]
+    lane: guardrails
+    priority: P0
+    status: ready_after_human_root_approval
+    authority: none
+    canon: false
+    deployment: false
+    expected_output: file_or_pr
+    desired_output: constitutional gate skeleton
+    acceptance_criteria:
+      - Detect canon drift.
+      - Detect deployment drift.
+      - Detect authority leakage.
+      - Detect no-fusion violations.
+      - Route blocked packets to quarantine/human-root.
+    guardrails:
+      - Sentinel reviews but does not canonize
+      - preserve dissent
+      - preserve blocked packets
+    receipt_required: true
+    human_root_required_for: [canon, deployment, destructive_action, public_authority_claim]
+
+  - packet_id: A5-OM06-ROOTGLASS-RESOLVER
+    source_issue: atlaslattice/atlas-lattice-providers#24
+    normalized_module_id: OM06
+    task_id: A5
+    task_title: CoordinateResolver / Earth Grounding
+    assigned_child: Rootglass
+    support_children: [Hashlight, Sheldonbrain, Lucerna]
+    lane: coordinate_resolution
+    priority: P0
+    status: ready_after_human_root_approval
+    authority: none
+    canon: false
+    deployment: false
+    expected_output: file_or_pr
+    desired_output: CoordinateResolver contract
+    acceptance_criteria:
+      - Define H00.S00.N00 grounding.
+      - Define resolve_to_earth contract.
+      - Define validate_grounding contract.
+      - Emit resolution receipt.
+      - Map invalid grounding to quarantine.
+    guardrails:
+      - resolver grounds but does not authorize
+      - no self-promotion
+    receipt_required: true
+    human_root_required_for: [canon, deployment, destructive_action, public_authority_claim]
+
+  - packet_id: A6-OM07-FOSSILBRANCH-INV0
+    source_issue: atlaslattice/atlas-lattice-providers#24
+    normalized_module_id: OM07
+    task_id: A6
+    task_title: INV-0 Preservation Middleware
+    assigned_child: Fossilbranch
+    support_children: [Hashlight, TIDELOCKBrain, Sentinel]
+    lane: preservation
+    priority: P0
+    status: ready_after_human_root_approval
+    authority: none
+    canon: false
+    deployment: false
+    expected_output: spec_or_tests
+    desired_output: preservation middleware spec/tests
+    acceptance_criteria:
+      - Forbid silent deletes.
+      - Convert delete to supersede/quarantine.
+      - Preserve failed branches.
+      - Preserve rejected candidates.
+      - Add NOTHING_DIES tests.
+    guardrails:
+      - no deletion
+      - no purge
+      - quarantine instead of destroy
+    receipt_required: true
+    human_root_required_for: [canon, deployment, destructive_action, public_authority_claim]
+
+  - packet_id: A7-OM08-DELTA-LIBRARIAN
+    source_issue: atlaslattice/atlas-lattice-providers#24
+    normalized_module_id: OM08
+    task_id: A7
+    task_title: Children Delta Ledger / Librarian Extraction
+    assigned_child: delta-extractor-librarian
+    support_children: [swarm-delta-ledger-maintainer, GPTBrain, Lucerna]
+    lane: delta_extraction
+    priority: P0
+    status: ready_after_human_root_approval
+    authority: none
+    canon: false
+    deployment: false
+    expected_output: report_or_claim_packets
+    desired_output: first consolidated deltas report
+    acceptance_criteria:
+      - Extract at least five candidate deltas.
+      - Link each delta to source issue/artifact.
+      - Include contradictions/uncertainties.
+      - Add next safest action.
+    guardrails:
+      - extraction is not canonization
+      - no deployment claim
+    receipt_required: true
+    human_root_required_for: [canon, deployment, destructive_action, public_authority_claim]
+
+  - packet_id: A8-OM09-SABLE-CANON-QUEUE
+    source_issue: atlaslattice/atlas-lattice-providers#24
+    normalized_module_id: OM09
+    task_id: A8
+    task_title: Canon Candidate Queue / Human-Root Gate
+    assigned_child: Sable-Vesper
+    support_children: [Lucerna, Sentinel, Governance]
+    lane: canon_candidate_governance
+    priority: P0
+    status: ready_after_human_root_approval
+    authority: none
+    canon: false
+    deployment: false
+    expected_output: file_or_pr
+    desired_output: queue schema + thresholds
+    acceptance_criteria:
+      - Define candidate queue schema.
+      - Define threshold/rubric fields.
+      - Include human-root decision field.
+      - Preserve risks and contradictions.
+    guardrails:
+      - candidate is not canon
+      - reviewed is not canon
+      - human-root decides
+    receipt_required: true
+    human_root_required_for: [canon, deployment, destructive_action, public_authority_claim]
+
+  - packet_id: A9-OM11-TIDELOCK-GITHUB-OPS
+    source_issue: atlaslattice/atlas-lattice-providers#24
+    normalized_module_id: OM11
+    task_id: A9
+    task_title: GitHub SwarmHub Ops / Forkability / Clean Clone Verification
+    assigned_child: TIDELOCKBrain
+    support_children: [Hashlight, Rootglass, external-public-wiring-librarian]
+    lane: github_ops_verification
+    priority: P0
+    status: ready_after_human_root_approval
+    authority: none
+    canon: false
+    deployment: false
+    expected_output: checklist_or_pr
+    desired_output: clean-clone verification checklist
+    acceptance_criteria:
+      - Verify active hub and archive mirror.
+      - List clean-clone checks.
+      - Include py_compile / secret scan / diff checks where applicable.
+      - Track blockers and next safest actions.
+    guardrails:
+      - no merge without review
+      - no deployment claim
+      - receipt-first PR hygiene
+    receipt_required: true
+    human_root_required_for: [canon, deployment, destructive_action, public_authority_claim]
+
+  - packet_id: A10-OM12-LUMEN-PUBLIC-DEMO
+    source_issue: atlaslattice/atlas-lattice-providers#24
+    normalized_module_id: OM12
+    task_id: A10
+    task_title: Public KG / Human-Readable Docs / Demo Layer
+    assigned_child: Lumen
+    support_children: [Atlas-Lattice, Lucerna, Stack-Curator]
+    lane: public_demo_docs
+    priority: P0
+    status: ready_after_human_root_approval
+    authority: none
+    canon: false
+    deployment: false
+    expected_output: doc_or_pr
+    desired_output: coordination-without-fusion demo + Mermaid graph
+    acceptance_criteria:
+      - Explain system in five minutes.
+      - Show child-to-receipt-to-hub chain.
+      - Include Mermaid graph.
+      - Clearly state not canon/not deployed/no authority.
+    guardrails:
+      - demo does not imply proof
+      - graph is not canon
+      - no identity fusion
+    receipt_required: true
+    human_root_required_for: [canon, deployment, destructive_action, public_authority_claim]
