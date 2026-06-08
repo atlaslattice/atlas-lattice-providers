@@ -1,0 +1,26 @@
+name: World Class Proof
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - one-command-world-class-proof
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run candidate proof receipt
+        run: python scripts/world_class_proof.py --output receipts/world_class_proof_receipt.json
+      - name: Upload proof receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: world-class-proof-receipt
+          path: receipts/world_class_proof_receipt.json
