@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 ROOT = Path(__file__).resolve().parents[1]
+LEGACY_NAME_ALLOWED_CONTEXT = {"docs/CONTINUUM_OS_DIRECTIVE.md", "docs/WORLD_CLASS_PROOF.md", "scripts/world_class_proof.py"}
 
 
 @dataclass
@@ -151,15 +152,18 @@ def scan_for_forbidden_term() -> CheckResult:
         else:
             continue
         for p in paths:
+            rp = rel(p)
+            if rp in LEGACY_NAME_ALLOWED_CONTEXT:
+                continue
             try:
                 text = p.read_text(encoding="utf-8", errors="ignore")
             except Exception:
                 continue
             if "Continuity OS".lower() in text.lower():
-                hits.append(rel(p))
+                hits.append(rp)
     if hits:
-        return CheckResult("continuum_not_continuity_name_guard", "FAIL", "Forbidden legacy name 'Continuity OS' found", hits[:50])
-    return CheckResult("continuum_not_continuity_name_guard", "PASS", "No forbidden 'Continuity OS' references found")
+        return CheckResult("continuum_not_continuity_name_guard", "FAIL", "Forbidden legacy name found outside directive docs", hits[:50])
+    return CheckResult("continuum_not_continuity_name_guard", "PASS", "No forbidden legacy name references found outside directive docs")
 
 
 def openai_readiness() -> CheckResult:
