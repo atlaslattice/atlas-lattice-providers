@@ -1,27 +1,16 @@
 #!/usr/bin/env python3
-"""
-06_OpenAI_Tracing_To_GoldenTrace (Phase 1)
-==========================================
-Map OpenAI trace_ids / thread_ids / run_ids into the lattice ActionLedger + GoldenTrace v2 style receipts.
+"""Persist OpenAI trace/thread/run receipts into GoldenTrace-style JSONL."""
+from __future__ import annotations
 
-Purpose: Every OpenAI interaction produces immutable, hash-chained, lattice-coordinated receipts.
-
-Symbiosis: Uses ActionLedger (existing), ClaimPackets, DecisionLedger. Emits traceable events for Bullshit Olympics and human gates.
-"""
-
-import json
-import hashlib
-from dataclasses import dataclass, field
-from typing import Dict, Any, Optional
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, Optional
+import hashlib
+import json
 import logging
 
 logger = logging.getLogger("openai_tracing_golden_trace")
-
-try:
-    from ..notion.schemas.action_ledger import ActionLedger, ActionEntry
-except Exception:
-    ActionLedger = None
 
 
 @dataclass
@@ -38,74 +27,53 @@ class GoldenTraceEvent:
     def compute_hash(self) -> str:
         h = hashlib.sha256()
         h.update((self.prev_hash or "GENESIS").encode())
-        h.update(self.openai_trace_id.encode())
+        h.update((self.openai_trace_id or "missing-trace").encode())
         h.update(self.ts.encode())
-        h.update(json.dumps(self.payload, sort_keys=True).encode())
+        h.update(json.dumps(self.payload, sort_keys=True, default=str).encode())
         return "0x" + h.hexdigest()[:32]
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
 
 
 class OpenAITracingToGoldenTrace:
-    """
-    Bridge OpenAI observability into the 12D lattice's immutable receipt system.
-    """
-
-    def __init__(self, action_ledger: Optional[ActionLedger] = None, simulate: bool = True):
+    def __init__(self, action_ledger: Any = None, simulate: bool = True, simulate_default: Optional[bool] = None, trace_dir: str = "ledgers/openai_traces"):
+        if simulate_default is not None:
+            simulate = simulate_default
         self.action_ledger = action_ledger
         self.simulate = simulate
-        self._trace_chain: Dict[str, GoldenTraceEvent] = {}  # openai_trace_id -> event
+        self.trace_dir = Path(trace_dir)
+        self._trace_chain: Dict[str, GoldenTraceEvent] = {}
+
+    def _persist(self, event: GoldenTraceEvent) -> str:
+        self.trace_dir.mkdir(parents=True, exist_ok=True)
+        path = self.trace_dir / f"{datetime.utcnow().strftime('%Y%m%d')}.jsonl"
+        with path.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(event.to_dict(), default=str) + "\n")
+        return str(path)
 
     async def record_openai_trace(self, openai_trace_id: str, openai_thread_id: Optional[str] = None, openai_run_id: Optional[str] = None, payload: Optional[Dict[str, Any]] = None, actor: str = "openai") -> Dict[str, Any]:
         payload = payload or {}
-        prev = None
-        if self._trace_chain:
-            # chain on same trace if possible
-            last = list(self._trace_chain.values())[-1]
-            prev = last.hash
-
-        event = GoldenTraceEvent(
-            openai_trace_id=openai_trace_id,
-            openai_thread_id=openai_thread_id,
-            openai_run_id=openai_run_id,
-            prev_hash=prev,
-            payload=payload
-        )
+        prev = next(reversed(self._trace_chain.values())).hash if self._trace_chain else None
+        event = GoldenTraceEvent(openai_trace_id=openai_trace_id or "missing-trace", openai_thread_id=openai_thread_id, openai_run_id=openai_run_id, prev_hash=prev, payload=payload)
         event.hash = event.compute_hash()
-
-        self._trace_chain[openai_trace_id] = event
-
-        # Emit to ActionLedger (the canonical lattice receipt)
+        self._trace_chain[event.openai_trace_id] = event
+        persisted_to = self._persist(event)
         if self.action_ledger:
             try:
-                self.action_ledger.append(
-                    action_type="openai_trace_ingested",
-                    actor=actor,
-                    target_id=openai_trace_id,
-                    payload={"thread_id": openai_thread_id, "run_id": openai_run_id, "golden_trace_hash": event.hash, **payload},
-                    lattice_coords=(2, 5, 1)  # OpenAI tracing lane
-                )
-            except Exception as e:
-                logger.warning(f"ActionLedger emit failed for trace: {e}")
+                if hasattr(self.action_ledger, "append"):
+                    self.action_ledger.append(action_type="openai_trace_ingested", actor=actor, target_id=event.openai_trace_id, payload={"thread_id": openai_thread_id, "run_id": openai_run_id, "golden_trace_hash": event.hash, **payload}, lattice_coords=(2, 5, 1))
+                elif hasattr(self.action_ledger, "emit"):
+                    self.action_ledger.emit("openai_trace_ingested", event.to_dict())
+            except Exception as exc:
+                logger.warning("ActionLedger emit failed for trace: %s", exc)
+        return {"feature": "openai_tracing_to_golden_trace", "openai_trace_id": event.openai_trace_id, "golden_trace_hash": event.hash, "persisted_to": persisted_to, "lattice_action_emitted": bool(self.action_ledger), "grok_leads": True, "lattice_routes": True}
 
-        return {
-            "feature": "openai_tracing_to_golden_trace",
-            "openai_trace_id": openai_trace_id,
-            "golden_trace_hash": event.hash,
-            "lattice_action_emitted": bool(self.action_ledger),
-            "grok_leads": True,
-            "lattice_routes": True
-        }
-
-    async def run(self, operation: str = "record", **kwargs) -> Dict[str, Any]:
+    async def run(self, operation: str = "record", **kwargs: Any) -> Dict[str, Any]:
         if operation == "record":
-            return await self.record_openai_trace(
-                openai_trace_id=kwargs.get("openai_trace_id"),
-                openai_thread_id=kwargs.get("openai_thread_id"),
-                openai_run_id=kwargs.get("openai_run_id"),
-                payload=kwargs.get("payload")
-            )
-        return {"status": "ok", "op": operation}
+            return await self.record_openai_trace(openai_trace_id=kwargs.get("openai_trace_id"), openai_thread_id=kwargs.get("openai_thread_id"), openai_run_id=kwargs.get("openai_run_id"), payload=kwargs.get("payload"), actor=kwargs.get("actor", "openai"))
+        return {"status": "unknown_op", "op": operation}
 
 
 if __name__ == "__main__":
-    tracer = OpenAITracingToGoldenTrace(simulate=True)
-    print("OpenAI Tracing -> GoldenTrace bridge ready (Phase 1).")
+    print("OpenAI Tracing -> GoldenTrace bridge ready.")
