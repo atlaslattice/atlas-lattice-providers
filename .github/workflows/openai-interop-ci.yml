@@ -31,6 +31,6 @@ jobs:
       - name: Run OpenAI interop smoke tests
         run: |
           python -m pip install --upgrade pip pytest
-          pytest -q tests/test_openai_interop.py
+          pytest -q tests/test_openai_interop.py tests/test_openai_executor_receipts.py
       - name: OpenAI interop readiness report
         run: python scripts/openai_interop_check.py
