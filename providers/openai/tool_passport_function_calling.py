@@ -17,7 +17,7 @@ Executor = Callable[[str, Dict[str, Any]], Any]
 
 
 class ToolPassportFunctionCalling:
-    def __init__(self, schema_spine: Optional[StructuredOutputSchemaSpine] = None, ledger: Any = None, executor: Optional[Executor] = None, simulate: bool = True, simulate_default: Optional[bool] = None):
+    def __init__(self, schema_spine: Optional[StructuredOutputSchemaSpine] = None, ledger: Any = None, executor: Optional[Executor] = None, simulate: bool = True, simulate_default: Optional[bool] = None, authorization_verifier: Optional[Callable[[ToolPassport, Dict[str, Any], str], bool]] = None):
         if simulate_default is not None:
             simulate = simulate_default
         self.schema_spine = schema_spine or StructuredOutputSchemaSpine(simulate=simulate)
@@ -25,6 +25,9 @@ class ToolPassportFunctionCalling:
         self.executor = executor
         self.simulate = simulate
         self._passports: Dict[str, ToolPassport] = {}
+        # Supplied by a trusted host adapter, never by the model/tool-call payload.
+        # No verifier means no approval for protected operations.
+        self.authorization_verifier = authorization_verifier
 
     def register_passport(self, passport: ToolPassport) -> Dict[str, Any]:
         self._passports[passport.name] = passport
@@ -50,8 +53,23 @@ class ToolPassportFunctionCalling:
         passport = self._passports.get(tool_name)
         if not passport:
             return {"error": "unknown_tool_passport", "tool": tool_name}
-        if passport.safety_level in ("destructive", "admin") and not approved:
-            return {"status": "requires_human_approval", "passport": passport.id, "safety_level": passport.safety_level}
+        # Caller-provided "approved" is deliberately ignored: it is not a host grant.
+        # Preserve the argument only for API compatibility; no model may self-approve.
+        _ = approved
+        if passport.safety_level not in ("read", "write", "destructive", "admin"):
+            return {"status": "invalid_safety_level", "passport": passport.id}
+        needs_approval = passport.requires_approval or passport.safety_level in ("write", "destructive", "admin")
+        if needs_approval:
+            host_authorized = False
+            if self.authorization_verifier is not None:
+                try:
+                    host_authorized = self.authorization_verifier(passport, arguments, actor) is True
+                except Exception as exc:
+                    logger.warning("Host authorization verifier failed closed: %s", exc)
+            if not host_authorized:
+                return {"status": "requires_human_approval", "passport": passport.id, "safety_level": passport.safety_level, "authorization": "HOST_VERIFIER_REQUIRED"}
+        if not self.simulate and self.executor is None:
+            return {"status": "executor_unavailable", "passport": passport.id}
         self._ledger_emit(passport, arguments, actor)
         if self.executor and not self.simulate:
             result_payload = self.executor(passport.name, arguments)
