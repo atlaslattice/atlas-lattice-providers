@@ -127,8 +127,14 @@ def propose(source: dict | str | bytes) -> dict:
     if reasons:
         # Do not retain even length/fingerprint signals for self-declared
         # leisure/private or unknown-scope material. No Play-to-Work harvest.
-        private = ("PRIVATE_MODE_OR_UNKNOWN_HARVEST" in reasons or
-                   "PRIVATE_OR_UNKNOWN_SCOPE" in reasons)
+        # Invalid/non-object/oversized input has no trustworthy mode. Do not
+        # emit a fingerprint or byte count for potentially private content.
+        # Even valid JSON must explicitly declare BOTH a permitted scope and
+        # Work/Public mode with harvesting opt-out disabled.
+        private = not (type(obj) is dict and
+                       obj.get("source_scope") in SCOPES and
+                       obj.get("mode") in ("WORK", "PUBLIC") and
+                       obj.get("no_harvest") is False)
         return {"status": "HOLD", "reason_codes": sorted(set(reasons)),
                 "source_sha256": None if private else digest,
                 "source_bytes": None if private else len(raw),
