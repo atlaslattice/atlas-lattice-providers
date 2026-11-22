@@ -153,7 +153,10 @@ def append_receipt(path: str | Path, outcome: SentinelReview) -> None:
     # silently redirect a Work receipt into an unrelated directory.
     if not target.parent.is_dir() or target.is_symlink() or any(p.is_symlink() for p in target.parents):
         raise ValueError("INVALID_RECEIPT_DESTINATION")
-    fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_APPEND | getattr(os, "O_NOFOLLOW", 0), 0o600)
+    # Nonblocking open is essential: a pre-existing FIFO with no reader must
+    # not hang before fstat can reject the non-regular destination.
+    fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_APPEND |
+                 getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0), 0o600)
     try:
         attrs = os.fstat(fd)
         if not stat.S_ISREG(attrs.st_mode):
