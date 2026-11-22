@@ -5,7 +5,6 @@ back to Earth. This separate boundary does *not* use that permissive parser.
 """
 from __future__ import annotations
 
-import copy
 import hashlib
 import json
 import math
@@ -218,9 +217,24 @@ def wrap_as_coordinate_packet(payload: Any, metadata: Any = None) -> dict:
 
 
 def escalate_to_human_root(reason: str, payload: Any) -> dict:
-    """Inert escalation proposal: no messaging, notification or decision grant."""
+    """Inert escalation proposal; never echo protected or non-JSON caller input."""
+    if _declared_private_mode(payload):
+        return {"type": "human_root_review_candidate",
+                "status": "HELD_PRIVATE_MODE",
+                "reason": "private_or_unknown_source_mode_no_import",
+                "payload": None, "payload_sha256": None,
+                "authority": "none", "canon": False, "deployment": False,
+                "human_root_gate": "not_granted"}
+    ok, snapshot = _snapshot_json(payload)
+    if not ok:
+        return {"type": "human_root_review_candidate",
+                "status": "HELD_INVALID_INPUT",
+                "reason": "invalid_non_json_caller_no_import",
+                "payload": None, "payload_sha256": None,
+                "authority": "none", "canon": False, "deployment": False,
+                "human_root_gate": "not_granted"}
     return {"type": "human_root_review_candidate", "status": "NOT_SENT",
-            "reason": reason if _present(reason) else "unspecified",
-            "payload": copy.deepcopy(payload), "payload_sha256": _json_hash(payload),
+            "reason": reason if type(reason) is str and _present(reason) else "unspecified",
+            "payload": snapshot, "payload_sha256": _json_hash(snapshot),
             "authority": "none", "canon": False, "deployment": False,
             "human_root_gate": "not_granted"}
