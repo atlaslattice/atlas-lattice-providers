@@ -94,10 +94,16 @@ class StructuredOutputSchemaSpine:
             claim_text = raw.get("claim_text") or payload.get("claim_text") or str(raw)[:500]
             certainty = float(raw.get("epistemic_certainty", 0.7))
             certainty = max(0.0, min(1.0, certainty))
-            review_state = raw.get("review_state", "PENDING_REVIEW")
-            if review_state not in ("PENDING_REVIEW", "APPROVED", "REJECTED", "SUPERSEDED", "ARCHIVED"):
-                review_state = "PENDING_REVIEW"
-            return ClaimPacket(id=str(claim_id), payload=payload, claim_text=str(claim_text), review_state=review_state, epistemic_certainty=certainty, lattice_coords=self._coerce_lattice(raw.get("lattice_coords")), linked_tool_passports=list(raw.get("linked_tool_passports", [])), action_ledger_refs=list(raw.get("action_ledger_refs", [])), metadata={"source": "openai_structured_spine", **raw.get("metadata", {})})
+            # Model/caller-provided state and metadata do not carry review authority.
+            # Preserve their assertions as untrusted input, never as verified status.
+            caller_metadata = raw.get("metadata") if isinstance(raw.get("metadata"), dict) else {}
+            metadata = {
+                "source": "openai_structured_spine",
+                "trust_boundary": "UNVERIFIED_CANDIDATE",
+                "declared_review_state": raw.get("review_state"),
+                "untrusted_input_metadata": caller_metadata,
+            }
+            return ClaimPacket(id=str(claim_id), payload=payload, claim_text=str(claim_text), review_state="PENDING_REVIEW", epistemic_certainty=certainty, lattice_coords=self._coerce_lattice(raw.get("lattice_coords")), linked_tool_passports=list(raw.get("linked_tool_passports", [])), action_ledger_refs=list(raw.get("action_ledger_refs", [])), metadata=metadata)
         except Exception as exc:
             logger.error("ClaimPacket validation failed: %s", exc)
             return ClaimPacket(id=str(raw.get("id", "invalid")), claim_text=f"VALIDATION_FAILED: {exc}", review_state="REJECTED", epistemic_certainty=0.0)
