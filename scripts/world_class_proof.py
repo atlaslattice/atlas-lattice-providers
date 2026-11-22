@@ -90,7 +90,8 @@ def compile_targets() -> CheckResult:
             missing.append(name)
             continue
         try:
-            py_compile.compile(str(path), doraise=True)
+            # Syntax-check without producing __pycache__ or changing tracked worktrees.
+            compile(path.read_bytes(), str(path), "exec")
             compiled.append(name)
         except Exception as exc:
             failures.append(f"{name}: {exc}")
@@ -185,9 +186,24 @@ def write_receipt(receipt: ProofReceipt, output: Optional[str]) -> None:
     if not output:
         print(json.dumps(receipt.to_dict(), indent=2, sort_keys=True))
         return
-    out = ROOT / output
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(receipt.to_dict(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    # Owner-private receipts must not overwrite evidence or redirect to arbitrary files.
+    relative = Path(output)
+    if (relative.is_absolute() or ".." in relative.parts or
+            len(relative.parts) < 2 or relative.parts[0] != "receipts"):
+        raise ValueError("Receipt output must be a relative path under receipts/ without traversal")
+    parent = ROOT
+    for part in relative.parts[:-1]:
+        parent = parent / part
+        if parent.is_symlink() or (parent.exists() and not parent.is_dir()):
+            raise ValueError("Receipt parent must be a real directory, not a symlink")
+    out = parent / relative.name
+    if out.is_symlink():
+        raise ValueError("Receipt destination must not be a symlink")
+    parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+    fd = os.open(out, flags, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as stream:
+        stream.write(json.dumps(receipt.to_dict(), indent=2, sort_keys=True) + "\n")
     print(json.dumps(receipt.to_dict(), indent=2, sort_keys=True))
     print(f"\nreceipt_written={rel(out)}")
 
