@@ -44,7 +44,9 @@ def test_eval_dataset_export_and_grade(tmp_path):
     ds = run(bridge.create_eval_dataset("demo", [{"input": "x", "expected": "y"}]))
     assert Path(ds["dataset_path"]).exists()
     grade = run(bridge.run_bullshit_as_grader("demo", "demo-0", "y"))
-    assert grade["eval_result"]["score"] >= 0
+    assert grade["eval_result"]["score"] is None
+    assert grade["eval_result"]["status"] == "NOT_RUN"
+    assert grade["eval_result"]["score_basis"] == "NONE"
 
 
 def test_hygiene_and_provider_boot():
