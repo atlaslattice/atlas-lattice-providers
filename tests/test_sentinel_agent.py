@@ -57,6 +57,16 @@ class SentinelTests(unittest.TestCase):
                 self.assertTrue(r.human_root_required)
                 self.assertFalse(r.execution_allowed)
 
+    def test_unknown_requested_actions_hold(self):
+        for action in ["run_shell", "merge all children into one", "untrusted_plugin_execute", "grant_role"]:
+            with self.subTest(action=action):
+                p=candidate(); p["requested_action"] = action
+                self.assertEqual(inspect(p).disposition, "HOLD_CANDIDATE")
+
+    def test_destructive_actions_casefold(self):
+        p=candidate(); p["requested_action"] = " DELETE "
+        self.assertEqual(inspect(p).disposition, "QUARANTINE_DESTRUCTIVE")
+
     def test_promotions_hold(self):
         for action in ["deploy", "publish", "activate_canon", "ratify", "approve", "change_iam", "spend", "external_write"]:
             with self.subTest(action=action):
