@@ -52,3 +52,9 @@ The repo must boot in simulation mode for CI and public review. Live mode is loc
 - Audit tool-passport schema validation, source rights, receipt storage and secret handling.
 - Verify current head CI, dependent application integration, and branch freshness.
 - Retain CANDIDATE / NOT CANON and no deployment or endorsement claims.
+
+## Candidate-only ClaimPacket review boundary
+
+`StructuredOutputSchemaSpine.validate_claim_packet()` accepts **untrusted** model/caller output. The caller may declare `review_state` and `metadata.source`, but neither is treated as host-reviewed status. The actual resulting `review_state` is always `PENDING_REVIEW`, and reserved metadata identifies `UNVERIFIED_CANDIDATE`. Original assertions are preserved under `declared_review_state` and `untrusted_input_metadata` for dissent and provenance. The verifier does not assign CANON, grant rights, or validate science.
+
+A future host-mediated review action needs its own authenticated reviewer, source-cut and rights-at-return checks. Do not implement approval by passing `review_state=APPROVED` through a model-produced ClaimPacket.
