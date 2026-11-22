@@ -1,0 +1,25 @@
+{
+  "schema_version": "atlas.continuum-link/candidate-v0.1",
+  "link_id": "synthetic.bridge.review-001",
+  "source_continuum_id": "synthetic.project.alpha",
+  "target_continuum_id": "synthetic.project.beta",
+  "bridge_type": "review",
+  "source_ref": "synthetic:bridge-review",
+  "status": "CANDIDATE",
+  "canon": false,
+  "deployment": false,
+  "authority": "none",
+  "collapse_allowed": false,
+  "identity_fusion_allowed": false,
+  "dissent_preserved": true,
+  "inv0_preservation_required": true,
+  "raw_content_transferred": false,
+  "provenance_refs": [
+    "synthetic:source-a"
+  ],
+  "dissent_refs": [],
+  "human_root_gate": {
+    "required": true,
+    "state": "not_granted"
+  }
+}
