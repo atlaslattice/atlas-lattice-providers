@@ -1,0 +1,63 @@
+{
+  "schema_version": "atlas.canon.candidate-queue/v0.1",
+  "status": "CANDIDATE_NONBINDING",
+  "canon": false,
+  "deployment": false,
+  "authority": "none",
+  "decision_source": "AUTHENTICATED_HUMAN_ROOT_NOT_PRESENT",
+  "adopted_count": 0,
+  "candidates": [
+    {
+      "id": "CAN-C001",
+      "title": "Delta Ledger provenance and dissent",
+      "source": "https://github.com/atlaslattice/atlas-lattice-providers/issues/3",
+      "risk": "Evidence register source path is not proof of exact current bytes",
+      "contradiction": "No independently attested host receipt",
+      "canonical_status": "NOT_ADOPTED",
+      "review_status": "PENDING_INDEPENDENT_REVIEW",
+      "human_root_decision": null,
+      "rights_at_return": "NOT_ATTESTED",
+      "semantic_review": "UNREVIEWED",
+      "dissent_preserved": true
+    },
+    {
+      "id": "CAN-C002",
+      "title": "No merged mind / independent A2A identity",
+      "source": "https://github.com/atlaslattice/atlas-lattice-providers/issues/5",
+      "risk": "Lexical checks are incomplete without host and cross-service gates",
+      "contradiction": "Message bus text does not authenticate residents",
+      "canonical_status": "NOT_ADOPTED",
+      "review_status": "PENDING_INDEPENDENT_REVIEW",
+      "human_root_decision": null,
+      "rights_at_return": "NOT_ATTESTED",
+      "semantic_review": "UNREVIEWED",
+      "dissent_preserved": true
+    },
+    {
+      "id": "CAN-C003",
+      "title": "A2A message bus and receipt distinctions",
+      "source": "https://github.com/atlaslattice/atlas-lattice-providers/issues/5",
+      "risk": "Delivery and independent peer response are different",
+      "contradiction": "Source-only protocol not verified at runtime",
+      "canonical_status": "NOT_ADOPTED",
+      "review_status": "PENDING_INDEPENDENT_REVIEW",
+      "human_root_decision": null,
+      "rights_at_return": "NOT_ATTESTED",
+      "semantic_review": "UNREVIEWED",
+      "dissent_preserved": true
+    },
+    {
+      "id": "CAN-C004",
+      "title": "Coordination-without-fusion synthetic demo",
+      "source": "https://github.com/atlaslattice/atlas-lattice-providers/issues/13",
+      "risk": "Synthetic fixture is not actual consent or participation",
+      "contradiction": "Zero real peer turns by design",
+      "canonical_status": "NOT_ADOPTED",
+      "review_status": "PENDING_INDEPENDENT_REVIEW",
+      "human_root_decision": null,
+      "rights_at_return": "NOT_ATTESTED",
+      "semantic_review": "UNREVIEWED",
+      "dissent_preserved": true
+    }
+  ]
+}
