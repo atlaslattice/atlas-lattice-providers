@@ -132,11 +132,16 @@ def test_simulation_does_not_call_executor_and_live_without_executor_is_not_exec
     assert calls == []
 
 
-def test_unknown_safety_level_is_denied_even_without_approval_flag():
+def test_unknown_safety_level_is_rejected_before_registration():
     bridge = ToolPassportFunctionCalling(simulate=False, executor=lambda n, a: {"ok": True})
-    bridge.register_passport(ToolPassport(id="u1", name="unknown_tool", description="Test only",
-                         input_schema={"type": "object"}, safety_level="unsupported", requires_approval=False))
-    assert run(bridge.execute_governed_tool("unknown_tool", {}))["status"] == "invalid_safety_level"
+    try:
+        bridge.register_passport(ToolPassport(id="u1", name="unknown_tool", description="Test only",
+                             input_schema={"type": "object"}, safety_level="unsupported", requires_approval=False))
+    except ValueError as exc:
+        assert "safety_level" in str(exc)
+    else:
+        raise AssertionError("unsafe passport was registered")
+    assert bridge._passports == {}
 
 
 def test_untrusted_model_claim_cannot_self_approve_or_spoof_source():
@@ -164,3 +169,70 @@ def test_rejected_and_non_dict_input_metadata_are_not_host_reviews():
         assert claim.metadata["source"] == "openai_structured_spine"
         assert claim.metadata["declared_review_state"] == state
         assert claim.metadata["untrusted_input_metadata"] == {}
+
+
+def _test_passport(id, name, safety="read", approval=False, input_schema=None):
+    return ToolPassport(id=id, name=name, description="Synthetic collision test",
+                        input_schema={"type": "object"} if input_schema is None else input_schema,
+                        safety_level=safety, requires_approval=approval)
+
+
+def _must_reject_collision(bridge, candidate):
+    try:
+        bridge.register_passport(candidate)
+    except ValueError as exc:
+        assert "alias collision" in str(exc)
+    else:
+        raise AssertionError("ToolPassport collision accepted")
+
+
+def test_passport_name_cannot_shadow_existing_protected_id():
+    bridge = ToolPassportFunctionCalling(simulate=True)
+    original = _test_passport("protected-id", "protected-tool", safety="admin", approval=True)
+    bridge.register_passport(original)
+    _must_reject_collision(bridge, _test_passport("other-id", "protected-id"))
+    assert bridge._passports["protected-id"] == original
+    assert bridge._passports["protected-tool"] == original
+    assert len(bridge.get_openai_tools()) == 1
+
+
+def test_passport_id_cannot_shadow_existing_name():
+    bridge = ToolPassportFunctionCalling(simulate=True)
+    original = _test_passport("protected-id", "protected-tool", safety="admin")
+    bridge.register_passport(original)
+    _must_reject_collision(bridge, _test_passport("protected-tool", "other-name"))
+    assert "other-name" not in bridge._passports
+    assert bridge._passports["protected-tool"] == original
+
+
+def test_repeated_id_cannot_replace_safety_policy_but_identical_is_idempotent():
+    bridge = ToolPassportFunctionCalling(simulate=True)
+    original = _test_passport("same-id", "same-name", safety="admin")
+    bridge.register_passport(original)
+    _must_reject_collision(bridge, _test_passport("same-id", "same-name", safety="read"))
+    assert bridge._passports["same-id"].safety_level == "admin"
+    assert bridge.schema_spine._registry["same-id"].safety_level == "admin"
+    bridge.register_passport(original)
+    assert len(bridge.get_openai_tools()) == 1
+
+
+def test_invalid_schema_rejected_without_partial_registration():
+    bridge = ToolPassportFunctionCalling(simulate=True)
+    invalid = _test_passport("invalid", "bad-schema", input_schema=[])
+    try:
+        bridge.register_passport(invalid)
+    except ValueError as exc:
+        assert "input_schema" in str(exc)
+    else:
+        raise AssertionError("invalid schema accepted")
+    assert bridge._passports == {}
+    assert bridge.get_openai_tools() == []
+
+
+def test_schema_registry_mismatch_does_not_allow_alternate_alias():
+    bridge = ToolPassportFunctionCalling(simulate=True)
+    original = _test_passport("s1", "first-tool", safety="admin")
+    bridge.schema_spine.register_tool_passport(original)
+    _must_reject_collision(bridge, _test_passport("s1", "second-tool", safety="read"))
+    assert bridge._passports == {}
+    assert bridge.schema_spine._registry["s1"] == original
