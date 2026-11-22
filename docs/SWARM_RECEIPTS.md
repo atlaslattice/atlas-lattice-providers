@@ -179,3 +179,7 @@ The ledger remembers.
 Human-root decides.
 NOTHING DIES.
 ```
+
+## Public Canon Candidate Queue (2026-11-22)
+
+The [candidate review queue](CANON_CANDIDATE_QUEUE.md) lists four seed items with explicit **PENDING — NO GRANT** human-root decisions and visible evidence gaps. This is review intake, **not** canon or deployment. The [receipt completeness rubric](RECEIPT_COMPLETENESS_SCORE.md) provides a documentary score, not proof or an authorization gate.
