@@ -12,9 +12,14 @@ import re
 from typing import Any
 
 EARTH = "H00.S00.N00"
-# Ariadne v0.7 knowledge nodes are exactly H01..H12 × S01..S12 × N01..N12.
-# H00.S00.N00 remains a distinct Earth grounding reference, not a source node.
-HSN = re.compile(r"^H(0[1-9]|1[0-2])\.S(0[1-9]|1[0-2])\.N(0[1-9]|1[0-2])$")
+# Do not conflate the historical CONTINUUM zero-based grid with Ariadne v0.7:
+# both have 1,728 positions but disagree on the source coordinate range.
+LEGACY_EDITION = "LEGACY_ZERO_BASED_12"
+ARIADNE_EDITION = "ARIADNE_V07"
+ARIADNE_SOURCE_SHA256 = "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+LEGACY_HSN = re.compile(r"^H(0\d|1[01])\.S(0\d|1[01])\.N(0\d|1[01])$")
+ARIADNE_HSN = re.compile(r"^H(0[1-9]|1[0-2])\.S(0[1-9]|1[0-2])\.N(0[1-9]|1[0-2])$")
+HSN = LEGACY_HSN  # compatibility alias for existing zero-based callers
 D_TAG = re.compile(r"^D(0[1-9]|1[0-2])$")
 BRIDGES = {"message", "receipt", "claim", "mirror", "review", "simulation", "human_root_decision"}
 
@@ -40,8 +45,20 @@ def resolve_to_earth(claim: Any) -> dict:
         if not _present(data.get(key)):
             errors.append(f"missing_{key}")
     coordinate = data.get("coordinate")
-    if not isinstance(coordinate, str) or not HSN.fullmatch(coordinate):
+    edition = data.get("coordinate_edition", LEGACY_EDITION)
+    coordinate_pattern = (LEGACY_HSN if edition == LEGACY_EDITION else
+                          ARIADNE_HSN if edition == ARIADNE_EDITION else None)
+    if type(edition) is not str or coordinate_pattern is None:
+        errors.append("invalid_coordinate_edition")
+    if not isinstance(coordinate, str) or coordinate_pattern is None or not coordinate_pattern.fullmatch(coordinate):
         errors.append("invalid_12x12x12_coordinate")
+    # An explicit, source-pinned edition is required to route Ariadne H12;
+    # never silently reinterpret historical zero-based coordinates.
+    digest = data.get("coordinate_registry_digest")
+    if edition == ARIADNE_EDITION and digest != ARIADNE_SOURCE_SHA256:
+        errors.append("ariadne_source_digest_required")
+    elif edition == LEGACY_EDITION and digest is not None:
+        errors.append("legacy_must_not_claim_ariadne_digest")
     if data.get("canon") is True or data.get("deployment") is True or data.get("authority") not in (None, "none"):
         errors.append("attempted_self_promotion")
     if data.get("identity_fusion_allowed") is True or data.get("collapse_allowed") is True:
@@ -69,6 +86,8 @@ def resolve_to_earth(claim: Any) -> dict:
         "original_claim": original,
         "claim_fingerprint_sha256": _json_hash(original),
         "original_coordinate": coordinate,
+        "coordinate_edition": edition if type(edition) is str and coordinate_pattern is not None else "UNRECOGNIZED",
+        "coordinate_registry_digest": ARIADNE_SOURCE_SHA256 if edition == ARIADNE_EDITION else None,
         "earth_reference": EARTH,
         "d_affinity": normalized_d,
         "provenance": {"source_ref": data.get("source_ref"), "source_url": source_url,
@@ -105,7 +124,7 @@ def validate_grounding(resolved: Any) -> dict:
         rechecked = resolve_to_earth(original)
         if rechecked["route"] != "candidate_review":
             problems.append("source_no_longer_valid")
-        for key in ("original_coordinate", "d_affinity", "provenance", "continuum_context", "status", "route", "errors", "earth_reference"):
+        for key in ("original_coordinate", "coordinate_edition", "coordinate_registry_digest", "d_affinity", "provenance", "continuum_context", "status", "route", "errors", "earth_reference"):
             if resolved.get(key) != rechecked.get(key):
                 problems.append("derived_field_mismatch:" + key)
     return {"valid": not problems, "reasons": problems,
