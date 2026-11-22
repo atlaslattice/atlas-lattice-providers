@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/atlaslattice/atlas-lattice-providers/blob/main/schemas/continuum/continuum_link.schema.json",
+  "title": "CONTINUUM OS — non-fusing bridge candidate v0.1",
+  "description": "Records a proposed bridge only. Does not transfer permissions, identities, raw content or rights.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "link_id",
+    "source_continuum_id",
+    "target_continuum_id",
+    "bridge_type",
+    "source_ref",
+    "status",
+    "canon",
+    "deployment",
+    "authority",
+    "collapse_allowed",
+    "identity_fusion_allowed",
+    "dissent_preserved",
+    "inv0_preservation_required",
+    "raw_content_transferred",
+    "human_root_gate"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "atlas.continuum-link/candidate-v0.1"
+    },
+    "link_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._:-]{2,127}$"
+    },
+    "source_continuum_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_continuum_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "bridge_type": {
+      "enum": [
+        "message",
+        "receipt",
+        "claim",
+        "mirror",
+        "review",
+        "simulation",
+        "human_root_decision"
+      ]
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "const": "CANDIDATE"
+    },
+    "canon": {
+      "const": false
+    },
+    "deployment": {
+      "const": false
+    },
+    "authority": {
+      "const": "none"
+    },
+    "collapse_allowed": {
+      "const": false
+    },
+    "identity_fusion_allowed": {
+      "const": false
+    },
+    "dissent_preserved": {
+      "const": true
+    },
+    "inv0_preservation_required": {
+      "const": true
+    },
+    "raw_content_transferred": {
+      "const": false
+    },
+    "provenance_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dissent_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "human_root_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "state"
+      ],
+      "properties": {
+        "required": {
+          "const": true
+        },
+        "state": {
+          "const": "not_granted"
+        },
+        "decision_route": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "$comment": "Runtime must separately reject source==target when cross-continuum is required and must authenticate consent, source access, release rights, revocation and approvals at effect time. This schema is not a runtime gate."
+}
