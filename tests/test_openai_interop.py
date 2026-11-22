@@ -6,7 +6,7 @@ from providers.provider_openai import OpenAIProvider
 
 
 def run(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.run(coro)
 
 
 def test_responses_spine_simulation():
@@ -53,3 +53,87 @@ def test_hygiene_and_provider_boot():
     assert "OPENAI_API_KEY" in report["report"]["present"]
     provider = OpenAIProvider(simulate=True)
     assert provider.name == "openai"
+
+
+def test_untrusted_approval_flag_cannot_authorize_protected_tools():
+    for safety in ("write", "destructive", "admin"):
+        dispatched = []
+        bridge = ToolPassportFunctionCalling(
+            simulate=False, executor=lambda name, args: dispatched.append(name) or {"ok": True}
+        )
+        bridge.register_passport(
+            ToolPassport(id=f"tool-{safety}", name=f"tool_{safety}",
+                         description="Test only", input_schema={"type": "object"},
+                         safety_level=safety, requires_approval=False)
+        )
+        direct = run(bridge.execute_governed_tool(f"tool_{safety}", {}, approved=True))
+        indirect = run(bridge.run("execute", tool_name=f"tool_{safety}", arguments={}, approved=True))
+        assert direct["status"] == "requires_human_approval"
+        assert indirect["status"] == "requires_human_approval"
+        assert direct["authorization"] == "HOST_VERIFIER_REQUIRED"
+        assert dispatched == []
+
+
+def test_explicit_approval_requirement_on_read_tool_is_enforced():
+    bridge = ToolPassportFunctionCalling(simulate=False, executor=lambda n, a: {"ok": True})
+    bridge.register_passport(ToolPassport(id="sensitive-read", name="read_sensitive",
+                         description="Test only", input_schema={"type": "object"},
+                         safety_level="read", requires_approval=True))
+    assert run(bridge.execute_governed_tool("read_sensitive", {}, approved=True))["status"] == "requires_human_approval"
+
+
+def test_host_verifier_requires_literal_true_and_fails_closed_on_error():
+    passport = ToolPassport(id="protected", name="protected_tool", description="Test only",
+                            input_schema={"type": "object"}, safety_level="admin")
+    for verifier in (lambda p, a, actor: "yes",
+                     lambda p, a, actor: 1,
+                     lambda p, a, actor: False):
+        bridge = ToolPassportFunctionCalling(simulate=False, executor=lambda n, a: {"ok": True},
+                                             authorization_verifier=verifier)
+        bridge.register_passport(passport)
+        assert run(bridge.execute_governed_tool("protected_tool", {}))["status"] == "requires_human_approval"
+
+    def failing_verifier(p, a, actor):
+        raise RuntimeError("authorization backend unavailable")
+
+    bridge = ToolPassportFunctionCalling(simulate=False, executor=lambda n, a: {"ok": True},
+                                         authorization_verifier=failing_verifier)
+    bridge.register_passport(passport)
+    assert run(bridge.execute_governed_tool("protected_tool", {}))["status"] == "requires_human_approval"
+
+
+def test_host_adapter_verifier_can_authorize_exact_request():
+    calls = []
+    bridge = ToolPassportFunctionCalling(
+        simulate=False,
+        executor=lambda name, args: calls.append((name, args)) or {"executed": True},
+        authorization_verifier=lambda p, a, actor: p.id == "a1" and a == {"key": "value"} and actor == "host"
+    )
+    bridge.register_passport(ToolPassport(id="a1", name="write_tool", description="Test only",
+                         input_schema={"type": "object"}, safety_level="write"))
+    assert run(bridge.execute_governed_tool("write_tool", {"key": "wrong"}, actor="host"))["status"] == "requires_human_approval"
+    result = run(bridge.execute_governed_tool("write_tool", {"key": "value"}, actor="host"))
+    assert result["status"] == "executed"
+    assert calls == [("write_tool", {"key": "value"})]
+
+
+def test_simulation_does_not_call_executor_and_live_without_executor_is_not_executed():
+    calls = []
+    passport = ToolPassport(id="safe", name="safe_read", description="Test only",
+                            input_schema={"type": "object"}, safety_level="read", requires_approval=False)
+    simulation = ToolPassportFunctionCalling(simulate=True,
+                executor=lambda n, a: calls.append(n) or {"ok": True})
+    simulation.register_passport(passport)
+    assert run(simulation.execute_governed_tool("safe_read", {}))["status"] == "simulated"
+    assert calls == []
+    live = ToolPassportFunctionCalling(simulate=False)
+    live.register_passport(passport)
+    assert run(live.execute_governed_tool("safe_read", {}))["status"] == "executor_unavailable"
+    assert calls == []
+
+
+def test_unknown_safety_level_is_denied_even_without_approval_flag():
+    bridge = ToolPassportFunctionCalling(simulate=False, executor=lambda n, a: {"ok": True})
+    bridge.register_passport(ToolPassport(id="u1", name="unknown_tool", description="Test only",
+                         input_schema={"type": "object"}, safety_level="unsupported", requires_approval=False))
+    assert run(bridge.execute_governed_tool("unknown_tool", {}))["status"] == "invalid_safety_level"
