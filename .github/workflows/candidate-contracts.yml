@@ -1,0 +1,58 @@
+name: Candidate Contracts — offline regression
+
+# CI verifies source behavior only. It does not authorize actions, attest
+# residents/host identity, ratify canon, or establish deployment readiness.
+on:
+  pull_request:
+    paths:
+      - 'core/coordinate_resolver.py'
+      - 'core/transparent_packet96.py'
+      - 'scripts/receipt_completeness.py'
+      - 'tests/test_coordinate_resolver.py'
+      - 'tests/test_transparent_packet96.py'
+      - 'tests/test_receipt_completeness.py'
+      - 'tests/test_sentinel_agent.py'
+      - 'core/sentinel_agent.py'
+      - '.github/workflows/candidate-contracts.yml'
+  push:
+    branches:
+      - 'ci/candidate-contract-tests-20261122'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-candidate-contracts:
+    name: Python ${{ matrix.python-version }} — candidate-only tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.13']
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact triggering commit
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run deterministic contract regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PYTHONDONTWRITEBYTECODE=1
+          python -m compileall -q core/coordinate_resolver.py core/transparent_packet96.py scripts/receipt_completeness.py
+          python -m unittest discover -s tests -p 'test_receipt_completeness.py' -v
+          python -m unittest discover -s tests -p 'test_coordinate_resolver.py' -v
+          python -m unittest discover -s tests -p 'test_transparent_packet96.py' -v
+          if test -f core/sentinel_agent.py; then
+            python -m compileall -q core/sentinel_agent.py
+            python -m unittest discover -s tests -p 'test_sentinel_agent.py' -v
+          fi
+      - name: Record safety boundary
+        run: |
+          echo 'LOCAL-CODE ONLY: No model calls, secrets, authentication, host integration, CANON, deployment, or resident action is tested here.'
