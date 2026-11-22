@@ -39,6 +39,24 @@ class PreparsePrivacyTests(unittest.TestCase):
             self.assertEqual(result["status"],"HOLD")
             self.assertIsNone(result["source_sha256"])
             self.assertIsNone(result["source_bytes"])
+    def test_nonstring_scope_is_generic_hold_without_unhashable_crash(self):
+        for scope in ([], ["WORK_REPORTED"], {}, {"private": "synthetic"}):
+            with self.subTest(scope=type(scope).__name__):
+                obj=good();obj["source_scope"]=scope
+                result=propose(obj)
+                self.assertEqual(result["status"],"HOLD")
+                self.assertIsNone(result["source_sha256"])
+                self.assertIsNone(result["source_bytes"])
+
+    def test_nonstring_mode_is_unknown_not_source_verified(self):
+        for mode in (["WORK"], {"mode": "WORK"}, None):
+            with self.subTest(mode=type(mode).__name__):
+                obj=good();obj["mode"]=mode
+                result=propose(obj)
+                self.assertEqual(result["status"],"HOLD")
+                self.assertIsNone(result["source_sha256"])
+                self.assertIsNone(result["source_bytes"])
+
     def test_valid_work_invalid_coordinate_retains_source_only_fingerprint(self):
         obj=good();obj["coordinate"]="H12.S01.N02"
         result=propose(json.dumps(obj))
