@@ -103,6 +103,25 @@ class CandidateBridgeTests(unittest.TestCase):
         self.assertEqual(outcome.status, "REVIEWABLE_LOCAL_ONLY")
         self.assertEqual(outcome.reasons, ())
 
+    def test_missing_optional_arrays_fail_closed_not_keyerror(self):
+        for name in ("d_affinity", "dissent_refs"):
+            candidate = good(); candidate.pop(name)
+            self.assertEqual(propose(candidate)["status"], "HOLD")
+
+    def test_private_mode_holds_without_fingerprint_or_length(self):
+        for key, value in (("mode", "PLAY"), ("source_scope", "QUIET"),
+                           ("no_harvest", True)):
+            candidate = good(); candidate[key] = value
+            r = propose(candidate)
+            self.assertEqual(r["status"], "HOLD")
+            self.assertIsNone(r["source_sha256"])
+            self.assertIsNone(r["source_bytes"])
+
+    def test_continuum_ids_do_not_encode_tokens_or_urls(self):
+        for bad_id in ("secret?token=abc", "https://example.com/path", "a b", "💫"):
+            candidate = good(); candidate["source_continuum_id"] = bad_id
+            self.assertEqual(propose(candidate)["status"], "HOLD")
+
     def test_official_link_schema_with_jsonschema_when_installed(self):
         try:
             from jsonschema import Draft202012Validator
