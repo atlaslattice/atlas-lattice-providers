@@ -65,3 +65,14 @@ A future host-mediated review action needs its own authenticated reviewer, sourc
 The local ToolPassport registry accepts a passport under both `id` and `name`. Registration must reject a new passport if **either** key already denotes a different passport, including a changed safety policy under the same identifier. This prevents a lower-safety alias from silently replacing an administrative tool. Identical registrations are idempotent.
 
 Registration validates identifier/name, input-schema type, safety label and boolean approval flag **before** writing either the dispatch registry or the structured-output registry. Invalid or colliding entries must leave both registries unchanged. This does not authenticate the host, authorize tool execution, or grant CANON; those remain separate gates. Regression tests in `tests/test_openai_interop.py` cover aliases, conflicting IDs, idempotence and partial-registration failures.
+
+## Evals evidence truthfulness (no fake scores)
+
+`EvalsBullshitOlympicsBridge` no longer invents a numerical grade or a backend grader identity when it has not run an evaluator. Every persisted result includes an explicit `status` and `score_basis`:
+
+- `NOT_RUN`: simulated run or no available grader. `score=null`, `grader="none"`, `score_basis="NONE"`.
+- `GRADER_FAILED`: the selected backend raised an exception. `score=null`; no private exception text appears in the exported evaluation record.
+- `INVALID_GRADE`: backend response lacks a real, finite numeric score in [0,1]. No silently supplied default or clamping.
+- `SCORED`: backend was invoked and returned a valid score. `score_basis="BACKEND_RESPONSE_UNVERIFIED"` means neither source truth, evaluator independence, scientific validation nor CANON were established.
+
+`simulate=True` never calls an explicitly supplied evaluator. Changes to downstream readers should distinguish `score=null` from zero performance and reject unreviewed `SCORED` as a sufficient release gate. Tests in `tests/test_eval_truthfulness.py` cover the original false-positive case, malformed/nonfinite grades, backend failures and persistence. This is a **local contract correction**, not verification of an external grader or a hosted rollout.
