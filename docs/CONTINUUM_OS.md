@@ -34,6 +34,10 @@ The schemas constrain **candidate declarations**. They do not enforce source con
 
 Each continuum can have H##.S##.N## and D-affinity metadata. Under the strict 12×12×12 candidate namespace, H, S and N each range 00–11: **1,728 addressable candidate cells**. A coordinate is a map location, not a proof that all knowledge is filled or an authority token. The historical [lattice_coordinates.py](../core/lattice_coordinates.py) accepts a broader vocabulary and fallback behavior; the [strict candidate resolver](../core/coordinate_resolver.py) fails closed. Reconcile the two before claiming live compatibility.
 
+## Offline bridge proposal reference
+
+The additive [continuum-to-Packet96 candidate adapter](../core/continuum_bridge_candidate.py) and its [review contract](CONTINUUM_PACKET_BRIDGE_CANDIDATE.md) emit **pointer-only, not-delivered proposals** for independently reviewed source scopes. This is not a live routing system. The source and target identifiers must be distinct; private modes and no-harvest sources are held without retaining even byte counts or fingerprints. The local 21-test suite was executed against byte-matched repository source files and the official Draft 2020-12 continuum-link schema; no host runner or real-world permission check is claimed.
+
 ## Release and integration gates
 
 1. Identify exact source and export scope; distinguish complete/partial/missing hashes.
