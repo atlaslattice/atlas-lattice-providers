@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
 import logging
+import inspect
 
 logger = logging.getLogger("openai_tool_passport")
 
@@ -53,6 +54,8 @@ class ToolPassportFunctionCalling:
         passport = self._passports.get(tool_name)
         if not passport:
             return {"error": "unknown_tool_passport", "tool": tool_name}
+        if not isinstance(arguments, dict):
+            return {"status": "invalid_arguments", "passport": passport.id}
         # Caller-provided "approved" is deliberately ignored: it is not a host grant.
         # Preserve the argument only for API compatibility; no model may self-approve.
         _ = approved
@@ -70,11 +73,19 @@ class ToolPassportFunctionCalling:
                 return {"status": "requires_human_approval", "passport": passport.id, "safety_level": passport.safety_level, "authorization": "HOST_VERIFIER_REQUIRED"}
         if not self.simulate and self.executor is None:
             return {"status": "executor_unavailable", "passport": passport.id}
-        self._ledger_emit(passport, arguments, actor)
         if self.executor and not self.simulate:
-            result_payload = self.executor(passport.name, arguments)
+            try:
+                result_payload = self.executor(passport.name, arguments)
+                if inspect.isawaitable(result_payload):
+                    result_payload = await result_payload
+            except Exception:
+                # Never record a failed executor as a completed tool action.
+                logger.warning("Governed tool executor failed; no completion receipt emitted")
+                return {"status": "executor_failed", "passport": passport.id}
         else:
-            result_payload = {"simulated_output": f"Executed {passport.name} with {list(arguments.keys())}"}
+            result_payload = {"simulated_output": f"Would execute {passport.name} with {list(arguments.keys())}"}
+        # The completion ledger is downstream of successful executor return.
+        self._ledger_emit(passport, arguments, actor)
         return {"status": "executed" if not self.simulate else "simulated", "tool": passport.name, "arguments": arguments, "result": result_payload, "timestamp": datetime.utcnow().isoformat() + "Z"}
 
     async def run(self, operation: str = "get_tools", **kwargs: Any) -> Dict[str, Any]:
