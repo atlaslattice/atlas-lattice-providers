@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from hashlib import sha256
 import json
+import math
 import re
 from typing import Any
 
@@ -31,6 +32,14 @@ def _reject_duplicate(pairs: list[tuple[str, Any]]) -> dict:
 
 def _reject_constant(value: str) -> Any:
     raise ValueError("nonfinite JSON constant: " + value)
+
+
+def _reject_nonfinite_float(value: str) -> float:
+    """Reject JSON exponent overflow (1e10000) as well as NaN/Infinity."""
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError("nonfinite JSON number")
+    return number
 
 
 def _digest(data: bytes) -> str:
@@ -73,7 +82,8 @@ def propose(source: dict | str | bytes) -> dict:
     if not reasons:
         try:
             obj = json.loads(raw.decode("utf-8"), object_pairs_hook=_reject_duplicate,
-                             parse_constant=_reject_constant)
+                             parse_constant=_reject_constant,
+                             parse_float=_reject_nonfinite_float)
             if type(obj) is not dict:
                 reasons.append("NOT_AN_OBJECT")
                 obj = {}
@@ -145,6 +155,13 @@ def propose(source: dict | str | bytes) -> dict:
         "canon": False, "deployment": False, "authority": "none",
         "identity_scope": "DISTINCT_PARTICIPANTS", "host_attestation": "NONE",
         "semantic_review": "UNREVIEWED", "same_as": False,
+        "continuum_context": {
+            "source_continuum_id": obj["source_continuum_id"],
+            "target_continuum_id": obj["target_continuum_id"],
+            "bridge_type": obj["bridge_type"],
+            "collapse_allowed": False, "identity_fusion_allowed": False,
+            "dissent_preserved": True, "inv0_preservation_required": True,
+        },
         "dissent": [{"ref_hash": h} for h in dissent_hashes],
         "provenance": {"source_ref": source_pointer, "source_cut": "SELF_DECLARED_UNVERIFIED"},
         "receipt": {"assurance": "LOCAL_UNATTESTED", "delivered": False},
