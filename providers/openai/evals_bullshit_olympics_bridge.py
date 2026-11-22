@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 import json
 import logging
+import math
 
 logger = logging.getLogger("openai_evals_bullshit_bridge")
 
@@ -29,9 +30,11 @@ class EvalItem:
 class EvalResult:
     eval_id: str
     item_id: str
-    score: float
+    score: Optional[float]
     grader: str
     explanation: str
+    status: str = "NOT_RUN"
+    score_basis: str = "NONE"
     claim_packet_id: Optional[str] = None
     ts: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
 
@@ -78,14 +81,40 @@ class EvalsBullshitOlympicsBridge:
                             break
         if not item:
             return {"error": "item_not_found", "eval_name": eval_name, "item_id": item_id}
-        if not self.bullshit:
-            score = 0.75
-            explanation = "simulated bullshit grade"
-        else:
-            review = await self.bullshit.review(f"Eval output for input: {item.input[:300]}\n\nOutput: {output[:600]}", high_stakes=False)
-            score = float(review.get("inv_l28_coherence", 0.8))
-            explanation = f"Bullshit verdict: {review.get('verdict')}. Critical flaws: {len(review.get('critical_flaws', []))}"
-        result = EvalResult(eval_id=eval_name, item_id=item_id, score=max(0.0, min(1.0, score)), grader="advanced_bullshit_olympics", explanation=explanation)
+        # Simulation is only a test fixture, never a scored evaluation.
+        score = None
+        status = "NOT_RUN"
+        score_basis = "NONE"
+        grader = "none"
+        explanation = "No evaluation executed (simulation or grader unavailable)"
+        if not self.simulate and self.bullshit is not None:
+            try:
+                review = await self.bullshit.review(
+                    f"Eval output for input: {item.input[:300]}\n\nOutput: {output[:600]}",
+                    high_stakes=False,
+                )
+            except Exception:
+                # Backend failure is not an endorsement, and private exception text
+                # must not escape into an exported result ledger.
+                logger.warning("Evaluation backend failed; no grade recorded")
+                status = "GRADER_FAILED"
+                explanation = "Evaluation backend failed; no grade recorded"
+            else:
+                raw_score = review.get("inv_l28_coherence") if isinstance(review, dict) else None
+                if (isinstance(raw_score, (float, int)) and not isinstance(raw_score, bool)
+                        and math.isfinite(raw_score) and 0.0 <= raw_score <= 1.0):
+                    score = float(raw_score)
+                    status = "SCORED"
+                    score_basis = "BACKEND_RESPONSE_UNVERIFIED"
+                    grader = "advanced_bullshit_olympics"
+                    explanation = "Backend returned a numeric grade; independent review not established"
+                else:
+                    status = "INVALID_GRADE"
+                    explanation = "Backend result lacked a finite numeric 0..1 grade"
+        result = EvalResult(
+            eval_id=eval_name, item_id=item_id, score=score, grader=grader,
+            explanation=explanation, status=status, score_basis=score_basis,
+        )
         self.eval_dir.mkdir(parents=True, exist_ok=True)
         with self._results_path(eval_name).open("a", encoding="utf-8") as fh:
             fh.write(json.dumps(asdict(result), default=str) + "\n")
