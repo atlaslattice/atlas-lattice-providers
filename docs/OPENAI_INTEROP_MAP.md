@@ -58,3 +58,10 @@ The repo must boot in simulation mode for CI and public review. Live mode is loc
 `StructuredOutputSchemaSpine.validate_claim_packet()` accepts **untrusted** model/caller output. The caller may declare `review_state` and `metadata.source`, but neither is treated as host-reviewed status. The actual resulting `review_state` is always `PENDING_REVIEW`, and reserved metadata identifies `UNVERIFIED_CANDIDATE`. Original assertions are preserved under `declared_review_state` and `untrusted_input_metadata` for dissent and provenance. The verifier does not assign CANON, grant rights, or validate science.
 
 A future host-mediated review action needs its own authenticated reviewer, source-cut and rights-at-return checks. Do not implement approval by passing `review_state=APPROVED` through a model-produced ClaimPacket.
+
+
+## ToolPassport registration integrity
+
+The local ToolPassport registry accepts a passport under both `id` and `name`. Registration must reject a new passport if **either** key already denotes a different passport, including a changed safety policy under the same identifier. This prevents a lower-safety alias from silently replacing an administrative tool. Identical registrations are idempotent.
+
+Registration validates identifier/name, input-schema type, safety label and boolean approval flag **before** writing either the dispatch registry or the structured-output registry. Invalid or colliding entries must leave both registries unchanged. This does not authenticate the host, authorize tool execution, or grant CANON; those remain separate gates. Regression tests in `tests/test_openai_interop.py` cover aliases, conflicting IDs, idempotence and partial-registration failures.
