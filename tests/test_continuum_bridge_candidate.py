@@ -96,4 +96,21 @@ class CandidateBridgeTests(unittest.TestCase):
         self.assertEqual(propose(obj)["status"],"HOLD")
 
 
+    def test_packet96_contract_with_existing_local_module(self):
+        from core.transparent_packet96 import review
+        p = propose(good())
+        outcome = review(p["packet96"])
+        self.assertEqual(outcome.status, "REVIEWABLE_LOCAL_ONLY")
+        self.assertEqual(outcome.reasons, ())
+
+    def test_official_link_schema_with_jsonschema_when_installed(self):
+        try:
+            from jsonschema import Draft202012Validator
+        except ImportError:
+            self.skipTest("jsonschema optional dependency not installed")
+        schema_path = pathlib.Path(__file__).resolve().parents[1] / "schemas" / "continuum" / "continuum_link.schema.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        Draft202012Validator.check_schema(schema)
+        Draft202012Validator(schema).validate(propose(good())["link"])
+
 if __name__=="__main__": unittest.main()
