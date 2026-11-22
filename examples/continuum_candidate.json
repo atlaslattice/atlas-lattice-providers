@@ -1,0 +1,31 @@
+{
+  "schema_version": "atlas.continuum/candidate-v0.1",
+  "continuum_id": "synthetic.project.alpha",
+  "continuum_type": "project",
+  "continuum_scope": "public_candidate",
+  "owner_or_steward": "synthetic-fixture",
+  "source_ref": "synthetic:public-source-alpha",
+  "raw_export_status": "raw_partial",
+  "status": "CANDIDATE",
+  "canon": false,
+  "deployment": false,
+  "authority": "none",
+  "coordinate": "H00.S00.N00",
+  "d_affinity": [
+    "D01",
+    "D12"
+  ],
+  "privacy": {
+    "rights_state": "unknown",
+    "consent_state": "not_granted",
+    "share_scope": "none"
+  },
+  "preservation": {
+    "source_fossil_ref": "synthetic:fossil-a",
+    "dissent_refs": []
+  },
+  "human_root_gate": {
+    "required": true,
+    "state": "not_granted"
+  }
+}
