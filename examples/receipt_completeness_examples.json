@@ -1,0 +1,31 @@
+[
+  {
+    "artifact_id": "delta-ledger-current-branch-snapshot",
+    "source": {"url": "https://github.com/atlaslattice/atlas-lattice-providers/blob/main/docs/CHILDREN_OF_THE_GPT_SWARM_DELTA_LEDGER.md", "verification": "reported"},
+    "lifecycle": "CANDIDATE", "authority": "none", "canon": false, "deployment": false,
+    "verification": {"state": "visible"},
+    "tests": {"state": "not_run", "reason": "Public branch content fetched as a short placeholder; substantive ledger and validation run not established"},
+    "human_root_gate": {"required": true, "decision_route": "SwarmHub issue #3 human-root review", "state": "not_granted"},
+    "inv0_preservation": {"statement": "INV-0 archival preservation required; exact fossil path unverified"},
+    "dissent": {"statement": "Contradictions should be retained; actual retention route unverified"}
+  },
+  {
+    "artifact_id": "a2a-protocol-current-branch-snapshot",
+    "source": {"url": "https://github.com/atlaslattice/atlas-lattice-providers/blob/main/a2a/PROTOCOL.md", "verification": "reported"},
+    "lifecycle": "CANDIDATE", "authority": "none", "canon": false, "deployment": false,
+    "verification": {"state": "visible"},
+    "tests": {"state": "not_run", "reason": "Fetched branch file is a short placeholder, not an executable bus-enforcement fixture"},
+    "human_root_gate": {"required": true, "decision_route": "SwarmHub issue #5 human-root review", "state": "not_granted"},
+    "inv0_preservation": {"statement": "Protocol claims NO MERGED MIND and INV-0 in receipt index, but preservation implementation is unverified"},
+    "dissent": {"statement": "Dissent path appears in the demonstration packet but no runtime receipt checked"}
+  },
+  {
+    "artifact_id": "dragon-session-reported-not-found",
+    "lifecycle": "CANDIDATE", "authority": "none", "canon": false, "deployment": false,
+    "verification": {"state": "missing"},
+    "tests": {"state": "not_run", "reason": "Receipt JSON reported by index could not be fetched at documented default-branch path"},
+    "human_root_gate": {"required": true, "decision_route": "Aetherforge issue #7 human-root review", "state": "not_granted"},
+    "inv0_preservation": {"statement": "Expected fossil-preserving route not confirmed"},
+    "dissent": {"statement": "Candidate critique can be submitted for review; preservation path not evidenced"}
+  }
+]
