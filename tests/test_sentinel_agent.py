@@ -2,6 +2,7 @@
 from __future__ import annotations
 from copy import deepcopy
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -171,6 +172,41 @@ class SentinelTests(unittest.TestCase):
             path.symlink_to(Path(d)/"target.jsonl")
             with self.assertRaises(ValueError):
                 append_receipt(path,inspect(candidate()))
+
+    @unittest.skipUnless(os.name == "posix", "POSIX file-mode guarantee")
+    def test_existing_world_readable_receipt_is_rejected_without_append(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "review.jsonl"
+            path.write_text("prior-review\n", encoding="utf-8")
+            path.chmod(0o644)
+            before = path.read_bytes()
+            with self.assertRaisesRegex(ValueError, "INSECURE_RECEIPT_FILE"):
+                append_receipt(path, inspect(candidate()))
+            self.assertEqual(path.read_bytes(), before)
+
+    @unittest.skipUnless(hasattr(os, "link"), "hardlink unavailable")
+    def test_existing_hardlinked_receipt_is_rejected_without_append(self):
+        with tempfile.TemporaryDirectory() as d:
+            original = Path(d) / "other-review.txt"
+            original.write_text("unrelated-review\n", encoding="utf-8")
+            original.chmod(0o600)
+            path = Path(d) / "review.jsonl"
+            os.link(original, path)
+            with self.assertRaisesRegex(ValueError, "INSECURE_RECEIPT_FILE"):
+                append_receipt(path, inspect(candidate()))
+            self.assertEqual(original.read_text(encoding="utf-8"), "unrelated-review\n")
+
+    @unittest.skipUnless(hasattr(Path, "symlink_to"), "symlink unavailable")
+    def test_symlink_parent_does_not_redirect_receipt(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            outside = root / "outside"
+            outside.mkdir()
+            link = root / "link"
+            link.symlink_to(outside, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, "INVALID_RECEIPT_DESTINATION"):
+                append_receipt(link / "review.jsonl", inspect(candidate()))
+            self.assertEqual(list(outside.iterdir()), [])
 
     def test_nested_nonserializable_dict_quarantined(self):
         p = candidate(); p["payload"]["not_serializable"] = object()
