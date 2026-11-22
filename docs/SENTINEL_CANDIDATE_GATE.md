@@ -26,6 +26,14 @@ python -m py_compile core/sentinel_agent.py tests/test_sentinel_agent.py
 
 Tests are synthetic and network-free. The optional `append_receipt(path, decision)` uses append-only JSONL with `fsync` and preserves dissent, but **only** for a caller-selected Work candidate. This does not prove distributed durability, permissions, safe retention, authentication or adversarial semantic interpretation. A lexical fusion check is necessary but not sufficient to prevent more subtle identity blending; production must enforce rights and permissions at actual effect boundaries.
 
+## Local receipt confidentiality correction (offline, 2026-11-22)
+
+A reproducible negative test found that the earlier `append_receipt` implementation appended complete Work candidate packets and dissent to existing **world-readable files**, **hardlinked files**, and paths redirected through **symlinked parent directories**, because creating a new file with mode `0600` does not tighten an existing file's permissions. This was an avoidable local confidentiality and custody failure.
+
+The additive guard now refuses symlink path components, refuses non-regular or multiply linked receipt targets, and on POSIX refuses files not owned by the current effective user or with any group/other permission bits. The default new-file mode remains `0600` and existing private append-only logs remain supported. Three synthetic regressions first failed on exact original GitHub source and pass after the guard. There are no real user packets or private-mode imports in these tests.
+
+**Limit:** these are locally checked, opt-in filesystem precautions, not a guarantee against a malicious concurrent directory swap, ACL exposure, network-filesystem semantics, compromised owner, hostile persistence backend, or rights-at-effect. An independently reviewed openat/dirfd-style host custody protocol and actual deployment tests remain necessary before any security claim.
+
 ## Host integration gates — remain open
 
 - Pin current real Sentinel, Orchestrator, Packet96 and broker implementations with exact commits and policy version; review likely overlap and source history.
