@@ -132,8 +132,10 @@ def propose(source: dict | str | bytes) -> dict:
         # Even valid JSON must explicitly declare BOTH a permitted scope and
         # Work/Public mode with harvesting opt-out disabled.
         private = not (type(obj) is dict and
-                       obj.get("source_scope") in SCOPES and
-                       obj.get("mode") in ("WORK", "PUBLIC") and
+                       type(obj.get("source_scope")) is str and
+                       obj["source_scope"] in SCOPES and
+                       type(obj.get("mode")) is str and
+                       obj["mode"] in ("WORK", "PUBLIC") and
                        obj.get("no_harvest") is False)
         return {"status": "HOLD", "reason_codes": sorted(set(reasons)),
                 "source_sha256": None if private else digest,
