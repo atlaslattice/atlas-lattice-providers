@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/atlaslattice/atlas-lattice-providers/blob/main/schemas/continuum/continuum.schema.json",
+  "title": "CONTINUUM OS — bounded continuum candidate v0.1",
+  "description": "Declares a proposed, distinct continuum. Shape validation does not authenticate source, rights, human identity, deployment, or canon.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "continuum_id",
+    "continuum_type",
+    "continuum_scope",
+    "owner_or_steward",
+    "source_ref",
+    "raw_export_status",
+    "status",
+    "canon",
+    "deployment",
+    "authority",
+    "privacy",
+    "preservation",
+    "human_root_gate"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "atlas.continuum/candidate-v0.1"
+    },
+    "continuum_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._:-]{2,127}$"
+    },
+    "continuum_type": {
+      "enum": [
+        "project",
+        "agent",
+        "source_surface",
+        "archive",
+        "fossil",
+        "simulation",
+        "play",
+        "work",
+        "governance",
+        "external_provider",
+        "document",
+        "timeline"
+      ]
+    },
+    "continuum_scope": {
+      "enum": [
+        "private",
+        "restricted",
+        "public_candidate"
+      ]
+    },
+    "owner_or_steward": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "raw_export_status": {
+      "enum": [
+        "raw_missing",
+        "raw_partial",
+        "raw_complete_unhashed",
+        "raw_complete_hashed",
+        "raw_source_unavailable",
+        "unknown"
+      ]
+    },
+    "status": {
+      "const": "CANDIDATE"
+    },
+    "canon": {
+      "const": false
+    },
+    "deployment": {
+      "const": false
+    },
+    "authority": {
+      "const": "none"
+    },
+    "coordinate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^H(0[0-9]|1[01])\\.S(0[0-9]|1[01])\\.N(0[0-9]|1[01])$"
+    },
+    "d_affinity": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^D(0[1-9]|1[0-2])$"
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rights_state",
+        "consent_state",
+        "share_scope"
+      ],
+      "properties": {
+        "rights_state": {
+          "enum": [
+            "unknown",
+            "review_required",
+            "cleared_for_candidate_description"
+          ]
+        },
+        "consent_state": {
+          "enum": [
+            "not_granted",
+            "scoped_consent_recorded"
+          ]
+        },
+        "share_scope": {
+          "enum": [
+            "none",
+            "owner_only",
+            "redacted_public_metadata"
+          ]
+        },
+        "consent_receipt_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "preservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_fossil_ref",
+        "dissent_refs"
+      ],
+      "properties": {
+        "source_fossil_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dissent_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "superseded_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "human_root_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "state"
+      ],
+      "properties": {
+        "required": {
+          "const": true
+        },
+        "state": {
+          "const": "not_granted"
+        },
+        "decision_route": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "$comment": "Strict candidate posture only; actual source rights and signatory approval are external. No automatic sharing, canon, deployment or private Play-to-Work import."
+}
