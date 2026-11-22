@@ -8,6 +8,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import math
 import re
 from typing import Any
 
@@ -29,7 +30,35 @@ def _present(x: Any) -> bool:
 
 
 def _json_hash(obj: Any) -> str:
-    return hashlib.sha256(json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str).encode()).hexdigest()
+    return hashlib.sha256(json.dumps(obj, sort_keys=True, separators=(",", ":"),
+                                    ensure_ascii=False, allow_nan=False).encode()).hexdigest()
+
+
+def _plain_json(value: Any, depth: int = 0) -> bool:
+    """Refuse mutable caller subclasses, non-string keys and non-JSON scalars."""
+    if depth > 64:
+        return False
+    if type(value) is dict:
+        return all(type(key) is str and _plain_json(item, depth + 1)
+                   for key, item in value.items())
+    if type(value) is list:
+        return all(_plain_json(item, depth + 1) for item in value)
+    return (type(value) in (str, int, bool, type(None)) or
+            (type(value) is float and math.isfinite(value)))
+
+
+def _snapshot_json(value: Any) -> tuple[bool, Any]:
+    """Freeze untrusted Python caller input; never coerce arbitrary objects."""
+    if not _plain_json(value):
+        return (False, None)
+    try:
+        wire = json.dumps(value, sort_keys=True, separators=(",", ":"),
+                          ensure_ascii=False, allow_nan=False)
+        if len(wire.encode("utf-8")) > 1_000_000:
+            return (False, None)
+        return (True, json.loads(wire))
+    except (TypeError, ValueError, OverflowError, RecursionError, UnicodeError):
+        return (False, None)
 
 
 def _declared_private_mode(value: Any) -> bool:
@@ -55,6 +84,14 @@ def _private_hold_packet() -> dict:
             "human_root_gate": "not_granted"}
 
 
+def _invalid_input_hold_packet() -> dict:
+    packet = _private_hold_packet()
+    packet["errors"] = ["invalid_non_json_caller_no_import"]
+    packet["status"] = "HELD_INVALID_INPUT"
+    packet["provenance"]["verification_state"] = "invalid_caller_held"
+    return packet
+
+
 def resolve_to_earth(claim: Any) -> dict:
     """Retain unmodified source claim; label structural route or quarantine.
 
@@ -63,8 +100,10 @@ def resolve_to_earth(claim: Any) -> dict:
     """
     if _declared_private_mode(claim):
         return _private_hold_packet()
-    original = copy.deepcopy(claim)
-    data = claim if isinstance(claim, dict) else {}
+    ok, original = _snapshot_json(claim)
+    if not ok:
+        return _invalid_input_hold_packet()
+    data = original if isinstance(original, dict) else {}
     errors = []
     for key in ("claim_id", "source_ref", "source_continuum_id"):
         if not _present(data.get(key)):
@@ -148,10 +187,13 @@ def validate_grounding(resolved: Any) -> dict:
     if ctx.get("collapse_allowed") is not False or ctx.get("identity_fusion_allowed") is not False:
         problems.append("continuum_collapse")
     original = resolved.get("original_claim")
-    if not isinstance(original, dict) or resolved.get("claim_fingerprint_sha256") != _json_hash(original):
+    ok, snapshot = _snapshot_json(original)
+    if not ok or type(snapshot) is not dict:
+        problems.append("source_not_plain_json")
+    elif resolved.get("claim_fingerprint_sha256") != _json_hash(snapshot):
         problems.append("source_fingerprint_mismatch")
     if not problems:
-        rechecked = resolve_to_earth(original)
+        rechecked = resolve_to_earth(snapshot)
         if rechecked["route"] != "candidate_review":
             problems.append("source_no_longer_valid")
         for key in ("schema", "original_coordinate", "coordinate_edition", "coordinate_registry_digest", "d_affinity", "provenance", "continuum_context", "status", "route", "errors", "earth_reference"):
@@ -165,9 +207,13 @@ def wrap_as_coordinate_packet(payload: Any, metadata: Any = None) -> dict:
     """Metadata is enclosed, never allowed to override authority or route."""
     if _declared_private_mode(payload) or _declared_private_mode(metadata):
         return _private_hold_packet()
+    if metadata is not None:
+        ok, snapshot = _snapshot_json(metadata)
+        if not ok:
+            return _invalid_input_hold_packet()
     packet = resolve_to_earth(payload)
     if metadata is not None:
-        packet["caller_metadata"] = copy.deepcopy(metadata)
+        packet["caller_metadata"] = snapshot
     return packet
 
 
