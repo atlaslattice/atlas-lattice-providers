@@ -28,41 +28,97 @@ class ResolverTests(unittest.TestCase):
         self.assertEqual(original, claim())
 
     def test_legacy_fallback_is_not_accepted(self):
-        for bad in ("banana", "H12.S00.N00", "H01.S12.N00", "H01.S01.N00", "H01.S02.N03 junk", "h01.s02.n03"):
+        for bad in ("banana", "H12.S00.N00", "H01.S12.N00", "H01.S01.N12", "H01.S02.N03 junk", "h01.s02.n03"):
             c = claim(); c["coordinate"] = bad
             self.assertEqual(resolver.resolve_to_earth(c)["route"], "quarantine")
 
     def test_full_ariadne_v07_1728_coordinate_lattice(self):
-        # All twelve houses, twelve spheres and twelve nodes must be reachable.
+        # All twelve houses, spheres and nodes must be available when opted-in.
         valid = 0
         for h in range(1, 13):
             for sphere in range(1, 13):
                 for node in range(1, 13):
                     c = claim()
                     c["coordinate"] = f"H{h:02d}.S{sphere:02d}.N{node:02d}"
+                    c["coordinate_edition"] = resolver.ARIADNE_EDITION
+                    c["coordinate_registry_digest"] = resolver.ARIADNE_SOURCE_SHA256
                     resolved = resolver.resolve_to_earth(c)
                     self.assertEqual(resolved["route"], "candidate_review", c["coordinate"])
                     self.assertEqual(resolved["earth_reference"], "H00.S00.N00")
+                    self.assertEqual(resolved["coordinate_edition"], resolver.ARIADNE_EDITION)
                     self.assertTrue(resolver.validate_grounding(resolved)["valid"], c["coordinate"])
                     valid += 1
         self.assertEqual(valid, 1728)
 
-    def test_earth_sentinel_is_output_only_not_a_knowledge_coordinate(self):
+    def test_full_legacy_zero_based_1728_coordinate_lattice_unchanged(self):
+        valid = 0
+        for h in range(12):
+            for sphere in range(12):
+                for node in range(12):
+                    c = claim(); c["coordinate"] = f"H{h:02d}.S{sphere:02d}.N{node:02d}"
+                    resolved = resolver.resolve_to_earth(c)
+                    self.assertEqual(resolved["route"], "candidate_review", c["coordinate"])
+                    self.assertEqual(resolved["coordinate_edition"], resolver.LEGACY_EDITION)
+                    self.assertIsNone(resolved["coordinate_registry_digest"])
+                    self.assertTrue(resolver.validate_grounding(resolved)["valid"])
+                    valid += 1
+        self.assertEqual(valid, 1728)
+
+    def test_earth_sentinel_is_not_an_ariadne_knowledge_coordinate(self):
         for invalid in ("H00.S00.N00", "H00.S01.N01", "H01.S00.N01",
                         "H01.S01.N00", "H00.S12.N12"):
             c = claim(); c["coordinate"] = invalid
+            c["coordinate_edition"] = resolver.ARIADNE_EDITION
+            c["coordinate_registry_digest"] = resolver.ARIADNE_SOURCE_SHA256
             r = resolver.resolve_to_earth(c)
             self.assertEqual(r["route"], "quarantine", invalid)
             self.assertEqual(r["original_claim"], c)
             self.assertEqual(r["earth_reference"], "H00.S00.N00")
             self.assertFalse(resolver.validate_grounding(r)["valid"], invalid)
 
+    def test_ariadne_and_legacy_edition_boundaries_are_not_silently_aliased(self):
+        valid_ariadne = claim(); valid_ariadne.update({
+            "coordinate": "H12.S12.N12", "coordinate_edition": resolver.ARIADNE_EDITION,
+            "coordinate_registry_digest": resolver.ARIADNE_SOURCE_SHA256,
+        })
+        self.assertEqual(resolver.resolve_to_earth(valid_ariadne)["route"], "candidate_review")
+        without_edition = dict(valid_ariadne)
+        without_edition.pop("coordinate_edition")
+        self.assertEqual(resolver.resolve_to_earth(without_edition)["route"], "quarantine")
+        without_digest = dict(valid_ariadne)
+        without_digest.pop("coordinate_registry_digest")
+        self.assertEqual(resolver.resolve_to_earth(without_digest)["route"], "quarantine")
+        wrong_digest = dict(valid_ariadne)
+        wrong_digest["coordinate_registry_digest"] = "0" * 64
+        self.assertEqual(resolver.resolve_to_earth(wrong_digest)["route"], "quarantine")
+        bad_edition = dict(valid_ariadne)
+        bad_edition["coordinate_edition"] = "ARIADNE_V0"
+        self.assertEqual(resolver.resolve_to_earth(bad_edition)["route"], "quarantine")
+        legacy_earth = claim(); legacy_earth["coordinate"] = "H00.S00.N00"
+        self.assertEqual(resolver.resolve_to_earth(legacy_earth)["route"], "candidate_review")
+        self.assertEqual(resolver.resolve_to_earth(legacy_earth)["coordinate_edition"], resolver.LEGACY_EDITION)
+
+    def test_reject_edition_and_digest_tampering(self):
+        c = claim(); c.update({
+            "coordinate": "H12.S12.N12", "coordinate_edition": resolver.ARIADNE_EDITION,
+            "coordinate_registry_digest": resolver.ARIADNE_SOURCE_SHA256,
+        })
+        for key, bad in (("coordinate_edition", resolver.LEGACY_EDITION),
+                         ("coordinate_registry_digest", None),
+                         ("coordinate_registry_digest", "1" * 64)):
+            with self.subTest(key=key, bad=bad):
+                receipt = resolver.resolve_to_earth(c)
+                receipt[key] = bad
+                self.assertFalse(resolver.validate_grounding(receipt)["valid"])
+
     def test_out_of_range_and_malformed_coordinates_are_quarantined(self):
         for invalid in ("H13.S12.N12", "H12.S13.N12", "H12.S12.N13",
                         "H99.S01.N01", "H01.S99.N01", "H01.S01.N99",
                         "H001.S01.N01", "H12.S012.N12", "H12.S12.N012",
                         "H-1.S01.N01", "H12.S12.N12 ", "h12.s12.n12"):
-            c = claim(); c["coordinate"] = invalid
+            c = claim(); c.update({"coordinate": invalid,
+                                   "coordinate_edition": resolver.ARIADNE_EDITION,
+                                   "coordinate_registry_digest": resolver.ARIADNE_SOURCE_SHA256})
             self.assertEqual(resolver.resolve_to_earth(c)["route"], "quarantine", invalid)
 
     def test_missing_provenance_is_quarantined(self):
