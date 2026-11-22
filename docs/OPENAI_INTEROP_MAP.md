@@ -89,3 +89,16 @@ Previously, dataset labels were normalized by replacing punctuation with undersc
 - The local test file `tests/test_eval_dataset_integrity.py` includes malformed labels, alias-collision reproduction, restart persistence, symlinks, failed writes and eight concurrent writers. The test alone does not prove deployed host behavior.
 
 **Compatibility / migration:** Legacy datasets created under lossy-normalized names remain untouched. They must be individually mapped to a new safe label under independent source review, not silently renamed, imported or overwritten. New results are still local append-only JSONL by convention, **not** a tamper-evident ledger or current-rights enforcement. No CANON, verified scientific claim, authenticated principal, or runtime deployment follows from this patch.
+
+
+## GoldenTrace local restart continuity (v0.5, CANDIDATE)
+
+The previous trace helper used only an in-memory last-event index. A new process restarted with `prev_hash=null`, silently splitting what appeared to be one append-only JSONL history. The old short hash also omitted thread ID, run ID and lattice action ID from its digest. Both defects were reproduced with synthetic local receipts.
+
+- The source-only v0.5 helper replays and verifies dated JSONL records before append, preserving original bytes. A broken link, mismatched hash, duplicate JSON key, truncated line, nonfinite constant or unknown scheme fails closed. No automatic repair/deletion is performed.
+- Historical events without `hash_scheme` are explicitly checked using the **exact legacy32 algorithm**, acknowledging its limited field coverage. New receipts use `sha256-v2` with all public receipt fields included and a full 64-hex SHA-256 digest; the original legacy rows are not rewritten.
+- A single-writer local lock, no-follow append where supported, regular-file and hardlink checks, byte-counted writes and `fsync` reduce local file races. A stale lock requires independent intervention, not automatic takeover. Ledger scanning is bounded to 32 MiB; larger installations need a separately reviewed checkpoint mechanism.
+- Model-supplied payload keys stay nested under `untrusted_trace_payload` in the optional ActionLedger emission, so they cannot override authoritative receipt hash, thread or run fields. `lattice_action_emitted` is true only after the optional append/emit method returns successfully, including awaitable adapters.
+- **Compatibility gate:** this changes new hash width (legacy 32 hex, new 64 hex) and the ActionLedger payload shape. Review all downstream consumers and any existing materialization/promotion code before merge. Historical provenance cannot retroactively authenticate unverified actor names or claims.
+
+**Remaining limitations:** This is local source-integrity validation, not a signed or independently time-stamped ledger; a sufficiently privileged local attacker could rewrite and rehash the complete history. The source directory must be trusted, and the file read has platform-specific race limits. Host principal, rights at return, independent semantic review, deployed API, current GitHub Actions admission and CANON remain unverified. `tests/test_trace_continuity.py` is a focused synthetic offline suite; it does not use real private resident activity.
