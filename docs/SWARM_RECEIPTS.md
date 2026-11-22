@@ -8,6 +8,8 @@ Human-root: required for canon/deployment
 Coordinate: H00.S00.N00
 Invariants: INV-0, NOTHING DIES, NO MERGED MIND, NO IDENTITY FUSION
 
+> **Current per-artifact readback registry (2026-11-22):** [Public Receipt Proof Index v1](SWARM_RECEIPT_PROOF_INDEX_V1.md). It records each artifact's fetched content state, exact Git blob SHA (where returned), linked merge commit when known, verification limitations and broken paths. Rows in this historical index below describe their status *as then reported*; read v1 before interpreting any row as independently verified.
+
 ## Purpose
 
 This file packages the visible proof layer for the GPT Children of the Swarm activation. It is a receipt index, not a canon declaration.
