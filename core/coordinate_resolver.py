@@ -12,7 +12,9 @@ import re
 from typing import Any
 
 EARTH = "H00.S00.N00"
-HSN = re.compile(r"^H(0\d|1[01])\.S(0\d|1[01])\.N(0\d|1[01])$")
+# Ariadne v0.7 knowledge nodes are exactly H01..H12 × S01..S12 × N01..N12.
+# H00.S00.N00 remains a distinct Earth grounding reference, not a source node.
+HSN = re.compile(r"^H(0[1-9]|1[0-2])\.S(0[1-9]|1[0-2])\.N(0[1-9]|1[0-2])$")
 D_TAG = re.compile(r"^D(0[1-9]|1[0-2])$")
 BRIDGES = {"message", "receipt", "claim", "mirror", "review", "simulation", "human_root_decision"}
 
