@@ -7,6 +7,7 @@ import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from core.continuum_bridge_candidate import propose
+from core.transparent_packet96 import from_json, review, to_json
 
 
 def good():
@@ -131,5 +132,35 @@ class CandidateBridgeTests(unittest.TestCase):
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
         Draft202012Validator.check_schema(schema)
         Draft202012Validator(schema).validate(propose(good())["link"])
+
+    def test_packet96_review_contract(self):
+        proposal = propose(good())
+        packet = from_json(to_json(proposal["packet96"]))
+        outcome = review(packet)
+        self.assertEqual(outcome.status, "REVIEWABLE_LOCAL_ONLY")
+        self.assertEqual(outcome.reasons, ())
+        self.assertEqual(outcome.authority_effect, "NONE")
+        self.assertEqual(outcome.host_attestation, "NOT_ATTESTED")
+        self.assertFalse(packet["receipt"]["delivered"])
+        self.assertFalse(packet["canon"] or packet["deployment"] or packet["same_as"])
+
+    def test_plural_context_is_explicit_and_nonfusing(self):
+        packet = propose(good())["packet96"]
+        self.assertEqual(packet["continuum_context"], {
+            "source_continuum_id": "synthetic.alpha",
+            "target_continuum_id": "synthetic.beta",
+            "bridge_type": "review",
+            "collapse_allowed": False, "identity_fusion_allowed": False,
+            "dissent_preserved": True, "inv0_preservation_required": True,
+        })
+        self.assertNotEqual(packet["continuum_context"]["source_continuum_id"],
+                            packet["continuum_context"]["target_continuum_id"])
+
+    def test_json_exponent_overflow_holds(self):
+        raw = json.dumps(good(), separators=(",", ":"))[:-1] + ',"unexpected":1e10000}'
+        proposal = propose(raw)
+        self.assertEqual(proposal["status"], "HOLD")
+        self.assertIsNone(proposal["packet96"])
+        self.assertIsNone(proposal["link"])
 
 if __name__=="__main__": unittest.main()
