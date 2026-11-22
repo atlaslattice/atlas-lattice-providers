@@ -108,6 +108,25 @@ class CoordinateSnapshotTests(unittest.TestCase):
         self.assertEqual(packet["route"], "quarantine")
         self.assertEqual(packet["original_claim"], "unsafe")
 
+    def test_private_escalation_never_echoes_opaque_payload(self):
+        sentinel = "SYNTHETIC_PALACE_BODY_NO_EXPORT"
+        result = resolver.escalate_to_human_root("disclose " + sentinel,
+                    {"mode": "PALACE", "body": sentinel, "secret": SideEffectObject()})
+        self.assertEqual(result["status"], "HELD_PRIVATE_MODE")
+        self.assertIsNone(result["payload"])
+        self.assertIsNone(result["payload_sha256"])
+        self.assertNotIn(sentinel, repr(result))
+
+    def test_unsafe_escalation_holds_and_safe_remains_inert(self):
+        held = resolver.escalate_to_human_root("review", {"x": SideEffectObject()})
+        self.assertEqual(held["status"], "HELD_INVALID_INPUT")
+        self.assertIsNone(held["payload_sha256"])
+        safe = resolver.escalate_to_human_root("review", {"id": "synthetic:1"})
+        self.assertEqual(safe["status"], "NOT_SENT")
+        self.assertEqual(safe["payload"], {"id": "synthetic:1"})
+        self.assertEqual(len(safe["payload_sha256"]), 64)
+        self.assertEqual(safe["authority"], "none")
+
 
 if __name__ == "__main__":
     unittest.main()
