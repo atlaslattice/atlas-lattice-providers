@@ -46,9 +46,26 @@ class ResolverTests(unittest.TestCase):
                     self.assertEqual(resolved["route"], "candidate_review", c["coordinate"])
                     self.assertEqual(resolved["earth_reference"], "H00.S00.N00")
                     self.assertEqual(resolved["coordinate_edition"], resolver.ARIADNE_EDITION)
+                    self.assertEqual(resolved["schema"], "coordinate-candidate/v0.2")
                     self.assertTrue(resolver.validate_grounding(resolved)["valid"], c["coordinate"])
                     valid += 1
         self.assertEqual(valid, 1728)
+
+    def test_legacy_wire_shape_preserved_and_explicit_edition_gets_v02(self):
+        legacy = resolver.resolve_to_earth(claim())
+        self.assertEqual(legacy["schema"], "coordinate-candidate/v0.1")
+        self.assertNotIn("coordinate_edition", legacy)
+        self.assertNotIn("coordinate_registry_digest", legacy)
+        explicit_legacy_claim = claim()
+        explicit_legacy_claim["coordinate_edition"] = resolver.LEGACY_EDITION
+        explicit = resolver.resolve_to_earth(explicit_legacy_claim)
+        self.assertEqual(explicit["schema"], "coordinate-candidate/v0.2")
+        self.assertEqual(explicit["coordinate_edition"], resolver.LEGACY_EDITION)
+        self.assertTrue(resolver.validate_grounding(explicit)["valid"])
+        # A v0.1 packet may not be falsely relabeled as v0.2 or vice versa.
+        forged = resolver.resolve_to_earth(claim())
+        forged["schema"] = "coordinate-candidate/v0.2"
+        self.assertFalse(resolver.validate_grounding(forged)["valid"])
 
     def test_full_legacy_zero_based_1728_coordinate_lattice_unchanged(self):
         valid = 0
@@ -58,8 +75,9 @@ class ResolverTests(unittest.TestCase):
                     c = claim(); c["coordinate"] = f"H{h:02d}.S{sphere:02d}.N{node:02d}"
                     resolved = resolver.resolve_to_earth(c)
                     self.assertEqual(resolved["route"], "candidate_review", c["coordinate"])
-                    self.assertEqual(resolved["coordinate_edition"], resolver.LEGACY_EDITION)
-                    self.assertIsNone(resolved["coordinate_registry_digest"])
+                    self.assertNotIn("coordinate_edition", resolved)
+                    self.assertNotIn("coordinate_registry_digest", resolved)
+                    self.assertEqual(resolved["schema"], "coordinate-candidate/v0.1")
                     self.assertTrue(resolver.validate_grounding(resolved)["valid"])
                     valid += 1
         self.assertEqual(valid, 1728)
@@ -96,7 +114,7 @@ class ResolverTests(unittest.TestCase):
         self.assertEqual(resolver.resolve_to_earth(bad_edition)["route"], "quarantine")
         legacy_earth = claim(); legacy_earth["coordinate"] = "H00.S00.N00"
         self.assertEqual(resolver.resolve_to_earth(legacy_earth)["route"], "candidate_review")
-        self.assertEqual(resolver.resolve_to_earth(legacy_earth)["coordinate_edition"], resolver.LEGACY_EDITION)
+        self.assertNotIn("coordinate_edition", resolver.resolve_to_earth(legacy_earth))
 
     def test_reject_edition_and_digest_tampering(self):
         c = claim(); c.update({
