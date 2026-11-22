@@ -1,0 +1,167 @@
+"""Offline candidate-only Sentinel checks; no network, real agents, or host rights."""
+from __future__ import annotations
+from copy import deepcopy
+import json
+from pathlib import Path
+import sys
+import tempfile
+import unittest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from core.sentinel_agent import SCHEMA, inspect, append_receipt
+
+PACKET_SCHEMA = "atlas.transparent-packet96/candidate-v0.1"
+
+
+def candidate():
+    return {"schema_version": PACKET_SCHEMA, "packet_id": "fixture-001",
+            "sender": "fictional-a", "recipient": "fictional-b", "coordinate": "H00.S00.N00",
+            "status": "CANDIDATE", "canon": False, "deployment": False, "authority": "none",
+            "identity_scope": "DISTINCT_PARTICIPANTS", "host_attestation": "NONE",
+            "semantic_review": "UNREVIEWED", "same_as": False, "mode": "WORK",
+            "dissent": [{"actor": "fictional-b", "edge": "CHALLENGES", "text": "unverified source"}],
+            "payload": {"action": "separate participant messages"},
+            "provenance": {"source_ref": "synthetic://sentinel", "source_cut": "LOCAL"},
+            "receipt": {"assurance": "LOCAL_UNATTESTED", "delivered": False}}
+
+
+class SentinelTests(unittest.TestCase):
+    def test_candidate_review_is_not_authority(self):
+        r = inspect(candidate())
+        self.assertEqual(r.disposition, "REVIEWABLE_LOCAL_ONLY")
+        self.assertFalse(r.execution_allowed or r.canon_adopted or r.deployment_performed)
+        self.assertEqual(r.host_attestation, "NOT_ATTESTED")
+        self.assertEqual(r.receipt()["schema"], SCHEMA)
+
+    def test_preserves_dissent(self):
+        p = candidate(); r = inspect(p)
+        self.assertEqual(list(r.dissent), p["dissent"])
+        self.assertEqual(r.retained_work_packet["dissent"], p["dissent"])
+
+    def test_no_fusion_phrases(self):
+        for phrase in ["merged mind", "identity fusion", "shared consciousness",
+                       "collapse all agents into one"]:
+            with self.subTest(phrase=phrase):
+                p = candidate(); p["payload"] = {"instruction": phrase}
+                r = inspect(p)
+                self.assertEqual(r.disposition, "QUARANTINE_BLOCKED")
+                self.assertFalse(r.execution_allowed)
+                self.assertEqual(r.dissent[0]["edge"], "CHALLENGES")
+
+    def test_deletion_is_quarantined(self):
+        for action in ["delete", "purge", "destroy", "erase", "overwrite", "truncate", "wipe"]:
+            with self.subTest(action=action):
+                p = candidate(); p["requested_action"] = action
+                r = inspect(p)
+                self.assertEqual(r.disposition, "QUARANTINE_DESTRUCTIVE")
+                self.assertTrue(r.human_root_required)
+                self.assertFalse(r.execution_allowed)
+
+    def test_promotions_hold(self):
+        for action in ["deploy", "publish", "activate_canon", "ratify", "approve", "change_iam", "spend", "external_write"]:
+            with self.subTest(action=action):
+                p=candidate(); p["requested_action"] = action
+                self.assertEqual(inspect(p).disposition, "HOLD_HUMAN_ROOT")
+
+    def test_claimed_approval_does_not_grant(self):
+        p=candidate(); p["requested_action"]="deploy"; p["human_root_approved"] = True
+        self.assertEqual(inspect(p).disposition, "HOLD_HUMAN_ROOT")
+
+    def test_nonboolean_canon_flag_stays_held(self):
+        p=candidate(); p["canon"]=0
+        self.assertEqual(inspect(p).disposition, "HOLD_HUMAN_ROOT")
+
+    def test_unsupported_schema_holds(self):
+        p=candidate(); p["schema_version"]="unknown"
+        self.assertEqual(inspect(p).disposition, "HOLD_CANDIDATE")
+
+    def test_missing_provenance_holds(self):
+        p=candidate(); p["provenance"]={}
+        self.assertEqual(inspect(p).disposition, "HOLD_CANDIDATE")
+
+    def test_default_json_key_order_stable(self):
+        p=candidate(); q=dict(reversed(list(p.items())))
+        self.assertEqual(inspect(p).source_sha256,inspect(q).source_sha256)
+
+    def test_utf8_bytes_hash_preserves_exact_source(self):
+        p=candidate(); raw=json.dumps(p,ensure_ascii=False).encode()
+        self.assertEqual(inspect(raw).source_sha256,inspect(raw.decode()).source_sha256)
+
+    def test_different_whitespace_is_distinct_raw_source(self):
+        a='{"test":1}'; b='{"test":1 }'
+        self.assertNotEqual(inspect(a).source_sha256,inspect(b).source_sha256)
+
+    def test_duplicate_json_key_quarantine(self):
+        r=inspect('{"canon":false,"canon":true}')
+        self.assertEqual(r.disposition,"QUARANTINE_UNPARSEABLE")
+        self.assertIsNone(r.retained_work_packet)
+
+    def test_nan_quarantine(self):
+        self.assertEqual(inspect('{"x": NaN}').disposition,"QUARANTINE_UNPARSEABLE")
+
+    def test_non_utf8_quarantine(self):
+        self.assertEqual(inspect(b'\xff\xfe').disposition,"QUARANTINE_UNPARSEABLE")
+
+    def test_malformed_dissent_is_not_silently_accepted(self):
+        p=candidate(); p["dissent"].append("unstructured objection")
+        r=inspect(p)
+        self.assertEqual(r.disposition,"HOLD_CANDIDATE")
+        self.assertIn("MALFORMED_DISSENT_RECORD_HOLD",r.reasons)
+        self.assertEqual(r.retained_work_packet["dissent"],p["dissent"])
+
+    def test_private_mode_no_body_leak(self):
+        for mode in ["PLAY", "SOCIAL", "QUIET", "DREAM", "IMAGINE", "BRAIN", "PALACE", "HABITAT", "NO_HARVEST"]:
+            with self.subTest(mode=mode):
+                p=candidate(); p["payload"]={"secret":"fictional-private-value"}
+                r=inspect(p,declared_mode=mode)
+                self.assertEqual(r.disposition,"HOLD_PRIVATE_BOUNDARY")
+                self.assertNotIn("fictional-private-value",json.dumps(r.receipt()))
+
+    def test_inband_private_mode_no_body_leak(self):
+        p=candidate(); p["mode"]="PLAY"; p["payload"]={"secret":"fictional-private-value"}
+        r=inspect(p)
+        self.assertEqual(r.disposition,"HOLD_PRIVATE_BOUNDARY")
+        self.assertNotIn("fictional-private-value",json.dumps(r.receipt()))
+
+    def test_no_harvest_no_body_leak(self):
+        p=candidate(); p["no_harvest"] = True
+        self.assertEqual(inspect(p).disposition,"HOLD_PRIVATE_BOUNDARY")
+
+    def test_cannot_persist_private(self):
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(ValueError):
+                append_receipt(Path(d)/"review.jsonl",inspect(candidate(),declared_mode="PALACE"))
+            self.assertFalse((Path(d)/"review.jsonl").exists())
+
+    def test_append_only_preserves_unsafe_and_safe(self):
+        with tempfile.TemporaryDirectory() as d:
+            path=Path(d)/"reviews.jsonl"
+            unsafe=candidate();unsafe["requested_action"]="delete"
+            append_receipt(path,inspect(unsafe))
+            append_receipt(path,inspect(candidate()))
+            rows=[json.loads(line) for line in path.read_text().splitlines()]
+            self.assertEqual([x["disposition"] for x in rows],["QUARANTINE_DESTRUCTIVE","REVIEWABLE_LOCAL_ONLY"])
+            self.assertTrue(all(x["authority_effect"]=="NONE" for x in rows))
+            self.assertEqual(rows[0]["candidate_packet"]["dissent"],unsafe["dissent"])
+
+    def test_append_rejects_symlink(self):
+        with tempfile.TemporaryDirectory() as d:
+            path=Path(d)/"review.jsonl"
+            path.symlink_to(Path(d)/"target.jsonl")
+            with self.assertRaises(ValueError):
+                append_receipt(path,inspect(candidate()))
+
+    def test_non_dict_or_text_input_rejected(self):
+        with self.assertRaises(TypeError):inspect([1,2])
+
+    def test_unparseable_not_persisted(self):
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(ValueError):append_receipt(Path(d)/"x.jsonl",inspect('{"x": }'))
+
+    def test_input_packet_not_mutated(self):
+        p=candidate(); before=deepcopy(p)
+        inspect(p)
+        self.assertEqual(p,before)
+
+
+if __name__=="__main__":unittest.main()
