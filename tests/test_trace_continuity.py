@@ -236,3 +236,11 @@ def test_untrusted_payload_cannot_override_action_ledger_source_fields(tmp_path)
     assert p['golden_trace_hash']==out['golden_trace_hash']
     assert p['thread_id']=='real-thread' and p['run_id']=='real-run'
     assert p['untrusted_trace_payload']['golden_trace_hash']=='FORGED'
+
+
+def test_explicit_negative_adapter_ack_is_not_emission(tmp_path):
+    class Unconfirmed:
+        def emit(self,*args,**kwargs): return False
+    out=run(bridge(tmp_path,Unconfirmed()).record_openai_trace('first'))
+    assert out['lattice_action_emitted'] is False
+    assert len(events(tmp_path))==1
