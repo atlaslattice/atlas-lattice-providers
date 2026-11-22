@@ -14,6 +14,10 @@ Build toward **CONTINUUM OS GPT NATIVE**: a local-first cockpit where GPT can re
 
 This is not Continuity OS. This is CONTINUUM OS: plural continuums, bridged with receipts.
 
+## Local cockpit v0.1 implementation receipt
+
+A [tested offline CLI candidate](CONTINUUM_LOCAL_COCKPIT_V01.md) now implements the read-only/local-proposal subset of the commands below. Its source is [scripts/continuum_cli.py](../scripts/continuum_cli.py); **16 local tests passed normally and 16 under optimized Python** with byte-matched GitHub source readback. This does not prove live agent rehydration, automatic source backups, a hosted UI, broker connectivity, or permission enforcement. The remaining commands and operational gates in this document remain goals, not completed features.
+
 ## Problem
 
 Current failure mode:
