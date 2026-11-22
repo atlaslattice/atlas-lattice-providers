@@ -85,6 +85,20 @@ class CandidateBridgeTests(unittest.TestCase):
         obj=good();obj["payload"] = obj
         self.assertEqual(propose(obj)["status"],"HOLD")
 
+    def test_nonzero_float_underflow_holds_without_rounding(self):
+        base=json.dumps(good())[:-1]
+        for tiny in ("1e-9999", "-1e-9999", "2e-400"):
+            with self.subTest(tiny=tiny):
+                raw=base+', "synthetic_weight":'+tiny+'}'
+                result=propose(raw)
+                self.assertEqual(result["status"], "HOLD")
+                self.assertIn("UNPARSEABLE_JSON", result["reason_codes"])
+        # A literal zero or a representable subnormal is not underflow.
+        for allowed in ("0e-9999", "5e-324"):
+            with self.subTest(allowed=allowed):
+                raw=base+', "synthetic_weight":'+allowed+'}'
+                self.assertEqual(propose(raw)["status"], "REVIEWABLE_LOCAL_ONLY")
+
     def test_non_utf8_bytes_hold(self):
         self.assertEqual(propose(b'\xff\xfe')["status"],"HOLD")
 
