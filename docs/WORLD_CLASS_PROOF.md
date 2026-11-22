@@ -18,6 +18,10 @@ By default it writes:
 receipts/world_class_proof_receipt.json
 ```
 
+Receipt custody: the writer creates new files only beneath the repository's `receipts/` tree with exclusive-create semantics. It refuses existing files, hardlinks to existing receipt paths, symlink destinations/parents, absolute paths and `..` traversal. On POSIX the new file requests mode 0600. A second run with the same output path now fails rather than overwriting prior evidence; use `--output receipts/unique-run-id.json` or `--output ""` to print without writing. Python syntax checking does not generate `__pycache__` artifacts.
+
+This is a **local filesystem source-only guard**, not a proven defense against hostile concurrent parent-directory replacement, unusual ACLs or network filesystems. It is not hosted acceptance, a security attestation, an authorized deployment or proof of every Continuum OS function.
+
 Use strict mode locally when you want warnings to fail the run:
 
 ```bash
