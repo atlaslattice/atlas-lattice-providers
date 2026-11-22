@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import json
 import logging
 import math
+import re
 
 logger = logging.getLogger("openai_evals_bullshit_bridge")
 
@@ -36,7 +37,7 @@ class EvalResult:
     status: str = "NOT_RUN"
     score_basis: str = "NONE"
     claim_packet_id: Optional[str] = None
-    ts: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
+    ts: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"))
 
 
 class EvalsBullshitOlympicsBridge:
@@ -48,27 +49,44 @@ class EvalsBullshitOlympicsBridge:
         self.eval_dir = Path(eval_dir)
         self._evals: Dict[str, List[EvalItem]] = {}
 
+    @staticmethod
+    def _checked_eval_name(name: str) -> str:
+        # No lossy filename normalization: "a/b" and "a_b" MUST NOT alias.
+        # This is a single, portable namespace, not a filesystem path or host grant.
+        if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,80}", name):
+            raise ValueError("eval_name must be 1..80 ASCII letters, digits, '-' or '_'")
+        return name
+
     def _dataset_path(self, name: str) -> Path:
-        safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in name)
-        return self.eval_dir / f"{safe}.jsonl"
+        return self.eval_dir / f"{self._checked_eval_name(name)}.jsonl"
 
     def _results_path(self, name: str) -> Path:
-        safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in name)
-        return self.eval_dir / f"{safe}.results.jsonl"
+        return self.eval_dir / f"{self._checked_eval_name(name)}.results.jsonl"
 
     async def create_eval_dataset(self, name: str, items: List[Dict[str, Any]]) -> Dict[str, Any]:
-        if not name:
+        if name is None or name == "":
             name = "atlas_lattice_eval"
-        self.eval_dir.mkdir(parents=True, exist_ok=True)
+        name = self._checked_eval_name(name)
+        if not isinstance(items, list) or any(not isinstance(item, dict) for item in items):
+            raise ValueError("items must be a list of dictionaries")
         eval_items = [EvalItem(id=item.get("id") or f"{name}-{i}", input=item.get("input", ""), expected=item.get("expected"), metadata=item.get("metadata", {})) for i, item in enumerate(items)]
-        self._evals[name] = eval_items
+        # Serialize before opening, so a bad input cannot leave a partly written file.
+        text = "".join(json.dumps(asdict(item), default=str) + "\n" for item in eval_items)
         path = self._dataset_path(name)
-        with path.open("w", encoding="utf-8") as fh:
-            for item in eval_items:
-                fh.write(json.dumps(asdict(item), default=str) + "\n")
+        self.eval_dir.mkdir(parents=True, exist_ok=True)
+        # Exclusive creation is atomic at the path level. Existing datasets,
+        # including symlinks and previous versions, are never overwritten.
+        with path.open("x", encoding="utf-8") as fh:
+            fh.write(text)
+        # An unsuccessful write must not replace the in-memory dataset either.
+        self._evals[name] = eval_items
         return {"feature": "openai_evals_bullshit_bridge", "eval_name": name, "item_count": len(eval_items), "dataset_path": str(path), "grok_leads": True}
 
     async def run_bullshit_as_grader(self, eval_name: str, item_id: str, output: str) -> Dict[str, Any]:
+        try:
+            self._checked_eval_name(eval_name)
+        except ValueError:
+            return {"error": "invalid_eval_name"}
         item = next((it for it in self._evals.get(eval_name, []) if it.id == item_id), None)
         if not item:
             path = self._dataset_path(eval_name)
