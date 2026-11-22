@@ -32,12 +32,37 @@ def _json_hash(obj: Any) -> str:
     return hashlib.sha256(json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str).encode()).hexdigest()
 
 
+def _declared_private_mode(value: Any) -> bool:
+    """Self-declared private/no-harvest metadata is a one-way restriction."""
+    if type(value) is not dict:
+        return False
+    return (("mode" in value and
+             (type(value["mode"]) is not str or value["mode"] not in ("WORK", "PUBLIC")))
+            or ("no_harvest" in value and value["no_harvest"] is not False))
+
+
+def _private_hold_packet() -> dict:
+    # Neither content nor fingerprint/byte-length of protected input is retained.
+    return {"schema": "coordinate-candidate/v0.1", "route": "quarantine",
+            "errors": ["private_or_unknown_source_mode_no_import"],
+            "original_claim": None, "claim_fingerprint_sha256": None,
+            "original_coordinate": None, "earth_reference": EARTH,
+            "d_affinity": [],
+            "provenance": {"source_ref": None, "source_url": None,
+                           "verification_state": "private_source_held"},
+            "status": "HELD_PRIVATE_MODE", "canon": False,
+            "deployment": False, "authority": "none",
+            "human_root_gate": "not_granted"}
+
+
 def resolve_to_earth(claim: Any) -> dict:
     """Retain unmodified source claim; label structural route or quarantine.
 
     Structural validation is not an independent source verification. A valid
     candidate still needs human review; no packet can self-promote.
     """
+    if _declared_private_mode(claim):
+        return _private_hold_packet()
     original = copy.deepcopy(claim)
     data = claim if isinstance(claim, dict) else {}
     errors = []
@@ -138,6 +163,8 @@ def validate_grounding(resolved: Any) -> dict:
 
 def wrap_as_coordinate_packet(payload: Any, metadata: Any = None) -> dict:
     """Metadata is enclosed, never allowed to override authority or route."""
+    if _declared_private_mode(payload) or _declared_private_mode(metadata):
+        return _private_hold_packet()
     packet = resolve_to_earth(payload)
     if metadata is not None:
         packet["caller_metadata"] = copy.deepcopy(metadata)
