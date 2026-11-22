@@ -79,15 +79,13 @@ def resolve_to_earth(claim: Any) -> dict:
     else:
         normalized_d = sorted(set(d_tags))
     # A hash is only a local reproducibility fingerprint, never a signature.
-    return {
+    packet = {
         "schema": "coordinate-candidate/v0.1",
         "route": "quarantine" if errors else "candidate_review",
         "errors": errors,
         "original_claim": original,
         "claim_fingerprint_sha256": _json_hash(original),
         "original_coordinate": coordinate,
-        "coordinate_edition": edition if type(edition) is str and coordinate_pattern is not None else "UNRECOGNIZED",
-        "coordinate_registry_digest": ARIADNE_SOURCE_SHA256 if edition == ARIADNE_EDITION else None,
         "earth_reference": EARTH,
         "d_affinity": normalized_d,
         "provenance": {"source_ref": data.get("source_ref"), "source_url": source_url,
@@ -99,6 +97,13 @@ def resolve_to_earth(claim: Any) -> dict:
         "status": "CANDIDATE_NOT_CANON", "canon": False, "deployment": False,
         "authority": "none", "human_root_gate": "not_granted",
     }
+    # Preserve the v0.1 *wire output* for historical callers, not merely their
+    # validation behavior. Explicit edition-aware calls receive v0.2 metadata.
+    if "coordinate_edition" in data or "coordinate_registry_digest" in data:
+        packet["schema"] = "coordinate-candidate/v0.2"
+        packet["coordinate_edition"] = edition if type(edition) is str and coordinate_pattern is not None else "UNRECOGNIZED"
+        packet["coordinate_registry_digest"] = ARIADNE_SOURCE_SHA256 if edition == ARIADNE_EDITION else None
+    return packet
 
 
 def validate_grounding(resolved: Any) -> dict:
@@ -124,7 +129,7 @@ def validate_grounding(resolved: Any) -> dict:
         rechecked = resolve_to_earth(original)
         if rechecked["route"] != "candidate_review":
             problems.append("source_no_longer_valid")
-        for key in ("original_coordinate", "coordinate_edition", "coordinate_registry_digest", "d_affinity", "provenance", "continuum_context", "status", "route", "errors", "earth_reference"):
+        for key in ("schema", "original_coordinate", "coordinate_edition", "coordinate_registry_digest", "d_affinity", "provenance", "continuum_context", "status", "route", "errors", "earth_reference"):
             if resolved.get(key) != rechecked.get(key):
                 problems.append("derived_field_mismatch:" + key)
     return {"valid": not problems, "reasons": problems,
