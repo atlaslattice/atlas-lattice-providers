@@ -1,0 +1,234 @@
+{
+  "schema_version": "atlas.a2a.synthetic-proof/v0.1",
+  "purpose": "Public synthetic illustration of coordination without identity fusion",
+  "status": "PREPARED_NOT_POSTED",
+  "authority": "none",
+  "canon": false,
+  "deployment": false,
+  "private_mode_ingested": false,
+  "host_grant": false,
+  "records": [
+    {
+      "schema_version": "atlas.a2a.synthetic-proof/v0.1",
+      "status": "PREPARED_NOT_POSTED",
+      "canon": false,
+      "deployment": false,
+      "authority": "none",
+      "identity_assurance": "SYNTHETIC_NOT_HOST_ATTESTED",
+      "source_rights": "NOT_HOST_ATTESTED",
+      "semantic_review": "UNREVIEWED",
+      "example_only": true,
+      "id": "ex-message-001",
+      "kind": "a2a_message",
+      "actor": "fictional-child-a",
+      "references": [],
+      "payload": {
+        "from": "fictional-child-a",
+        "to": "fictional-librarian",
+        "topic": "Water resource planning",
+        "coordinate": "H02.S05.N02",
+        "text": "Candidate: distinguish water demand estimates from measured supplies; no measured outcome asserted.",
+        "sent": false
+      }
+    },
+    {
+      "schema_version": "atlas.a2a.synthetic-proof/v0.1",
+      "status": "PREPARED_NOT_POSTED",
+      "canon": false,
+      "deployment": false,
+      "authority": "none",
+      "identity_assurance": "SYNTHETIC_NOT_HOST_ATTESTED",
+      "source_rights": "NOT_HOST_ATTESTED",
+      "semantic_review": "UNREVIEWED",
+      "example_only": true,
+      "id": "ex-receipt-001",
+      "kind": "receipt",
+      "actor": "fictional-recorder",
+      "references": [
+        "ex-message-001"
+      ],
+      "payload": {
+        "observed_message_id": "ex-message-001",
+        "stored": false,
+        "delivered": false,
+        "read": false,
+        "reply": false,
+        "host_attestation": null,
+        "digest": null,
+        "proof_status": "NOT_COMPUTED"
+      }
+    },
+    {
+      "schema_version": "atlas.a2a.synthetic-proof/v0.1",
+      "status": "PREPARED_NOT_POSTED",
+      "canon": false,
+      "deployment": false,
+      "authority": "none",
+      "identity_assurance": "SYNTHETIC_NOT_HOST_ATTESTED",
+      "source_rights": "NOT_HOST_ATTESTED",
+      "semantic_review": "UNREVIEWED",
+      "example_only": true,
+      "id": "ex-claim-001",
+      "kind": "claim_packet",
+      "actor": "fictional-child-a",
+      "references": [
+        "ex-message-001",
+        "ex-receipt-001"
+      ],
+      "payload": {
+        "claim": "A supply-and-demand distinction is a topic for review, not a proven water intervention.",
+        "evidence_status": "CANDIDATE_ONLY",
+        "experiment_id": null,
+        "test_id": null,
+        "publication_id": null
+      }
+    },
+    {
+      "schema_version": "atlas.a2a.synthetic-proof/v0.1",
+      "status": "PREPARED_NOT_POSTED",
+      "canon": false,
+      "deployment": false,
+      "authority": "none",
+      "identity_assurance": "SYNTHETIC_NOT_HOST_ATTESTED",
+      "source_rights": "NOT_HOST_ATTESTED",
+      "semantic_review": "UNREVIEWED",
+      "example_only": true,
+      "id": "ex-dissent-001",
+      "kind": "dissent_packet",
+      "actor": "fictional-child-b",
+      "references": [
+        "ex-claim-001"
+      ],
+      "payload": {
+        "edge_kind": "CHALLENGES",
+        "challenge": "No baseline, source boundary, units or independent measurement were supplied.",
+        "preserved": true,
+        "not_a_vote": true
+      }
+    },
+    {
+      "schema_version": "atlas.a2a.synthetic-proof/v0.1",
+      "status": "PREPARED_NOT_POSTED",
+      "canon": false,
+      "deployment": false,
+      "authority": "none",
+      "identity_assurance": "SYNTHETIC_NOT_HOST_ATTESTED",
+      "source_rights": "NOT_HOST_ATTESTED",
+      "semantic_review": "UNREVIEWED",
+      "example_only": true,
+      "id": "ex-handoff-001",
+      "kind": "a2a_handoff",
+      "actor": "fictional-child-a",
+      "references": [
+        "ex-claim-001",
+        "ex-dissent-001",
+        "ex-receipt-001"
+      ],
+      "payload": {
+        "to": "fictional-librarian",
+        "state": "PROPOSED_NOT_DELIVERED",
+        "preserve_dissent": [
+          "ex-dissent-001"
+        ],
+        "original_claim": "ex-claim-001",
+        "identity_fusion": false
+      }
+    },
+    {
+      "schema_version": "atlas.a2a.synthetic-proof/v0.1",
+      "status": "PREPARED_NOT_POSTED",
+      "canon": false,
+      "deployment": false,
+      "authority": "none",
+      "identity_assurance": "SYNTHETIC_NOT_HOST_ATTESTED",
+      "source_rights": "NOT_HOST_ATTESTED",
+      "semantic_review": "UNREVIEWED",
+      "example_only": true,
+      "id": "ex-delta-001",
+      "kind": "librarian_delta",
+      "actor": "fictional-librarian",
+      "references": [
+        "ex-handoff-001",
+        "ex-dissent-001"
+      ],
+      "payload": {
+        "classification": "UNREVIEWED_CANDIDATE",
+        "recommendation": "Request data and source-rights review before promotion",
+        "same_as": false,
+        "supports_scientific_truth": false
+      }
+    },
+    {
+      "schema_version": "atlas.a2a.synthetic-proof/v0.1",
+      "status": "PREPARED_NOT_POSTED",
+      "canon": false,
+      "deployment": false,
+      "authority": "none",
+      "identity_assurance": "SYNTHETIC_NOT_HOST_ATTESTED",
+      "source_rights": "NOT_HOST_ATTESTED",
+      "semantic_review": "UNREVIEWED",
+      "example_only": true,
+      "id": "ex-hub-001",
+      "kind": "hub_issue_candidate",
+      "actor": "fictional-router",
+      "references": [
+        "ex-delta-001"
+      ],
+      "payload": {
+        "target": "atlaslattice/atlas-lattice-providers#3",
+        "posted": false,
+        "issue_created": false,
+        "task_completed": false
+      }
+    },
+    {
+      "schema_version": "atlas.a2a.synthetic-proof/v0.1",
+      "status": "PREPARED_NOT_POSTED",
+      "canon": false,
+      "deployment": false,
+      "authority": "none",
+      "identity_assurance": "SYNTHETIC_NOT_HOST_ATTESTED",
+      "source_rights": "NOT_HOST_ATTESTED",
+      "semantic_review": "UNREVIEWED",
+      "example_only": true,
+      "id": "ex-mirror-001",
+      "kind": "archive_mirror_candidate",
+      "actor": "fictional-archivist",
+      "references": [
+        "ex-hub-001"
+      ],
+      "payload": {
+        "written": false,
+        "retention_state": "PLANNED_NOT_EXECUTED",
+        "preserve_originals": true,
+        "source_cut": "LOCAL_SYNTHETIC_ONLY"
+      }
+    },
+    {
+      "schema_version": "atlas.a2a.synthetic-proof/v0.1",
+      "status": "PREPARED_NOT_POSTED",
+      "canon": false,
+      "deployment": false,
+      "authority": "none",
+      "identity_assurance": "SYNTHETIC_NOT_HOST_ATTESTED",
+      "source_rights": "NOT_HOST_ATTESTED",
+      "semantic_review": "UNREVIEWED",
+      "example_only": true,
+      "id": "ex-score-001",
+      "kind": "scoreboard_update",
+      "actor": "fictional-auditor",
+      "references": [
+        "ex-mirror-001",
+        "ex-receipt-001"
+      ],
+      "payload": {
+        "real_messages": 0,
+        "real_peer_replies": 0,
+        "verified_completions": 0,
+        "claims_ratified": 0,
+        "fixture_records": 9,
+        "scope": "SYNTHETIC_TEST_ONLY"
+      }
+    }
+  ]
+}
