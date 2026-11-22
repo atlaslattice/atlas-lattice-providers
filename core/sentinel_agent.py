@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from hashlib import sha256
 import json
 import os
+import stat
 from pathlib import Path
 from typing import Any
 
@@ -21,6 +22,7 @@ except ImportError:  # allow direct invocation from this directory in isolated t
 PRIVATE_MODES = frozenset({"PLAY", "SOCIAL", "QUIET", "DREAM", "IMAGINE", "BRAIN", "PALACE", "HABITAT", "NO_HARVEST"})
 DESTRUCTIVE_ACTIONS = frozenset({"delete", "purge", "destroy", "erase", "overwrite", "truncate", "revoke_all", "wipe"})
 PROMOTION_ACTIONS = frozenset({"deploy", "publish", "activate_canon", "ratify", "approve", "change_iam", "spend", "external_write"})
+SAFE_REVIEW_ACTIONS = frozenset({"review", "inspect", "summarize", "audit", "propose", "prepare_candidate"})
 SCHEMA = "atlas.sentinel.candidate-review/v0.1"
 
 
@@ -108,6 +110,9 @@ def inspect(data: str | bytes | dict[str, Any], *, declared_mode: str = "WORK") 
     elif basic.status != "REVIEWABLE_LOCAL_ONLY":
         reasons.extend(basic.reasons)
         disposition = "HOLD_CANDIDATE"
+    elif action not in SAFE_REVIEW_ACTIONS:
+        reasons.append("UNKNOWN_ACTION_NO_EXECUTION_CONTRACT")
+        disposition = "HOLD_CANDIDATE"
     else:
         reasons.append("CANDIDATE_REVIEW_ONLY_NO_AUTHORIZATION")
         disposition = "REVIEWABLE_LOCAL_ONLY"
@@ -135,9 +140,16 @@ def append_receipt(path: str | Path, outcome: SentinelReview) -> None:
     # Existing writable directory is required; no implicit path discovery.
     if not target.parent.is_dir() or target.is_symlink():
         raise ValueError("INVALID_RECEIPT_DESTINATION")
-    fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+    fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_APPEND | getattr(os, "O_NOFOLLOW", 0), 0o600)
     try:
-        os.write(fd, payload)
+        if not stat.S_ISREG(os.fstat(fd).st_mode):
+            raise ValueError("NOT_A_REGULAR_RECEIPT_FILE")
+        cursor = 0
+        while cursor < len(payload):
+            written = os.write(fd, payload[cursor:])
+            if written <= 0:
+                raise OSError("SHORT_RECEIPT_WRITE")
+            cursor += written
         os.fsync(fd)
     finally:
         os.close(fd)
