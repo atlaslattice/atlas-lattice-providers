@@ -17,6 +17,35 @@ def claim():
 
 
 class ResolverTests(unittest.TestCase):
+    def test_self_declared_private_sources_and_metadata_never_echo(self):
+        secret = "FICTIONAL_PRIVACY_SENTINEL_DO_NOT_ECHO"
+        for mode in ("PLAY", "SOCIAL", "QUIET", "IMAGINE", "DREAM", None, 1):
+            with self.subTest(mode=repr(mode)):
+                c = claim()
+                c["mode"] = mode
+                c["payload"] = {"secret": secret}
+                result = resolver.resolve_to_earth(c)
+                self.assertEqual(result["status"], "HELD_PRIVATE_MODE")
+                self.assertEqual(result["route"], "quarantine")
+                self.assertIsNone(result["original_claim"])
+                self.assertNotIn(secret, repr(result))
+                self.assertFalse(resolver.validate_grounding(result)["valid"])
+        for flag in (True, None, "false", 0):
+            with self.subTest(no_harvest=repr(flag)):
+                c = claim()
+                c["no_harvest"] = flag
+                c["body"] = secret
+                result = resolver.resolve_to_earth(c)
+                self.assertEqual(result["status"], "HELD_PRIVATE_MODE")
+                self.assertNotIn(secret, repr(result))
+        wrapped = resolver.wrap_as_coordinate_packet(
+            claim(), {"mode": "IMAGINE", "secret": secret})
+        self.assertEqual(wrapped["status"], "HELD_PRIVATE_MODE")
+        self.assertNotIn(secret, repr(wrapped))
+        self.assertNotIn("caller_metadata", wrapped)
+        normal = resolver.resolve_to_earth(dict(claim(), mode="WORK", no_harvest=False))
+        self.assertEqual(normal["route"], "candidate_review")
+
     def test_valid_references_earth_and_preserves_origin(self):
         original = claim()
         r = resolver.resolve_to_earth(original)
