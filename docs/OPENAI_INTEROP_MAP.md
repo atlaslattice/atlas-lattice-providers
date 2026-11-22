@@ -76,3 +76,16 @@ Registration validates identifier/name, input-schema type, safety label and bool
 - `SCORED`: backend was invoked and returned a valid score. `score_basis="BACKEND_RESPONSE_UNVERIFIED"` means neither source truth, evaluator independence, scientific validation nor CANON were established.
 
 `simulate=True` never calls an explicitly supplied evaluator. Changes to downstream readers should distinguish `score=null` from zero performance and reject unreviewed `SCORED` as a sufficient release gate. Tests in `tests/test_eval_truthfulness.py` cover the original false-positive case, malformed/nonfinite grades, backend failures and persistence. This is a **local contract correction**, not verification of an external grader or a hosted rollout.
+
+
+## Evaluation dataset filename integrity (v0.4, offline source-only)
+
+Previously, dataset labels were normalized by replacing punctuation with underscores, so labels such as `a/b` and `a_b` mapped to the same JSONL path and the second dataset silently truncated the first. This was reproduced against the v0.3 module.
+
+- Dataset names are **identifiers, not paths**: only ASCII letters, digits, hyphen and underscore; length 1–80. Ambiguous, internationalized or path-like labels fail explicitly instead of being silently normalized. `None` and the empty string retain the historical default `atlas_lattice_eval`.
+- `create_eval_dataset` prepares serialization before opening and uses exclusive `x` creation. A duplicate name raises `FileExistsError`; existing files and symlinks are not followed or overwritten. In-memory mappings change only after successful file write.
+- The same checked name applies to result lookup. Existing safe-name datasets remain readable across process restarts.
+- Case-only names may be distinct on case-sensitive hosts; on a case-insensitive filesystem the second create must fail, **never replace** the first.
+- The local test file `tests/test_eval_dataset_integrity.py` includes malformed labels, alias-collision reproduction, restart persistence, symlinks, failed writes and eight concurrent writers. The test alone does not prove deployed host behavior.
+
+**Compatibility / migration:** Legacy datasets created under lossy-normalized names remain untouched. They must be individually mapped to a new safe label under independent source review, not silently renamed, imported or overwritten. New results are still local append-only JSONL by convention, **not** a tamper-evident ledger or current-rights enforcement. No CANON, verified scientific claim, authenticated principal, or runtime deployment follows from this patch.
