@@ -202,13 +202,13 @@ class OpenAITracingToGoldenTrace:
                                  "untrusted_trace_payload": event.payload},
                         lattice_coords=(2, 5, 1))
                     if inspect.isawaitable(result):
-                        await result
-                    emitted = True
+                        result = await result
+                    emitted = result is not False
                 elif hasattr(self.action_ledger, "emit"):
                     result = self.action_ledger.emit("openai_trace_ingested", event.to_dict())
                     if inspect.isawaitable(result):
-                        await result
-                    emitted = True
+                        result = await result
+                    emitted = result is not False
             except Exception:
                 logger.warning("ActionLedger emission failed; local receipt preserved")
         return {"feature": "openai_tracing_to_golden_trace",
