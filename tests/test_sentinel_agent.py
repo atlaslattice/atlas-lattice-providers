@@ -137,6 +137,17 @@ class SentinelTests(unittest.TestCase):
         p=candidate(); p["no_harvest"] = True
         self.assertEqual(inspect(p).disposition,"HOLD_PRIVATE_BOUNDARY")
 
+    def test_untyped_no_harvest_values_hold_without_body(self):
+        for flag in (0, 1, "false", "true", None, [], {}):
+            with self.subTest(flag=repr(flag)):
+                p = candidate()
+                p["no_harvest"] = flag
+                p["payload"] = {"secret": "fictional-private-not-for-work"}
+                result = inspect(p)
+                self.assertEqual(result.disposition, "HOLD_PRIVATE_BOUNDARY")
+                self.assertIsNone(result.retained_work_packet)
+                self.assertNotIn("fictional-private-not-for-work", json.dumps(result.receipt()))
+
     def test_cannot_persist_private(self):
         with tempfile.TemporaryDirectory() as d:
             with self.assertRaises(ValueError):

@@ -82,7 +82,7 @@ def inspect(data: str | bytes | dict[str, Any], *, declared_mode: str = "WORK") 
     except (ValueError, UnicodeDecodeError, TypeError) as exc:
         return SentinelReview("QUARANTINE_UNPARSEABLE", (type(exc).__name__,), digest, size, mode,
                               None, (), False)
-    if packet.get("mode", "WORK") != "WORK" or packet.get("no_harvest") is True:
+    if packet.get("mode", "WORK") != "WORK" or packet.get("no_harvest", False) is not False:
         return SentinelReview("HOLD_PRIVATE_BOUNDARY", ("UNAUTHORIZED_OR_PRIVATE_SOURCE_MODE",), digest,
                               size, str(packet.get("mode", "UNKNOWN")), None, (), False)
     reasons: list[str] = []
