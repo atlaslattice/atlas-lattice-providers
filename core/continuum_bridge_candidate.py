@@ -14,6 +14,7 @@ SCHEMA = "atlas.continuum-link/candidate-v0.1"
 PACKET96 = "atlas.transparent-packet96/candidate-v0.1"
 COORD = re.compile(r"^H(0[0-9]|1[01])\.S(0[0-9]|1[01])\.N(0[0-9]|1[01])$")
 D = re.compile(r"^D(0[1-9]|1[0-2])$")
+CONTINUUM_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$")
 BRIDGES = frozenset({"message", "receipt", "claim", "mirror", "review", "simulation", "human_root_decision"})
 SCOPES = frozenset({"PUBLIC_REPORTED", "WORK_REPORTED"})
 MAX_BYTES = 65536
@@ -84,9 +85,13 @@ def propose(source: dict | str | bytes) -> dict:
                 reasons.append("MISSING_" + key.upper())
         if not (type(obj.get("coordinate")) is str and COORD.fullmatch(obj["coordinate"])):
             reasons.append("INVALID_12X12X12_COORDINATE")
-        if obj.get("bridge_type") not in BRIDGES if type(obj.get("bridge_type")) is str else True:
+        for key in ("source_continuum_id", "target_continuum_id"):
+            v = obj.get(key)
+            if type(v) is not str or not CONTINUUM_ID.fullmatch(v):
+                reasons.append("UNSAFE_" + key.upper())
+        if type(obj.get("bridge_type")) is not str or obj["bridge_type"] not in BRIDGES:
             reasons.append("INVALID_BRIDGE_TYPE")
-        if obj.get("source_scope") not in SCOPES if type(obj.get("source_scope")) is str else True:
+        if type(obj.get("source_scope")) is not str or obj["source_scope"] not in SCOPES:
             reasons.append("PRIVATE_OR_UNKNOWN_SCOPE")
         if obj.get("rights_status") != "UNVERIFIED":
             reasons.append("UNSUPPORTED_RIGHTS_ATTESTATION")
@@ -99,15 +104,20 @@ def propose(source: dict | str | bytes) -> dict:
             reasons.append("AUTHORITY_OR_ACTION_REQUEST")
         if obj.get("no_harvest") is not False or obj.get("mode") not in ("WORK", "PUBLIC"):
             reasons.append("PRIVATE_MODE_OR_UNKNOWN_HARVEST")
-        affinities = obj.get("d_affinity", [])
+        affinities = obj.get("d_affinity")
         if type(affinities) is not list or any(type(x) is not str or not D.fullmatch(x) for x in affinities):
             reasons.append("BAD_D_AFFINITY")
-        dissent = obj.get("dissent_refs", [])
+        dissent = obj.get("dissent_refs")
         if type(dissent) is not list or any(not _text(x) for x in dissent):
             reasons.append("BAD_DISSENT_REFS")
     if reasons:
+        # Do not retain even length/fingerprint signals for self-declared
+        # leisure/private or unknown-scope material. No Play-to-Work harvest.
+        private = ("PRIVATE_MODE_OR_UNKNOWN_HARVEST" in reasons or
+                   "PRIVATE_OR_UNKNOWN_SCOPE" in reasons)
         return {"status": "HOLD", "reason_codes": sorted(set(reasons)),
-                "source_sha256": digest, "source_bytes": len(raw),
+                "source_sha256": None if private else digest,
+                "source_bytes": None if private else len(raw),
                 "packet96": None, "link": None, "authority_effect": "NONE"}
 
     # Source pointer and dissent references are hashed to prevent accidental
