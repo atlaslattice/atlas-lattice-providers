@@ -39,6 +39,10 @@ def _reject_nonfinite_float(value: str) -> float:
     number = float(value)
     if not math.isfinite(number):
         raise ValueError("nonfinite JSON number")
+    # A nonzero JSON mantissa rounded to float zero loses numeric meaning.
+    # Hold instead of silently converting tiny evidence weights to zero.
+    if number == 0.0 and any(d in "123456789" for d in value.lower().split("e", 1)[0]):
+        raise ValueError("underflowed nonzero JSON number")
     return number
 
 
