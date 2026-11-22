@@ -149,12 +149,20 @@ def append_receipt(path: str | Path, outcome: SentinelReview) -> None:
                           allow_nan=False, separators=(",", ":")) + "\n").encode("utf-8")
     target = Path(path)
     # Existing writable directory is required; no implicit path discovery.
-    if not target.parent.is_dir() or target.is_symlink():
+    # Refuse path-component symlinks as well as final symlinks: an alias may
+    # silently redirect a Work receipt into an unrelated directory.
+    if not target.parent.is_dir() or target.is_symlink() or any(p.is_symlink() for p in target.parents):
         raise ValueError("INVALID_RECEIPT_DESTINATION")
     fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_APPEND | getattr(os, "O_NOFOLLOW", 0), 0o600)
     try:
-        if not stat.S_ISREG(os.fstat(fd).st_mode):
+        attrs = os.fstat(fd)
+        if not stat.S_ISREG(attrs.st_mode):
             raise ValueError("NOT_A_REGULAR_RECEIPT_FILE")
+        # O_CREAT's 0600 mode does not repair permissions on an existing file.
+        # Do not append source/dissent to an exposed file or a hardlink alias.
+        if (attrs.st_nlink != 1 or (os.name == "posix" and
+                (stat.S_IMODE(attrs.st_mode) & 0o077 or attrs.st_uid != os.geteuid()))):
+            raise ValueError("INSECURE_RECEIPT_FILE")
         cursor = 0
         while cursor < len(payload):
             written = os.write(fd, payload[cursor:])
