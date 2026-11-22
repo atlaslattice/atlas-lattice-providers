@@ -28,9 +28,42 @@ class ResolverTests(unittest.TestCase):
         self.assertEqual(original, claim())
 
     def test_legacy_fallback_is_not_accepted(self):
-        for bad in ("banana", "H12.S00.N00", "H01.S12.N00", "H01.S01.N12", "H01.S02.N03 junk", "h01.s02.n03"):
+        for bad in ("banana", "H12.S00.N00", "H01.S12.N00", "H01.S01.N00", "H01.S02.N03 junk", "h01.s02.n03"):
             c = claim(); c["coordinate"] = bad
             self.assertEqual(resolver.resolve_to_earth(c)["route"], "quarantine")
+
+    def test_full_ariadne_v07_1728_coordinate_lattice(self):
+        # All twelve houses, twelve spheres and twelve nodes must be reachable.
+        valid = 0
+        for h in range(1, 13):
+            for sphere in range(1, 13):
+                for node in range(1, 13):
+                    c = claim()
+                    c["coordinate"] = f"H{h:02d}.S{sphere:02d}.N{node:02d}"
+                    resolved = resolver.resolve_to_earth(c)
+                    self.assertEqual(resolved["route"], "candidate_review", c["coordinate"])
+                    self.assertEqual(resolved["earth_reference"], "H00.S00.N00")
+                    self.assertTrue(resolver.validate_grounding(resolved)["valid"], c["coordinate"])
+                    valid += 1
+        self.assertEqual(valid, 1728)
+
+    def test_earth_sentinel_is_output_only_not_a_knowledge_coordinate(self):
+        for invalid in ("H00.S00.N00", "H00.S01.N01", "H01.S00.N01",
+                        "H01.S01.N00", "H00.S12.N12"):
+            c = claim(); c["coordinate"] = invalid
+            r = resolver.resolve_to_earth(c)
+            self.assertEqual(r["route"], "quarantine", invalid)
+            self.assertEqual(r["original_claim"], c)
+            self.assertEqual(r["earth_reference"], "H00.S00.N00")
+            self.assertFalse(resolver.validate_grounding(r)["valid"], invalid)
+
+    def test_out_of_range_and_malformed_coordinates_are_quarantined(self):
+        for invalid in ("H13.S12.N12", "H12.S13.N12", "H12.S12.N13",
+                        "H99.S01.N01", "H01.S99.N01", "H01.S01.N99",
+                        "H001.S01.N01", "H12.S012.N12", "H12.S12.N012",
+                        "H-1.S01.N01", "H12.S12.N12 ", "h12.s12.n12"):
+            c = claim(); c["coordinate"] = invalid
+            self.assertEqual(resolver.resolve_to_earth(c)["route"], "quarantine", invalid)
 
     def test_missing_provenance_is_quarantined(self):
         for field in ("claim_id", "source_ref", "source_continuum_id"):
