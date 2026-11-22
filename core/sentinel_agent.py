@@ -63,16 +63,27 @@ def inspect(data: str | bytes | dict[str, Any], *, declared_mode: str = "WORK") 
     No body from a private mode enters an output or persisted receipt.
     A source status of REVIEWABLE is always an offline proposal, never permission.
     """
-    if type(data) is dict:
-        raw = packet96_to_json(data).encode("utf-8")
-    elif type(data) is str:
-        raw = data.encode("utf-8")
-    elif type(data) is bytes:
-        raw = data
-    else:
+    if type(data) not in (dict, str, bytes):
         raise TypeError("data must be exact UTF-8 JSON bytes, text, or dict")
-    digest, size = _digest(raw), len(raw)
     mode = str(declared_mode).upper()
+    try:
+        if type(data) is dict:
+            raw = packet96_to_json(data).encode("utf-8")
+        elif type(data) is str:
+            raw = data.encode("utf-8")
+        else:
+            raw = data
+    except (ValueError, TypeError, UnicodeError, RecursionError, OverflowError):
+        # No exact source bytes exist, so do not invent a SHA-256 or retain
+        # possibly private data in an error or a candidate receipt.
+        if mode != "WORK":
+            return SentinelReview("HOLD_PRIVATE_BOUNDARY",
+                                  ("NO_LEISURE_OR_PRIVATE_WORK_IMPORT", "SOURCE_BYTES_UNAVAILABLE"),
+                                  "", 0, mode, None, (), False)
+        return SentinelReview("QUARANTINE_UNPARSEABLE",
+                              ("NON_SERIALIZABLE_SOURCE", "SOURCE_BYTES_UNAVAILABLE"),
+                              "", 0, mode, None, (), False)
+    digest, size = _digest(raw), len(raw)
     if mode != "WORK":
         return SentinelReview("HOLD_PRIVATE_BOUNDARY", ("NO_LEISURE_OR_PRIVATE_WORK_IMPORT",), digest,
                               size, mode, None, (), False)
