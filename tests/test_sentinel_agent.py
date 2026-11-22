@@ -172,6 +172,35 @@ class SentinelTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 append_receipt(path,inspect(candidate()))
 
+    def test_nested_nonserializable_dict_quarantined(self):
+        p = candidate(); p["payload"]["not_serializable"] = object()
+        r = inspect(p)
+        self.assertEqual(r.disposition, "QUARANTINE_UNPARSEABLE")
+        self.assertIsNone(r.retained_work_packet)
+        self.assertEqual(r.source_sha256, "")
+        self.assertEqual(r.source_bytes, 0)
+        self.assertIn("SOURCE_BYTES_UNAVAILABLE", r.reasons)
+        self.assertNotIn("not_serializable", json.dumps(r.receipt()))
+
+    def test_nonfinite_dict_quarantined_without_uncaught_exception(self):
+        p = candidate(); p["payload"]["number"] = float("nan")
+        self.assertEqual(inspect(p).disposition, "QUARANTINE_UNPARSEABLE")
+
+    def test_cyclic_dict_quarantined_without_uncaught_exception(self):
+        p = candidate(); p["payload"]["cycle"] = p
+        r = inspect(p)
+        self.assertEqual(r.disposition, "QUARANTINE_UNPARSEABLE")
+        self.assertIsNone(r.retained_work_packet)
+
+    def test_lone_surrogate_and_private_source_unserializable(self):
+        p = candidate(); p["payload"]["bad_utf8"] = "\ud800"
+        self.assertEqual(inspect(p).disposition, "QUARANTINE_UNPARSEABLE")
+        p = candidate(); p["payload"]["private"] = object()
+        r = inspect(p, declared_mode="PLAY")
+        self.assertEqual(r.disposition, "HOLD_PRIVATE_BOUNDARY")
+        self.assertIsNone(r.retained_work_packet)
+        self.assertNotIn("private", json.dumps(r.receipt()))
+
     def test_non_dict_or_text_input_rejected(self):
         with self.assertRaises(TypeError):inspect([1,2])
 
