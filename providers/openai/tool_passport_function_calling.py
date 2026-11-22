@@ -31,9 +31,29 @@ class ToolPassportFunctionCalling:
         self.authorization_verifier = authorization_verifier
 
     def register_passport(self, passport: ToolPassport) -> Dict[str, Any]:
+        # Check the complete ID/name namespace before mutating either registry.
+        # Reject collisions and malformed schemas, including partial-register leaks.
+        if not isinstance(passport.id, str) or not passport.id.strip():
+            raise ValueError("ToolPassport requires a nonempty id")
+        if not isinstance(passport.name, str) or not passport.name.strip():
+            raise ValueError("ToolPassport requires a nonempty name")
+        if not isinstance(passport.input_schema, dict):
+            raise ValueError("ToolPassport requires dict input_schema")
+        if passport.safety_level not in ("read", "write", "destructive", "admin"):
+            raise ValueError("ToolPassport requires recognized safety_level")
+        if not isinstance(passport.requires_approval, bool):
+            raise ValueError("ToolPassport requires boolean requires_approval")
+        for key in {passport.name, passport.id}:
+            previous = self._passports.get(key)
+            if previous is not None and previous != passport:
+                raise ValueError(f"ToolPassport alias collision: {key}")
+        prior_schema = getattr(self.schema_spine, "_registry", {}).get(passport.id)
+        if prior_schema is not None and prior_schema != passport:
+            raise ValueError(f"ToolPassport alias collision: schema registry id {passport.id}")
+        result = self.schema_spine.register_tool_passport(passport)
         self._passports[passport.name] = passport
         self._passports[passport.id] = passport
-        return self.schema_spine.register_tool_passport(passport)
+        return result
 
     def get_openai_tools(self) -> List[Dict[str, Any]]:
         unique = {p.id: p for p in self._passports.values()}.values()
