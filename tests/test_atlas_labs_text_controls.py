@@ -61,6 +61,32 @@ class ReviewTextBoundaryTests(unittest.TestCase):
             pass
         self.assertFalse(_text(E("Hello")))
 
+    def test_hidden_format_controls_are_not_review_text(self):
+        # All are non-printing; accepting them would permit visually
+        # indistinguishable but byte-distinct synthetic review statements.
+        for cp in (0x00AD, 0x034F, 0x180E, 0x200B,
+                   0x2060, 0x2061, 0x2062, 0x2063, 0x2064, 0x206A):
+            with self.subTest(codepoint=f"U+{cp:04X}"):
+                self.assertFalse(_text("Public" + chr(cp) + " review"))
+
+    def test_multilingual_joiners_are_preserved(self):
+        # Joiners are meaningful in real writing; reject only selected
+        # invisible review-format controls, not all non-ASCII text.
+        for example in ("Hello 👩‍🔬", "فارسی‌نویسی", "α + β → γ"):
+            with self.subTest(example=example):
+                self.assertTrue(_text(example))
+
+    def test_prepare_holds_hidden_format_in_each_review_field(self):
+        base = json.loads((ROOT / "examples/atlas_labs_v32_synthetic.json").read_text(encoding="utf-8"))
+        for field in ("title", "hypothesis", "falsifier", "model_revision"):
+            for cp in (0x00AD, 0x034F, 0x200B, 0x2060, 0x2063):
+                with self.subTest(field=field, codepoint=f"U+{cp:04X}"):
+                    record = copy.deepcopy(base)
+                    record[field] = "Public" + chr(cp) + " review"
+                    self.assertEqual(prepare(record), {
+                        "status": "HOLD", "reason": "INVALID_OR_UNAUTHORIZED_PUBLIC_SOURCE",
+                        "source_count": 0, "candidate": None})
+
     def test_prepare_denies_spoof_text_without_echoing(self):
         # Integration case: requires the checked-out source and public fixture.
         base = json.loads(
