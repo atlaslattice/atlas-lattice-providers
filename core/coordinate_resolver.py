@@ -172,7 +172,9 @@ def resolve_to_earth(claim: Any) -> dict:
 def validate_grounding(resolved: Any) -> dict:
     """Structural acceptance only; a tampered or failed packet is not accepted."""
     problems = []
-    if not isinstance(resolved, dict):
+    # An untrusted dict subclass may override get/items and run caller code.
+    # Exact JSON-decoded objects are plain dicts; reject opaque packet wrappers.
+    if type(resolved) is not dict:
         return {"valid": False, "reasons": ["not_a_packet"]}
     if resolved.get("earth_reference") != EARTH:
         problems.append("wrong_earth_reference")
@@ -195,6 +197,13 @@ def validate_grounding(resolved: Any) -> dict:
         rechecked = resolve_to_earth(snapshot)
         if rechecked["route"] != "candidate_review":
             problems.append("source_no_longer_valid")
+        # No unverifiable top-level add-ons may ride on a valid candidate.
+        # Caller metadata is inert and JSON-shaped, not identity or authority.
+        extra = set(resolved) - set(rechecked) - {"caller_metadata"}
+        if extra:
+            problems.append("unexpected_packet_fields")
+        if "caller_metadata" in resolved and not _snapshot_json(resolved["caller_metadata"])[0]:
+            problems.append("caller_metadata_not_plain_json")
         for key in ("schema", "original_coordinate", "coordinate_edition", "coordinate_registry_digest", "d_affinity", "provenance", "continuum_context", "status", "route", "errors", "earth_reference"):
             if resolved.get(key) != rechecked.get(key):
                 problems.append("derived_field_mismatch:" + key)
