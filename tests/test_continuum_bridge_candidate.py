@@ -232,4 +232,32 @@ class CandidateBridgeTests(unittest.TestCase):
         self.assertEqual(out["status"], "REVIEWABLE_LOCAL_ONLY")
         self.assertRegex(out["source_sha256"], r"^[a-f0-9]{64}$")
 
+
+    def test_unpaired_escaped_unicode_holds_without_pointer_hash_crash(self):
+        # json.loads accepts these escape sequences as lone surrogates;
+        # previous source_ref/dissent hash encoding could raise raw errors.
+        for field, value in (
+            ("source_ref", chr(0xD800)),
+            ("claim_id", chr(0xDC00)),
+            ("dissent_refs", ["ok", chr(0xDFFF)]),
+        ):
+            with self.subTest(field=field):
+                candidate = good()
+                candidate[field] = value
+                raw = json.dumps(candidate, ensure_ascii=True)
+                out = propose(raw)
+                self.assertEqual(out["status"], "HOLD")
+                self.assertIn("INVALID_UNICODE_SCALAR", out["reason_codes"])
+                self.assertIsNone(out["source_sha256"])
+                self.assertIsNone(out["source_bytes"])
+                self.assertIsNone(out["link"])
+                self.assertIsNone(out["packet96"])
+
+    def test_valid_escaped_unicode_pair_still_reviewable(self):
+        candidate = good()
+        candidate["source_ref"] = "synthetic://bird-" + chr(0x1FABF)
+        candidate["dissent_refs"] = ["synthetic:" + chr(0x1F9EA)]
+        encoded = json.dumps(candidate, ensure_ascii=True)
+        self.assertEqual(propose(encoded)["status"], "REVIEWABLE_LOCAL_ONLY")
+
 if __name__=="__main__": unittest.main()
