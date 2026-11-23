@@ -73,8 +73,13 @@ def _decode(raw: Any) -> dict:
 
 # Reject spoof-prone directional marks and invisible line/paragraph control
 # characters in review-facing text, without excluding ordinary Unicode science.
-REVIEW_VISUAL_CONTROLS = frozenset({0x061C, 0x200E, 0x200F, 0x2028, 0x2029, 0xFEFF}
-    | set(range(0x202A, 0x202F)) | set(range(0x2066, 0x206A)))
+# Explicitly exclude invisible format operators in human-facing review fields.
+# Keep U+200C (ZWNJ) and U+200D (ZWJ): both carry legitimate multilingual
+# shaping/emoji meaning. This is not an input-language or Unicode ban.
+REVIEW_VISUAL_CONTROLS = frozenset(
+    {0x00AD, 0x034F, 0x061C, 0x180E, 0x200B, 0x200E, 0x200F,
+     0x2028, 0x2029, 0xFEFF}
+    | set(range(0x202A, 0x202F)) | set(range(0x2060, 0x2070)))
 
 
 def _text(x: Any, limit: int = 240) -> bool:
