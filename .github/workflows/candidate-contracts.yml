@@ -12,6 +12,7 @@ on:
       - 'tests/test_transparent_packet96.py'
       - 'tests/test_receipt_completeness.py'
       - 'tests/test_sentinel_agent.py'
+      - 'tests/test_sentinel_receipt_fifo.py'
       - 'core/sentinel_agent.py'
       - '.github/workflows/candidate-contracts.yml'
   push:
@@ -46,13 +47,42 @@ jobs:
           set -euo pipefail
           export PYTHONDONTWRITEBYTECODE=1
           python -m compileall -q core/coordinate_resolver.py core/transparent_packet96.py scripts/receipt_completeness.py
-          python -m unittest discover -s tests -p 'test_receipt_completeness.py' -v
-          python -m unittest discover -s tests -p 'test_coordinate_resolver.py' -v
-          python -m unittest discover -s tests -p 'test_transparent_packet96.py' -v
           if test -f core/sentinel_agent.py; then
             python -m compileall -q core/sentinel_agent.py
-            python -m unittest discover -s tests -p 'test_sentinel_agent.py' -v
           fi
+          python - <<'PY'
+          from pathlib import Path
+          import sys
+          import unittest
+          
+          required = (
+              ('scripts/receipt_completeness.py', 'tests/test_receipt_completeness.py'),
+              ('core/coordinate_resolver.py', 'tests/test_coordinate_resolver.py'),
+              ('core/transparent_packet96.py', 'tests/test_transparent_packet96.py'),
+          )
+          for source_path, test_path in required:
+              if not Path(source_path).is_file() or not Path(test_path).is_file():
+                  sys.exit(f'MISSING_REQUIRED_CONTRACT: {source_path} / {test_path}')
+          sentinel_source = Path('core/sentinel_agent.py').is_file()
+          sentinel_tests = Path('tests/test_sentinel_agent.py').is_file()
+          fifo_tests = Path('tests/test_sentinel_receipt_fifo.py').is_file()
+          if sentinel_source != sentinel_tests or (fifo_tests and not sentinel_source):
+              sys.exit('INCOMPLETE_SENTINEL_CONTRACT: source/test mismatch')
+          test_paths = [test for _, test in required]
+          if sentinel_source:
+              test_paths.append('tests/test_sentinel_agent.py')
+              if fifo_tests:
+                  test_paths.append('tests/test_sentinel_receipt_fifo.py')
+          for test_path in test_paths:
+              suite = unittest.defaultTestLoader.discover('tests', pattern=Path(test_path).name)
+              count = suite.countTestCases()
+              if count == 0:
+                  sys.exit(f'ZERO_TESTS_DISCOVERED: {test_path}')
+              print(f'CONTRACT_TESTS_DISCOVERED: {test_path}: {count}', flush=True)
+              outcome = unittest.TextTestRunner(verbosity=2).run(suite)
+              if not outcome.wasSuccessful():
+                  sys.exit(f'CONTRACT_TEST_FAILURE: {test_path}')
+          PY
       - name: Record safety boundary
         run: |
           echo 'LOCAL-CODE ONLY: No model calls, secrets, authentication, host integration, CANON, deployment, or resident action is tested here.'
