@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { captureSourceDomMap, resolveSourceDomRange } from '../src/dom_source_map.mjs';
+import { captureSourceDomMap, resolveSourceDomRange } from '../interop/swarmchat_v32/dom_source_map.mjs';
 const sourceRef = {roomId:'v32-work-test-01',seq:14,requestId:'deterministic-req-01'};
 const sha = text=>createHash('sha256').update(text,'utf8').digest('hex');
 
