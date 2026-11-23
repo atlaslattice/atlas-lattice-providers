@@ -58,6 +58,22 @@ class CandidateBridgeTests(unittest.TestCase):
             obj=good();obj["coordinate"]=coordinate
             with self.subTest(coordinate=coordinate):self.assertEqual(propose(obj)["status"],"HOLD")
 
+    def test_ariadne_v07_one_based_coordinate_range(self):
+        # All 1,728 canonical coordinates are H/S/N = 01..12, never 00.
+        for coordinate in ("H01.S01.N01", "H12.S12.N12", "H12.S01.N12",
+                           "H01.S12.N01"):
+            obj = good(); obj["coordinate"] = coordinate
+            with self.subTest(valid=coordinate):
+                self.assertEqual(propose(obj)["status"], "REVIEWABLE_LOCAL_ONLY")
+        for coordinate in ("H00.S01.N01", "H01.S00.N01", "H01.S01.N00",
+                           "H13.S12.N12", "H12.S13.N12", "H12.S12.N13"):
+            obj = good(); obj["coordinate"] = coordinate
+            with self.subTest(invalid=coordinate):
+                result = propose(obj)
+                self.assertEqual(result["status"], "HOLD")
+                self.assertIsNone(result["source_sha256"])
+                self.assertIsNone(result["packet96"])
+
     def test_missing_source_identity_hold(self):
         for field in ["claim_id", "source_ref", "source_continuum_id", "target_continuum_id"]:
             obj=good();obj.pop(field)
