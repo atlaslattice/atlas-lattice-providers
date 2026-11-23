@@ -97,6 +97,28 @@ class AtlasLabsTests(unittest.TestCase):
         self.assert_held({**fixture(), "quantities": [q]*9})
         self.assert_held({**fixture(), "quantities": [dict(q, value=1.0)]})
 
+    def test_ascii_only_scientific_decimal_strings(self):
+        # Unicode decimal digits may be parsed as numbers by Decimal but are
+        # not portable scientific-wire decimal syntax: fail closed in both APIs.
+        malformed = ("9٩", "1.٢", "1e+٩", "1e۹", "1.٢e+١")
+        for field in ("value", "uncertainty"):
+            for value in malformed:
+                with self.subTest(field=field, value=value):
+                    obj = fixture()
+                    obj["quantities"][0][field] = value
+                    self.assert_held(obj)
+                    self.assert_held(json.dumps(obj, ensure_ascii=False))
+        for good in ("0", "1.25", "1e+9", "1e-9"):
+            with self.subTest(valid_value=good):
+                obj = fixture()
+                obj["quantities"][0]["value"] = good
+                self.assertEqual(prepare(obj)["status"], "PREPARED_SOURCE_ONLY")
+        for good in ("0", "1.25", "1e-9"):
+            with self.subTest(valid_uncertainty=good):
+                obj = fixture()
+                obj["quantities"][0]["uncertainty"] = good
+                self.assertEqual(prepare(obj)["status"], "PREPARED_SOURCE_ONLY")
+
     def test_no_private_data_or_hidden_field_echo(self):
         x = fixture()
         for key in ("rawBody", "password", "token", "host_attested", "rights_epoch", "provider_api_key"):
