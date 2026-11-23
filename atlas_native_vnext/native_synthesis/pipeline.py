@@ -19,7 +19,7 @@ class OfflineAtlasPipeline:
         self.store=store
         self.native=NativeSynthesis()
 
-    def prepare(self, lab_input, *, tenant, account, principal, room, epoch=0):
+    def prepare(self, lab_input, *, tenant, principal, room, account=None, epoch=0):
         """Two separately validated candidates -> a durable local non-send record.
 
         Idempotent by (opaque HMAC scope, request_id, native digest). A revoked
@@ -52,7 +52,7 @@ class OfflineAtlasPipeline:
         except (WireError,KeyError,TypeError,ValueError,AttributeError):
             return generic_hold()
 
-    def withdraw_local(self, *, tenant, account, principal, room, source_sha256):
+    def withdraw_local(self, *, tenant, principal, room, source_sha256, account=None):
         """Synthetic local fencing only; cannot revoke actual account rights."""
         if type(source_sha256) is not str or not HEX64.fullmatch(source_sha256):
             return generic_hold()
