@@ -19,7 +19,7 @@ try:
 except ImportError:
     labs = None
 
-PR61_BLOB = 'eb667d20e8e80c463dbc84e1559d808dd803047c'
+PR61_BLOB = 'd3eb9cfe9009a23488b33f09dd1782fed93e28c3'
 HSN_SHA = '07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6'
 
 
