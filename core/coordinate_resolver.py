@@ -207,8 +207,14 @@ def validate_grounding(resolved: Any) -> dict:
         extra = set(resolved) - set(rechecked) - {"caller_metadata"}
         if extra:
             problems.append("unexpected_packet_fields")
-        if "caller_metadata" in resolved and not _snapshot_json(resolved["caller_metadata"])[0]:
-            problems.append("caller_metadata_not_plain_json")
+        if "caller_metadata" in resolved:
+            metadata = resolved["caller_metadata"]
+            # Enforce the same one-way private/no-harvest restriction on
+            # externally received packets as on locally wrapped metadata.
+            if _declared_private_mode(metadata):
+                problems.append("caller_metadata_private_mode_no_import")
+            elif not _snapshot_json(metadata)[0]:
+                problems.append("caller_metadata_not_plain_json")
         for key in ("schema", "original_coordinate", "coordinate_edition", "coordinate_registry_digest", "d_affinity", "provenance", "continuum_context", "status", "route", "errors", "earth_reference"):
             if resolved.get(key) != rechecked.get(key):
                 problems.append("derived_field_mismatch:" + key)
