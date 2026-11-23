@@ -19,7 +19,7 @@ class OfflineAtlasPipeline:
         self.store=store
         self.native=NativeSynthesis()
 
-    def prepare(self, lab_input, *, tenant, principal, room, epoch=0):
+    def prepare(self, lab_input, *, tenant, account, principal, room, epoch=0):
         """Two separately validated candidates -> a durable local non-send record.
 
         Idempotent by (opaque HMAC scope, request_id, native digest). A revoked
@@ -36,7 +36,7 @@ class OfflineAtlasPipeline:
                 return generic_hold()
             receipt=self.store.stage(tenant,principal,room,'review',
                                      result['labs_experiment_sha256'],rid,
-                                     result['native_experiment_sha256'],epoch)
+                                     result['native_experiment_sha256'],epoch,account=account)
             if receipt['status'] not in ('NEW_PREPARED_LOCAL_ONLY','DEDUPLICATED_PREPARED_LOCAL_ONLY'):
                 return generic_hold()
             return {'status':'LOCAL_REVIEW_PREPARED_NOT_SENT',
@@ -52,8 +52,8 @@ class OfflineAtlasPipeline:
         except (WireError,KeyError,TypeError,ValueError,AttributeError):
             return generic_hold()
 
-    def withdraw_local(self, *, tenant, principal, room, source_sha256):
+    def withdraw_local(self, *, tenant, account, principal, room, source_sha256):
         """Synthetic local fencing only; cannot revoke actual account rights."""
         if type(source_sha256) is not str or not HEX64.fullmatch(source_sha256):
             return generic_hold()
-        return self.store.withdraw(tenant,principal,room,'review',source_sha256)
+        return self.store.withdraw(tenant,principal,room,'review',source_sha256,account=account)
