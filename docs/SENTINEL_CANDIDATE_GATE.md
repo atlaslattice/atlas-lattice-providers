@@ -43,3 +43,11 @@ The additive guard now refuses symlink path components, refuses non-regular or m
 - Review retention and safe removal when privacy law/consent requires erasure; **INV-0 does not override lawful deletion**.
 
 Do not close the parent issue as a production integration on the basis of this candidate alone.
+
+## Private-mode metadata non-disclosure repair (2026-11-23, source-only)
+
+Original `inspect` generated a SHA-256 digest and byte count **before** recognizing a caller-declared non-Work mode, and its in-band private-mode HOLD returned those fields. A self-declared mode can additionally be non-string structured JSON, which the former receipt path stringified into `mode`. These are unnecessary private-source existence/length and metadata-echo surfaces. This is a source-code finding with fictional fixtures, **not evidence of real protected source ingestion or hosted exposure**.
+
+The additive candidate correction refuses explicitly non-Work caller mode **before serialization**, and shallow-checks an exact-dict in-band `mode` or `no_harvest` before visiting its payload. For textual/byte JSON, it checks decoded in-band metadata before returning any source fingerprint. Every recognized private-mode HOLD returns `source_sha256=""`, `source_bytes=0`, no candidate packet or dissent, and only a fixed enumerated mode label; any unusual/unrecognized mode is `UNKNOWN`. Existing valid `WORK` digest/byte receipts remain unchanged. Six checked-in synthetic regressions cover caller and in-band exclusions, non-serializable bodies, string/byte inputs, no-harvest and untrusted mode-value redaction, plus unchanged Work behavior.
+
+**Limits:** A textual/byte input necessarily requires local parsing to discover in-band metadata; there is no independent source rights or mode attestation. Invalid/undecodable Work-declared input retains the historical malformed-input digest behavior; this change is not a complete private-data protection protocol or host enforcement. Actual full-checkout test, CI runner steps, privacy/security review, current host principal, rights at READ and RETURN and independent owner acceptance remain HELD. Do not merge, publish, or promote CANON solely from this source-level repair.
