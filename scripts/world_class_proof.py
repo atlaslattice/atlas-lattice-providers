@@ -65,6 +65,19 @@ def rel(path: Path) -> str:
         return str(path)
 
 
+def in_repo_file(path: Path) -> bool:
+    """Accept only files whose resolved content stays within this checkout.
+
+    A candidate proof must not read or execute external symlink targets.
+    This is a source-only boundary, not a defense against concurrent
+    filesystem replacement by an adversarial host.
+    """
+    try:
+        return path.is_file() and path.resolve(strict=True).is_relative_to(ROOT.resolve(strict=True))
+    except (OSError, RuntimeError, ValueError):
+        return False
+
+
 def compile_targets() -> CheckResult:
     candidates = [
         "scripts/world_class_proof.py",
@@ -86,7 +99,7 @@ def compile_targets() -> CheckResult:
     failures: List[str] = []
     for name in candidates:
         path = ROOT / name
-        if not path.exists():
+        if not in_repo_file(path):
             missing.append(name)
             continue
         try:
@@ -104,7 +117,7 @@ def compile_targets() -> CheckResult:
 
 def run_optional_pytest() -> CheckResult:
     tests = ["tests/test_openai_interop.py"]
-    existing = [t for t in tests if (ROOT / t).exists()]
+    existing = [t for t in tests if in_repo_file(ROOT / t)]
     if not existing:
         return CheckResult("pytest_openai_interop", "WARN", "tests/test_openai_interop.py not present yet")
     try:
@@ -121,10 +134,10 @@ def scan_terms(name: str, required_terms: List[str], roots: List[str]) -> CheckR
     seen_files: List[str] = []
     for root in roots:
         path = ROOT / root
-        if path.is_file():
+        if in_repo_file(path):
             paths = [path]
-        elif path.is_dir():
-            paths = [p for p in path.rglob("*") if p.is_file() and p.suffix.lower() in {".py", ".md", ".yaml", ".yml", ".json", ".txt"}]
+        elif path.is_dir() and not path.is_symlink():
+            paths = [p for p in path.rglob("*") if in_repo_file(p) and p.suffix.lower() in {".py", ".md", ".yaml", ".yml", ".json", ".txt"}]
         else:
             continue
         for p in paths:
@@ -146,10 +159,10 @@ def scan_for_forbidden_term() -> CheckResult:
     hits: List[str] = []
     for root in roots:
         path = ROOT / root
-        if path.is_file():
+        if in_repo_file(path):
             paths = [path]
-        elif path.is_dir():
-            paths = [p for p in path.rglob("*") if p.is_file() and p.suffix.lower() in {".py", ".md", ".yaml", ".yml", ".json", ".txt"}]
+        elif path.is_dir() and not path.is_symlink():
+            paths = [p for p in path.rglob("*") if in_repo_file(p) and p.suffix.lower() in {".py", ".md", ".yaml", ".yml", ".json", ".txt"}]
         else:
             continue
         for p in paths:
@@ -174,8 +187,8 @@ def openai_readiness() -> CheckResult:
         ROOT / "docs/OPENAI_INTEROP_MAP.md",
         ROOT / "AGENTS.md",
     ]
-    present = [rel(f) for f in files if f.exists()]
-    missing = [rel(f) for f in files if not f.exists()]
+    present = [rel(f) for f in files if in_repo_file(f)]
+    missing = [rel(f) for f in files if not in_repo_file(f)]
     has_key = bool(os.getenv("OPENAI_API_KEY"))
     if missing:
         return CheckResult("openai_operability_surface", "WARN", f"missing={missing}; OPENAI_API_KEY_present={has_key}", present)
