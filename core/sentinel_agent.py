@@ -97,13 +97,14 @@ def inspect(data: str | bytes | dict[str, Any], *, declared_mode: str = "WORK") 
         return SentinelReview("QUARANTINE_UNPARSEABLE",
                               ("NON_SERIALIZABLE_SOURCE", "SOURCE_BYTES_UNAVAILABLE"),
                               "", 0, mode, None, (), False)
-    digest, size = _digest(raw), len(raw)
     try:
         # Strict JSON decoder rejects NaN, duplicate keys, non-objects and invalid encoding.
         packet = packet96_from_json(raw.decode("utf-8"))
     except (ValueError, UnicodeDecodeError, TypeError) as exc:
-        return SentinelReview("QUARANTINE_UNPARSEABLE", (type(exc).__name__,), digest, size, mode,
-                              None, (), False)
+        # Preserve the historical Work-declared malformed-input receipt;
+        # no accepted private-mode source reaches this branch.
+        return SentinelReview("QUARANTINE_UNPARSEABLE", (type(exc).__name__,),
+                              _digest(raw), len(raw), mode, None, (), False)
     packet_mode = packet.get("mode", "WORK")
     if (type(packet_mode) is not str or packet_mode != "WORK" or
             packet.get("no_harvest", False) is not False):
@@ -114,6 +115,8 @@ def inspect(data: str | bytes | dict[str, Any], *, declared_mode: str = "WORK") 
         return SentinelReview("HOLD_PRIVATE_BOUNDARY",
                               ("UNAUTHORIZED_OR_PRIVATE_SOURCE_MODE",),
                               "", 0, safe_mode, None, (), False)
+    # No source fingerprint is computed for a parsed private/no-harvest packet.
+    digest, size = _digest(raw), len(raw)
     reasons: list[str] = []
     action = packet.get("requested_action", "review")
     if type(action) is not str or not action.strip():
