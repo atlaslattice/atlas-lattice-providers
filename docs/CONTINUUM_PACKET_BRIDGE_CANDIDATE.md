@@ -77,3 +77,12 @@ source now accepts H01–H12 for every dimension and rejects H00; tests cover
 all three zero-coordinate positions plus H12 positive controls. This is a
 source-only address fix, not a changed ontology edition, semantic crosswalk,
 CANON adoption, host gate, or proof of live graph compatibility.
+
+## 2026-11-22 source-only Unicode scalar guard (bounded Work review)
+
+The JSON parser accepts escaped, unpaired UTF-16 surrogates as Python strings. In the previous adapter, syntactically valid JSON such as an escaped lone high surrogate in `source_ref` could pass `_text()` and then raise an uncaught `UnicodeEncodeError` when hashing the source/dissent pointer. This was a deterministic **offline review availability** defect, not a demonstrated hosted exploit or unauthorized source read.
+
+- Reversible candidate fix: before any fingerprint/pointer hash, perform `json.dumps(obj, ensure_ascii=False, allow_nan=False).encode("utf-8")`; malformed decoded scalar values now return `HOLD` / `INVALID_UNICODE_SCALAR` with no digest, byte count, Packet96, or link.
+- Two additive repository test methods cover escaped unpaired source_ref, claim_id and dissent entries, and one valid supplementary-plane Unicode pair. These checked-in methods require full-branch execution; **NOT yet executed in the checked-out repository**.
+- Seven independent extracted-guard synthetic unit cases passed in local Python normal mode and seven passed in optimized `-O` mode (14 executions), including nested/escaped/key invalid scalars, valid pair, ASCII, and valid non-BMP Unicode. This verifies only the focused guard invariant, not complete application integration.
+- Existing source/rights, principal and revocation boundaries are unchanged. PR remains **DRAFT / SOURCE ONLY / NOT HOSTED / NOT CANON**. Independently execute the full branch unit tests with runner steps, assess privacy/rights, reviewer acceptance, and separate stacked PR compatibility before any merge.
