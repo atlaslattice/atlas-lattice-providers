@@ -19,6 +19,15 @@ CONTINUUM_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$")
 BRIDGES = frozenset({"message", "receipt", "claim", "mirror", "review", "simulation", "human_root_decision"})
 SCOPES = frozenset({"PUBLIC_REPORTED", "WORK_REPORTED"})
 MAX_BYTES = 65536
+# Reject untyped extra fields, including caller-supplied raw protected bodies.
+# Schema extensions require separate review instead of silently hashing them.
+ALLOWED_SOURCE_FIELDS = frozenset({
+    "claim_id", "source_ref", "source_continuum_id", "target_continuum_id",
+    "coordinate", "bridge_type", "source_scope", "rights_status", "mode",
+    "no_harvest", "canon", "deployment", "collapse_allowed",
+    "identity_fusion_allowed", "authority", "requested_action",
+    "d_affinity", "dissent_refs",
+})
 
 
 def _reject_duplicate(pairs: list[tuple[str, Any]]) -> dict:
@@ -94,6 +103,8 @@ def propose(source: dict | str | bytes) -> dict:
         except (UnicodeDecodeError, ValueError, TypeError, RecursionError):
             reasons.append("UNPARSEABLE_JSON")
     if not reasons:
+        if set(obj) - ALLOWED_SOURCE_FIELDS:
+            reasons.append("UNRECOGNIZED_SOURCE_FIELDS")
         for key in ("claim_id", "source_ref", "source_continuum_id", "target_continuum_id"):
             if not _text(obj.get(key)):
                 reasons.append("MISSING_" + key.upper())
