@@ -10,6 +10,7 @@ from native_synthesis.wire import WireError
 
 SCOPE=('tenant-A','principal-A','work-room','review','a'*64)
 KEY=b'local-operator-secret-'*2
+ACCOUNT='account-A'
 
 class ReceiptStoreTest(unittest.TestCase):
     def setUp(self):
@@ -18,7 +19,7 @@ class ReceiptStoreTest(unittest.TestCase):
         self.s=OfflinePreparationStore(self.path,scope_key=KEY)
     def tearDown(self):self.s.close();self.d.cleanup()
     def stage(self,rid='review.001',digest='b'*64,epoch=0):
-        return self.s.stage(*SCOPE,rid,digest,epoch)
+        return self.s.stage(*SCOPE,rid,digest,epoch,account=ACCOUNT)
     def test_new_is_not_sent(self):
         x=self.stage()
         self.assertEqual(x['status'],'NEW_PREPARED_LOCAL_ONLY')
@@ -36,25 +37,25 @@ class ReceiptStoreTest(unittest.TestCase):
         self.assertEqual(self.stage()['status'],'DEDUPLICATED_PREPARED_LOCAL_ONLY')
     def test_withdraw_blocks_old_epoch(self):
         self.stage()
-        self.assertEqual(self.s.withdraw(*SCOPE)['new_epoch'],1)
+        self.assertEqual(self.s.withdraw(*SCOPE,account=ACCOUNT)['new_epoch'],1)
         self.assertEqual(self.stage('fresh.002',epoch=0)['status'],'HOLD')
     def test_regrant_doesnt_resurrect_old_request(self):
         self.stage()
-        self.s.withdraw(*SCOPE)
+        self.s.withdraw(*SCOPE,account=ACCOUNT)
         self.assertEqual(self.stage(epoch=1)['status'],'HOLD')
         self.assertEqual(self.stage('fresh.002',epoch=1)['status'],'NEW_PREPARED_LOCAL_ONLY')
     def test_replayed_epoch_after_restart(self):
-        self.s.withdraw(*SCOPE);self.s.close()
+        self.s.withdraw(*SCOPE,account=ACCOUNT);self.s.close()
         self.s=OfflinePreparationStore(self.path,scope_key=KEY)
         self.assertEqual(self.stage(epoch=0)['status'],'HOLD')
     def test_scope_collision_safe(self):
         self.stage()
-        other=self.s.stage('tenant-A','principal-A','work-room-x','review','a'*64,'review.001','b'*64,0)
+        other=self.s.stage('tenant-A','principal-A','work-room-x','review','a'*64,'review.001','b'*64,0,account=ACCOUNT)
         self.assertEqual(other['status'],'NEW_PREPARED_LOCAL_ONLY')
         self.assertEqual(self.s.report()['prepared_records'],2)
     def test_account_switch_different_scope(self):
         self.stage()
-        other=self.s.stage('tenant-B','principal-A','work-room','review','a'*64,'review.001','b'*64,0)
+        other=self.s.stage('tenant-B','principal-A','work-room','review','a'*64,'review.001','b'*64,0,account=ACCOUNT)
         self.assertEqual(other['status'],'NEW_PREPARED_LOCAL_ONLY')
     def test_wrong_key_after_restart_holds_before_replay(self):
         self.stage();self.s.close()
@@ -64,27 +65,56 @@ class ReceiptStoreTest(unittest.TestCase):
         self.assertEqual(self.stage()['status'],'DEDUPLICATED_PREPARED_LOCAL_ONLY')
     def test_epoch_saturation_never_resurrects_staging(self):
         # Synthetic local upper-bound probe; NOT a host rights withdrawal.
-        scope=self.s._scope(*SCOPE)
+        scope=self.s._scope(*SCOPE,account=ACCOUNT)
         self.s._conn.execute('INSERT OR REPLACE INTO scopes(scope_hash,epoch) VALUES (?,?)',
                              (scope,2147483646))
         self.assertEqual(self.stage('before-saturation',epoch=2147483646)['status'],
                          'NEW_PREPARED_LOCAL_ONLY')
-        r=self.s.withdraw(*SCOPE)
+        r=self.s.withdraw(*SCOPE,account=ACCOUNT)
         self.assertEqual(r['status'],'SIMULATED_WITHDRAWAL_ONLY')
         self.assertEqual(r['new_epoch'],2147483647)
         # Staged operations remain held even if caller guesses the final epoch.
         self.assertEqual(self.stage('after-saturation',epoch=2147483647)['status'],'HOLD')
-        self.assertEqual(self.s.withdraw(*SCOPE)['status'],'HOLD')
+        self.assertEqual(self.s.withdraw(*SCOPE,account=ACCOUNT)['status'],'HOLD')
         self.assertEqual(self.s.report()['prepared_records'],1)
 
     def test_saturated_epoch_survives_restart_and_fails_closed(self):
-        scope=self.s._scope(*SCOPE)
+        scope=self.s._scope(*SCOPE,account=ACCOUNT)
         self.s._conn.execute('INSERT OR REPLACE INTO scopes(scope_hash,epoch) VALUES (?,?)',
                              (scope,2147483647))
         self.s.close()
         self.s=OfflinePreparationStore(self.path,scope_key=KEY)
         self.assertEqual(self.stage('replay',epoch=2147483647)['status'],'HOLD')
+        self.assertEqual(self.s.withdraw(*SCOPE,account=ACCOUNT)['status'],'HOLD')
+
+    def test_same_tenant_principal_different_account_no_dedup(self):
+        self.stage()
+        second=self.s.stage(*SCOPE,'review.001','b'*64,0,account='account-B')
+        self.assertEqual(second['status'],'NEW_PREPARED_LOCAL_ONLY')
+        self.assertEqual(self.s.report()['prepared_records'],2)
+        self.assertEqual(self.s.withdraw(*SCOPE,account='account-B')['new_epoch'],1)
+        self.assertEqual(self.stage('fresh.002')['status'],'NEW_PREPARED_LOCAL_ONLY')
+
+    def test_missing_or_invalid_account_holds_without_writes(self):
+        self.assertEqual(self.s.stage(*SCOPE,'review.001','b'*64,0)['status'],'HOLD')
         self.assertEqual(self.s.withdraw(*SCOPE)['status'],'HOLD')
+        for account in (None,[],{},'private account',True):
+            with self.subTest(account=repr(account)):
+                self.assertEqual(self.s.stage(*SCOPE,'review.001','b'*64,0,account=account)['status'],'HOLD')
+        self.assertEqual(self.s.report()['prepared_records'],0)
+
+    def test_v02_database_not_silently_reused_with_new_account_scope(self):
+        import hmac,hashlib
+        self.s.close()
+        legacy=hmac.new(KEY,b'atlas.native.offline-receipts.key/v0.2','sha256').hexdigest()
+        db=sqlite3.connect(self.path)
+        db.execute("UPDATE meta SET value=? WHERE name='scope_key_id'",(legacy,))
+        db.commit();db.close()
+        with self.assertRaises(WireError): OfflinePreparationStore(self.path,scope_key=KEY)
+        # Old database remains present; use a different new filename in production.
+        self.assertTrue(Path(self.path).exists())
+        # TearDown needs an owned valid connection, not the refused legacy one.
+        self.s=OfflinePreparationStore(':memory:',scope_key=KEY)
 
     def test_multiple_threads_single_record(self):
         with ThreadPoolExecutor(max_workers=12) as ex:
@@ -103,12 +133,12 @@ class ReceiptStoreTest(unittest.TestCase):
     def test_bad_config_denied(self):
         with self.assertRaises(WireError):OfflinePreparationStore(':memory:',scope_key=b'short')
     def test_no_published_events(self):
-        self.stage();self.s.withdraw(*SCOPE)
+        self.stage();self.s.withdraw(*SCOPE,account=ACCOUNT)
         self.assertEqual(self.s.report()['published'],0)
         self.assertEqual(self.s.report()['peer_reads'],0)
     def test_different_source_no_membership_oracle(self):
         self.stage()
-        v=self.s.stage(*SCOPE[:-1],'b'*64,'review.001','b'*64,0)
+        v=self.s.stage(*SCOPE[:-1],'b'*64,'review.001','b'*64,0,account=ACCOUNT)
         self.assertEqual(v['status'],'NEW_PREPARED_LOCAL_ONLY')
         self.assertEqual(self.s.report()['prepared_records'],2)
 
