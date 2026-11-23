@@ -107,12 +107,47 @@ New source/negative controls added on this candidate branch:
   They remain self-reported candidate pointers: the code does not fetch or
   independently validate the referenced blob bytes or source licenses.
 - Atlas ONE v2 **separate rewrite PR #8** remains an independent candidate.
-  Its Work host-port currently omits explicit tenant/account fields from the
-  callbacks. A source-linked review raised this gap; no implication that an
-  actual hosted tenant leak has been observed, and no competing broker created.
+  Its initial Work host-port omitted explicit tenant/account fields; this was
+  repaired in draft PR #8 source. The installed host, D1 identity, and atomic
+  sink commit remain independently UNVERIFIED; no live leak is alleged.
 
 **Release HOLD:** GitHub Actions jobs are still reporting failure without
 recorded steps; host principal/tenant binding, two-account D1 READ/RETURN,
 actual model activation, durable receiver receipts, source privacy, publisher
 license/rollback, real UWS/QPU/science execution and matched competitor benchmarks
 must be separately observed. All research outputs are candidates until reviewed.
+
+## November 23, 2026 — offline account-bound receipt contract (v0.3)
+
+**Breaking, fail-closed local-only API amendment**, not a host-account grant:
+`OfflinePreparationStore.stage(...,account='...')`,
+`withdraw(...,account='...')`, and
+`OfflineAtlasPipeline.prepare(...,account='...')` now bind the account ID
+independently of tenant/principal/room/source. Absent or invalid account
+returns a generic `HOLD`, including the pipeline entrypoint.
+
+The HMAC scope namespace changed to
+`atlas.native.offline-receipts.key/v0.3.account-bound`. Opening an old
+v0.2 source-only SQLite ledger with the new code fails closed as
+`INVALID_CONFIG`; preserve original files for offline audit and use a NEW
+disposable v0.3 database. No automatic migration, deletion, or replay of old
+receipts. Only the issuer-owned host can authenticate an actual account;
+model-declared strings and the synthetic fixture do not.
+
+**Executable source evidence:** PR #63 head
+`7513eb74630d4661228da521aac8ba98eed7e2f8`;
+the account scope store, pipeline, tests and runner were fetched back from
+GitHub and matched their local Git blob hashes. Current local test run:
+**144 test methods, 118 passed + 26 skipped** in normal and optimized Python.
+The 26 skipped require a currently pinned separate Atlas Labs source checkout
+and are **not passed tests**. A byte-pinned historical PR61 fixture was
+different from newer PR61 HEAD, so current-host cross-repo parity is HOLD.
+
+**Differential falsifier:** historical v0.2 cannot represent account B as
+distinct: A and B under the same tenant/principal/room/request produce
+NEW/DEDUP and one stored receipt. Repaired v0.3 scopes them separately:
+NEW/NEW; B withdrawal leaves A's scope unchanged. This proves ONLY a
+synthetic SQLite contract, not a real SwarmChat two-account/D1/network
+boundary. CI issue #54 remains open: latest Eight Gates run
+[45236508176](https://github.com/atlaslattice/atlas-lattice-providers/actions/runs/45236508176)
+reported zero executed steps and missing logs. No merge/CANON/deployment.
