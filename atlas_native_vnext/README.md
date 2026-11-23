@@ -51,6 +51,16 @@ Keep independent Work permissions, real peer identity, source/revision rights, s
 
 See `docs/ARCHITECTURE.md`, `docs/OSS_SELECTION.md`, `docs/COMPETITOR_EVAL.md`, and `docs/HOST_ACCEPTANCE.md`.
 
+## v0.2 — PR61 ↔ PR63 offline source integration
+
+- Added `native_synthesis/interop.py` to reconcile **separately version-pinned** Atlas Labs v32 PR #61 and Native Synthesis PR #63 review packets. Source and ontology editions, unit semantics, source Git blob, experiment digest and three inert destinations must agree; missing/legacy HSN and unsupported unit conversions HOLD.
+- Added `native_synthesis/offline_receipts.py` and `native_synthesis/pipeline.py`: **real local SQLite staging transactions**, HMAC-obscured scope, replay/digest rejection across local restarts, monotone synthetic withdrawal epoch, and fail-closed HMAC-key rotation. No host rights or external delivery can result.
+- Added an optional exact-source smoke script that verifies PR61's `labs/atlas_labs_v32.py` Git blob SHA-1 `eb667d20e8e80c463dbc84e1559d808dd803047c` **before import**. PR61 code is not vendored in this branch; source-dependent tests skip when absent.
+- Independent local run with exact pinned PR61 source: **135/135 Python unittest methods passed** normally and with `python -O`; 1,024 synthetic adversarial checks passed; disposable PR61→PR63→SQLite smoke returned `LOCAL_REVIEW_PREPARED_NOT_SENT`.
+- The current public documentation omits the account-private broker locator; earlier PR commits may still contain historical references and require separate repository-owner review before public release. No Git history was force-rewritten.
+
+Runbook: [docs/ATLAS_NATIVE_PR61_PIPELINE_v02.md](docs/ATLAS_NATIVE_PR61_PIPELINE_v02.md). **The system is still SOURCE_ONLY and local-test verified, not CI or host verified, nor integrated into a live OpenAI/Atlas ONE/SwarmChat service.**
+
 ## Operating posture and known limitations
 
 - SOURCE_TRACED = documented GitHub URLs/commits and separately verified representative blob SHAs; not all 31 upstream sources exhaustively reviewed.
