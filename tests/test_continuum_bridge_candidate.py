@@ -177,4 +177,37 @@ class CandidateBridgeTests(unittest.TestCase):
         self.assertIsNone(proposal["packet96"])
         self.assertIsNone(proposal["link"])
 
+
+    def test_invalid_caller_labeled_work_never_fingerprinted(self):
+        # Mode/rights strings are untrusted. Invalid data can originate
+        # from any protected surface despite a self-reported Work label.
+        for key, value in (("coordinate", "wrong"),
+                           ("source_continuum_id", "https://invalid.test/path"),
+                           ("rights_status", "VERIFIED")):
+            obj = good()
+            obj[key] = value
+            with self.subTest(field=key):
+                out = propose(obj)
+                self.assertEqual(out["status"], "HOLD")
+                self.assertIsNone(out["source_sha256"])
+                self.assertIsNone(out["source_bytes"])
+
+    def test_unreviewed_extra_body_fields_cannot_enter_digest(self):
+        for extra in ("private_body", "privateMemo", "sourceText", "unreviewed"):
+            obj = good()
+            obj[extra] = "FICTIONAL_PRIVATE_CANARY"
+            with self.subTest(extra=extra):
+                out = propose(obj)
+                self.assertEqual(out["status"], "HOLD")
+                self.assertIn("UNRECOGNIZED_SOURCE_FIELDS", out["reason_codes"])
+                self.assertIsNone(out["source_sha256"])
+                self.assertIsNone(out["source_bytes"])
+                self.assertIsNone(out["packet96"])
+                self.assertIsNone(out["link"])
+
+    def test_valid_declared_review_candidate_retains_source_digest(self):
+        out = propose(good())
+        self.assertEqual(out["status"], "REVIEWABLE_LOCAL_ONLY")
+        self.assertRegex(out["source_sha256"], r"^[a-f0-9]{64}$")
+
 if __name__=="__main__": unittest.main()
