@@ -112,5 +112,62 @@ class TestProofReceiptCustody(unittest.TestCase):
         self.assertFalse((source.parent / "__pycache__").exists())
 
 
+    def test_external_symlink_is_not_proof_of_required_terms(self):
+        with tempfile.TemporaryDirectory() as outside:
+            target = Path(outside) / "external.md"
+            target.write_text("CONTINUUM OS multiple continuums")
+            (proof.ROOT / "docs").mkdir()
+            (proof.ROOT / "docs/synthetic.md").symlink_to(target)
+            outcome = proof.scan_terms(
+                "terms", ["CONTINUUM OS", "multiple continuums"], ["docs"]
+            )
+            self.assertEqual(outcome.status, "WARN")
+            self.assertEqual(outcome.files, [])
+
+    def test_external_symlink_cannot_trigger_legacy_name_failure(self):
+        with tempfile.TemporaryDirectory() as outside:
+            target = Path(outside) / "external.md"
+            target.write_text("Continuity OS")
+            (proof.ROOT / "docs").mkdir()
+            (proof.ROOT / "docs/synthetic.md").symlink_to(target)
+            outcome = proof.scan_for_forbidden_term()
+            self.assertEqual(outcome.status, "PASS")
+            self.assertEqual(outcome.files, [])
+
+    def test_outside_symlinked_python_cannot_be_compiled_or_tested(self):
+        with tempfile.TemporaryDirectory() as outside:
+            target = Path(outside) / "external.py"
+            target.write_text("raise RuntimeError('must never run')")
+            (proof.ROOT / "scripts").mkdir()
+            (proof.ROOT / "tests").mkdir()
+            (proof.ROOT / "scripts/world_class_proof.py").symlink_to(target)
+            (proof.ROOT / "tests/test_openai_interop.py").symlink_to(target)
+            self.assertFalse(proof.in_repo_file(proof.ROOT / "scripts/world_class_proof.py"))
+            self.assertFalse(proof.in_repo_file(proof.ROOT / "tests/test_openai_interop.py"))
+            self.assertNotIn("scripts/world_class_proof.py", proof.compile_targets().files)
+            self.assertEqual(proof.run_optional_pytest().status, "WARN")
+
+    def test_internal_regular_source_remains_valid(self):
+        (proof.ROOT / "docs").mkdir()
+        source = proof.ROOT / "docs/synthetic.md"
+        source.write_text("CONTINUUM OS multiple continuums")
+        self.assertTrue(proof.in_repo_file(source))
+        self.assertEqual(
+            proof.scan_terms("terms", ["CONTINUUM OS", "multiple continuums"], ["docs"]).status,
+            "PASS",
+        )
+        source.write_text("Continuity OS")
+        self.assertEqual(proof.scan_for_forbidden_term().status, "FAIL")
+
+    def test_external_symlink_directory_is_not_scanned(self):
+        with tempfile.TemporaryDirectory() as outside:
+            target = Path(outside) / "external.md"
+            target.write_text("CONTINUUM OS multiple continuums")
+            (proof.ROOT / "docs").symlink_to(Path(outside), target_is_directory=True)
+            self.assertEqual(
+                proof.scan_terms("terms", ["CONTINUUM OS"], ["docs"]).status, "WARN"
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
