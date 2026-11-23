@@ -116,6 +116,54 @@ class ReceiptStoreTest(unittest.TestCase):
         # TearDown needs an owned valid connection, not the refused legacy one.
         self.s=OfflinePreparationStore(':memory:',scope_key=KEY)
 
+    def test_missing_marker_legacy_tables_not_adopted_or_mutated(self):
+        self.s.close()
+        Path(self.path).unlink()
+        con=sqlite3.connect(self.path)
+        con.execute('CREATE TABLE scopes(scope_hash TEXT PRIMARY KEY,epoch INTEGER NOT NULL)')
+        con.execute("INSERT INTO scopes VALUES ('untrusted-legacy-scope',0)")
+        con.execute('CREATE TABLE records(scope_hash TEXT,request_id TEXT,payload_digest TEXT,epoch INTEGER,state TEXT)')
+        con.execute("INSERT INTO records VALUES ('untrusted-legacy-scope','req','abc',0,'PREPARED_NOT_POSTED')")
+        con.commit();con.close()
+        with self.assertRaises(WireError):OfflinePreparationStore(self.path,scope_key=KEY)
+        con=sqlite3.connect(self.path)
+        self.assertEqual(con.execute("SELECT name FROM sqlite_master WHERE name='meta'").fetchone(),None)
+        self.assertEqual(con.execute('SELECT count(*) FROM records').fetchone()[0],1)
+        con.close()
+        self.s=OfflinePreparationStore(':memory:',scope_key=KEY)
+
+    def test_deleted_marker_with_existing_records_not_reinitialized(self):
+        self.stage()
+        self.s.close()
+        con=sqlite3.connect(self.path)
+        con.execute("DELETE FROM meta WHERE name='scope_key_id'")
+        con.commit();con.close()
+        with self.assertRaises(WireError):OfflinePreparationStore(self.path,scope_key=KEY)
+        con=sqlite3.connect(self.path)
+        self.assertEqual(con.execute('SELECT count(*) FROM records').fetchone()[0],1)
+        self.assertEqual(con.execute("SELECT count(*) FROM meta WHERE name='scope_key_id'").fetchone()[0],0)
+        con.close()
+        self.s=OfflinePreparationStore(':memory:',scope_key=KEY)
+
+    def test_blank_meta_only_snapshot_can_initialize(self):
+        self.s.close()
+        Path(self.path).unlink()
+        con=sqlite3.connect(self.path)
+        con.execute('CREATE TABLE meta(name TEXT PRIMARY KEY,value TEXT NOT NULL)')
+        con.commit();con.close()
+        self.s=OfflinePreparationStore(self.path,scope_key=KEY)
+        self.assertEqual(self.stage()['status'],'NEW_PREPARED_LOCAL_ONLY')
+
+    def test_unrecognized_meta_row_without_marker_is_hold(self):
+        self.s.close()
+        Path(self.path).unlink()
+        con=sqlite3.connect(self.path)
+        con.execute('CREATE TABLE meta(name TEXT PRIMARY KEY,value TEXT NOT NULL)')
+        con.execute("INSERT INTO meta VALUES ('legacy-nonce','untrusted')")
+        con.commit();con.close()
+        with self.assertRaises(WireError):OfflinePreparationStore(self.path,scope_key=KEY)
+        self.s=OfflinePreparationStore(':memory:',scope_key=KEY)
+
     def test_multiple_threads_single_record(self):
         with ThreadPoolExecutor(max_workers=12) as ex:
             r=list(ex.map(lambda _:self.stage(),range(24)))
