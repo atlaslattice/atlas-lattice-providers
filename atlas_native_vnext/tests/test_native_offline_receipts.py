@@ -62,6 +62,30 @@ class ReceiptStoreTest(unittest.TestCase):
             OfflinePreparationStore(self.path,scope_key=b'x'*32)
         self.s=OfflinePreparationStore(self.path,scope_key=KEY)
         self.assertEqual(self.stage()['status'],'DEDUPLICATED_PREPARED_LOCAL_ONLY')
+    def test_epoch_saturation_never_resurrects_staging(self):
+        # Synthetic local upper-bound probe; NOT a host rights withdrawal.
+        scope=self.s._scope(*SCOPE)
+        self.s._conn.execute('INSERT OR REPLACE INTO scopes(scope_hash,epoch) VALUES (?,?)',
+                             (scope,2147483646))
+        self.assertEqual(self.stage('before-saturation',epoch=2147483646)['status'],
+                         'NEW_PREPARED_LOCAL_ONLY')
+        r=self.s.withdraw(*SCOPE)
+        self.assertEqual(r['status'],'SIMULATED_WITHDRAWAL_ONLY')
+        self.assertEqual(r['new_epoch'],2147483647)
+        # Staged operations remain held even if caller guesses the final epoch.
+        self.assertEqual(self.stage('after-saturation',epoch=2147483647)['status'],'HOLD')
+        self.assertEqual(self.s.withdraw(*SCOPE)['status'],'HOLD')
+        self.assertEqual(self.s.report()['prepared_records'],1)
+
+    def test_saturated_epoch_survives_restart_and_fails_closed(self):
+        scope=self.s._scope(*SCOPE)
+        self.s._conn.execute('INSERT OR REPLACE INTO scopes(scope_hash,epoch) VALUES (?,?)',
+                             (scope,2147483647))
+        self.s.close()
+        self.s=OfflinePreparationStore(self.path,scope_key=KEY)
+        self.assertEqual(self.stage('replay',epoch=2147483647)['status'],'HOLD')
+        self.assertEqual(self.s.withdraw(*SCOPE)['status'],'HOLD')
+
     def test_multiple_threads_single_record(self):
         with ThreadPoolExecutor(max_workers=12) as ex:
             r=list(ex.map(lambda _:self.stage(),range(24)))
