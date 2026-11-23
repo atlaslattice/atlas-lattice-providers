@@ -26,14 +26,26 @@ class OfflinePreparationStore:
         # Cross-process restart must not silently accept a different HMAC scope
         # key: otherwise the same request can be staged as a distinct scope.
         # This is a local compatibility pin, NOT proof of host identity.
-        self._conn.execute('CREATE TABLE IF NOT EXISTS meta (name TEXT PRIMARY KEY, value TEXT NOT NULL)')
         identity=hmac_new(scope_key,b'atlas.native.offline-receipts.key/v0.3.account-bound','sha256').hexdigest()
         try:
+            # Acquire the initialization lock BEFORE creating or reading any
+            # schema markers. A legacy/partially damaged ledger without its
+            # scope-key marker must not be silently adopted as v0.3.
             self._conn.execute('BEGIN IMMEDIATE')
+            present={row[0] for row in self._conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
+            if 'meta' not in present and present:
+                raise WireError('INVALID_CONFIG')
+            self._conn.execute('CREATE TABLE IF NOT EXISTS meta (name TEXT PRIMARY KEY, value TEXT NOT NULL)')
             prev=self._conn.execute('SELECT value FROM meta WHERE name=?',('scope_key_id',)).fetchone()
             if prev is not None and prev[0]!=identity:
                 raise WireError('INVALID_CONFIG')
             if prev is None:
+                # Also reject a removed marker in an otherwise populated v0.3
+                # file; missing epoch/receipt ownership is never a fresh DB.
+                if any(name!='meta' for name in present) or self._conn.execute(
+                        'SELECT 1 FROM meta LIMIT 1').fetchone() is not None:
+                    raise WireError('INVALID_CONFIG')
                 self._conn.execute('INSERT INTO meta(name,value) VALUES (?,?)',('scope_key_id',identity))
             self._conn.execute('COMMIT')
         except Exception:
