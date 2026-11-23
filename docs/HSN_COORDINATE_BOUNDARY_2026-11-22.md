@@ -29,3 +29,9 @@ Source-reported task sharding, visual coordinates and `H00` grounding cannot sil
 python -m unittest discover -s tests -p 'test_coordinate_resolver.py' -v
 python -m py_compile core/coordinate_resolver.py tests/test_coordinate_resolver.py
 ```
+
+## Packet extension guard — source-only follow-up
+
+Review packets built by `validate_grounding` now refuse behavioral `dict` subclasses, non-string top-level keys and extraneous top-level fields. This prevents an otherwise valid synthetic coordinate packet from carrying an unverified top-level `host_approved` or similar claim while retaining `valid: true`. `caller_metadata` remains an allowed *inert, plain-JSON* envelope field; it is not independently authenticated, cannot grant rights or production authority, and is never an acceptance credential. Malformed caller metadata is rejected. Historical default v0.1 output and explicit Ariadne v0.2 routing semantics remain unchanged.
+
+Seven additional offline regression methods are authored in `tests/test_coordinate_packet_fields.py`. No full exact-HEAD repository run, hosted CI success, independent source-rights approval, private-mode return-rights audit or merge authority is established by authoring these tests. Continue to HOLD this PR until independent acceptance and the shared CI runner issue are resolved.
