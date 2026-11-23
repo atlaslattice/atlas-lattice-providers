@@ -6,7 +6,7 @@ const sourceRef = {roomId:'v32-work-test-01',seq:14,requestId:'deterministic-req
 const sha = text=>createHash('sha256').update(text,'utf8').digest('hex');
 
 function fixture(sourceText, cut=sourceText.length, changedText=sourceText) {
- const doc = {createRange(){
+ const doc = {createTreeWalker(){let done=false;return {nextNode(){if(done)return null;done=true;return node;}};},createRange(){
   let startNode, endNode, start, end;
   return {setStart(n,o){startNode=n;start=o},setEnd(n,o){endNode=n;end=o},toString(){
     if(startNode!==endNode) return 'UNSUPPORTED_FAKE_CROSS_NODE';

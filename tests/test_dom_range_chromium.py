@@ -129,4 +129,27 @@ class DomRangeChromium(unittest.TestCase):
        [dict(node=1,fromUtf16=0,toUtf16=3),dict(node=0,fromUtf16=3,toUtf16=6)],0,6)
     self.assertEqual(r['status'],'HOLD_UNAVAILABLE')
 
+
+  # Authored rendered-context regressions. This environment cannot launch
+  # Chromium (socket EPERM); these await a browser-enabled runner.
+  def test_rendered_same_node_combining_suffix_refused(self):
+    r=self.execute('A','<span data-copy>A\u0301</span>',[dict(node=0,fromUtf16=0,toUtf16=1)],0,1)
+    self.assertEqual(r['status'],'HOLD_UNAVAILABLE')
+  def test_rendered_cross_node_combining_suffix_refused(self):
+    r=self.execute('A','<span data-copy>A</span><span>\u0301</span>',[dict(node=0,fromUtf16=0,toUtf16=1)],0,1)
+    self.assertEqual(r['status'],'HOLD_UNAVAILABLE')
+  def test_rendered_cross_node_zwj_suffix_refused(self):
+    r=self.execute('👩','<span data-copy>👩</span><span>\u200d🔬</span>',[dict(node=0,fromUtf16=0,toUtf16=2)],0,2)
+    self.assertEqual(r['status'],'HOLD_UNAVAILABLE')
+  def test_rendered_cross_node_flag_suffix_refused(self):
+    r=self.execute('🇺','<span data-copy>🇺</span><span>🇸</span>',[dict(node=0,fromUtf16=0,toUtf16=2)],0,2)
+    self.assertEqual(r['status'],'HOLD_UNAVAILABLE')
+  def test_rendered_cross_node_zwj_prefix_refused(self):
+    r=self.execute('🔬','<span>👩\u200d</span><span data-copy>🔬</span>',[dict(node=0,fromUtf16=0,toUtf16=2)],0,2)
+    self.assertEqual(r['status'],'HOLD_UNAVAILABLE')
+  def test_rendered_ordinary_unmapped_neighbors_accepted(self):
+    r=self.execute('A','<span>x </span><span data-copy>A</span><span> !</span>',[dict(node=0,fromUtf16=0,toUtf16=1)],0,1)
+    self.assertEqual(r['status'],'DOM_RANGE_VERIFIED')
+    self.assertEqual(r['highlight'],'A')
+
 if __name__=='__main__':unittest.main(verbosity=2)

@@ -26,7 +26,7 @@ function fixture(text='a🪿bc',opts={}) {
     removeEventListener:(name,fn)=>windowListeners.get(name)?.delete(fn),
     dispatch:(name)=>{for(const fn of windowListeners.get(name)||[])fn();},
   };
-  const doc={defaultView:win,createRange(){let a,b,start,end;const range={
+  const doc={defaultView:win,createTreeWalker(){let done=false;return {nextNode(){if(done)return null;done=true;return node;}};},createRange(){let a,b,start,end;const range={
     setStart(n,o){a=n;start=o;},setEnd(n,o){b=n;end=o;},
     toString(){return a===b?a.data.slice(start,end):'CROSS_NODE_FAKE';},
     startContainer:null,endContainer:null,

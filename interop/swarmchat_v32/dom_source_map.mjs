@@ -19,6 +19,7 @@ const HOLD = Object.freeze({status:'HOLD_UNAVAILABLE'});
 const CAPTURE_STATE = new WeakMap();
 const MAX_RAW_UTF8 = 256 * 1024;
 const MAX_SEGMENTS = 2048;
+const MAX_RENDER_TEXT_NODES = 8192;
 const SHA = /^[a-f0-9]{64}$/;
 
 function isValidScalarSequence(s) {
@@ -67,6 +68,34 @@ function eligibleNode(node,root) {
   return node?.nodeType === 3 && node.isConnected && root?.isConnected &&
          typeof root.contains === 'function' && root.contains(node) &&
          node.ownerDocument === root.ownerDocument;
+}
+
+/**
+ * Read the current root's logical DOM text, including unmapped neighbors.
+ * A source grapheme can merge with rendered combining marks, ZWJ, or regional
+ * indicators across Text nodes. Raw-source boundaries alone cannot certify a
+ * rendered selection. This bounded snapshot stays internal and grants no rights.
+ */
+function renderedTextSnapshot(root, document) {
+  if (typeof document.createTreeWalker !== 'function') return null;
+  const walker = document.createTreeWalker(root, 4); // NodeFilter.SHOW_TEXT
+  const offsets = new Map();
+  const chunks = [];
+  let units = 0, bytes = 0, count = 0;
+  let node = root.nodeType === 3 ? root : walker.nextNode();
+  while (node) {
+    if (++count > MAX_RENDER_TEXT_NODES || !eligibleNode(node, root) ||
+        typeof node.data !== 'string') return null;
+    const data = node.data;
+    bytes += encoder.encode(data).length;
+    if (bytes > MAX_RAW_UTF8) return null;
+    offsets.set(node, units);
+    chunks.push(data);
+    units += data.length;
+    node = walker.nextNode();
+  }
+  const text = chunks.join('');
+  return isValidScalarSequence(text) ? {text, offsets} : null;
 }
 
 /**
@@ -144,6 +173,18 @@ export async function resolveSourceDomRange({capture,startUtf16,endUtf16,
     // Check again after all async operations, prior to returning a live DOM Range.
     if (await returnAllowed() !== true) return HOLD;
     if (!c.root.isConnected || c.spans.some(s=>!eligibleNode(s.node,c.root)||s.node.data!==s.nodeData)) return HOLD;
+    // Validate the endpoints in CURRENT rendered context as well as raw source.
+    // Inspect unmapped adjacent nodes too; a suffix mark may join the selection
+    // without changing any mapped node or the selected Range's string value.
+    const rendered = renderedTextSnapshot(c.root, c.document);
+    if (!rendered || !rendered.offsets.has(startPoint[0]) ||
+        !rendered.offsets.has(endPoint[0])) return HOLD;
+    const renderedStart = rendered.offsets.get(startPoint[0]) + startPoint[1];
+    const renderedEnd = rendered.offsets.get(endPoint[0]) + endPoint[1];
+    if (renderedEnd <= renderedStart ||
+        !goodBoundary(rendered.text, renderedStart, renderedEnd) ||
+        rendered.text.slice(renderedStart, renderedEnd) !==
+          c.sourceText.slice(startUtf16,endUtf16)) return HOLD;
     const range = c.document.createRange();
     range.setStart(...startPoint);
     range.setEnd(...endPoint);
