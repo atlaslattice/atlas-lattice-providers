@@ -6,7 +6,7 @@ publish science: it only stages a disposable local SQLite preparation receipt.
 from __future__ import annotations
 import argparse
 from hashlib import sha1
-import importlib.util
+from types import ModuleType
 import json
 from pathlib import Path
 import sys
@@ -25,11 +25,12 @@ def import_pinned_labs_source(path: Path):
     raw=path.read_bytes()
     if len(raw)>250_000 or sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()!=LABS_PR61_SOURCE_GIT_BLOB:
         raise ValueError('Labs source Git blob is not the reviewed PR61 revision')
-    spec=importlib.util.spec_from_file_location('atlas_labs_pinned_source_only',path)
-    if spec is None or spec.loader is None:
-        raise ValueError('Cannot load pinned source')
-    module=importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    # Execute the bytes that passed the Git blob check. Re-opening the path
+    # with a source loader could execute replacement bytes after the hash check.
+    # This does not pin imports made *by* the reviewed module or prove host IAM.
+    module=ModuleType('atlas_labs_pinned_source_only')
+    module.__file__=str(path)
+    exec(compile(raw,str(path),'exec'),module.__dict__)
     return module
 
 
