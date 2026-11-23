@@ -99,4 +99,27 @@ class LineageGateTests(unittest.TestCase):
             self.assertFalse(result["canon"])
             self.assertFalse(result["deployed"])
 
+
+    def test_cross_namespace_numeric_offset_is_distinct_not_an_alias(self):
+        left=record(LEGACY,"H00.S00.N00",namespace="synthetic.one")
+        right=record(ARIADNE,"H01.S01.N01",namespace="synthetic.two")
+        out=review_crosswalk(left,right)
+        self.assertEqual(out["status"],"DISTINCT_LINEAGES")
+        self.assertFalse(out["same_as"] or out["migration_authorized"])
+
+    def test_cross_namespace_shared_label_is_not_an_edition_overlap(self):
+        left=record(LEGACY,"H01.S01.N01",namespace="synthetic.one")
+        right=record(ARIADNE,"H01.S01.N01",namespace="synthetic.two")
+        out=review_crosswalk(left,right)
+        self.assertEqual(out["status"],"DISTINCT_LINEAGES")
+        self.assertFalse(out["same_as"] or out["canon"])
+
+    def test_cross_namespace_same_edition_same_label_is_not_collision(self):
+        left=record(ARIADNE,"H01.S01.N01",namespace="synthetic.one")
+        right=record(ARIADNE,"H01.S01.N01",namespace="synthetic.two")
+        out=review_crosswalk(left,right)
+        self.assertEqual(out["status"],"DISTINCT_LINEAGES")
+        self.assertFalse(out["same_as"] or out["publisher_attested"])
+
+
 if __name__=="__main__": unittest.main()
