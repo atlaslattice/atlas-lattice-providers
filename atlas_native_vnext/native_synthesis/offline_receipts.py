@@ -22,6 +22,23 @@ class OfflinePreparationStore:
         self._lock=RLock()
         self._conn.execute('PRAGMA busy_timeout=10000')
         self._conn.execute('PRAGMA foreign_keys=ON')
+        # Cross-process restart must not silently accept a different HMAC scope
+        # key: otherwise the same request can be staged as a distinct scope.
+        # This is a local compatibility pin, NOT proof of host identity.
+        self._conn.execute('CREATE TABLE IF NOT EXISTS meta (name TEXT PRIMARY KEY, value TEXT NOT NULL)')
+        identity=hmac_new(scope_key,b'atlas.native.offline-receipts.key/v0.2','sha256').hexdigest()
+        try:
+            self._conn.execute('BEGIN IMMEDIATE')
+            prev=self._conn.execute('SELECT value FROM meta WHERE name=?',('scope_key_id',)).fetchone()
+            if prev is not None and prev[0]!=identity:
+                raise WireError('INVALID_CONFIG')
+            if prev is None:
+                self._conn.execute('INSERT INTO meta(name,value) VALUES (?,?)',('scope_key_id',identity))
+            self._conn.execute('COMMIT')
+        except Exception:
+            if self._conn.in_transaction:self._conn.execute('ROLLBACK')
+            self._conn.close()
+            raise
         self._conn.execute('CREATE TABLE IF NOT EXISTS scopes (scope_hash TEXT PRIMARY KEY, epoch INTEGER NOT NULL CHECK(epoch >= 0))')
         self._conn.execute('''CREATE TABLE IF NOT EXISTS records (
             scope_hash TEXT NOT NULL, request_id TEXT NOT NULL, payload_digest TEXT NOT NULL,
