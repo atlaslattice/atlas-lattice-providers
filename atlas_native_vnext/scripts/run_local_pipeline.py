@@ -46,7 +46,7 @@ def main():
         s=OfflinePreparationStore(str(Path(tmp)/'source_only.sqlite'),scope_key=b'synthetic-fixture-operator-key-32-bytes')
         try:
             pipe=OfflineAtlasPipeline(labs.prepare,labs.catalog,s)
-            result=pipe.prepare(raw,tenant='synthetic-tenant',principal='synthetic-principal',
+            result=pipe.prepare(raw,tenant='synthetic-tenant',account='synthetic-account',principal='synthetic-principal',
                                 room='offline-review')
             result['offline_store_report']=s.report()
             result['pr61_source_git_blob_sha1']=LABS_PR61_SOURCE_GIT_BLOB
