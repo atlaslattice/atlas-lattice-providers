@@ -27,7 +27,7 @@ class OfflinePreparationStore:
         # key: otherwise the same request can be staged as a distinct scope.
         # This is a local compatibility pin, NOT proof of host identity.
         self._conn.execute('CREATE TABLE IF NOT EXISTS meta (name TEXT PRIMARY KEY, value TEXT NOT NULL)')
-        identity=hmac_new(scope_key,b'atlas.native.offline-receipts.key/v0.2','sha256').hexdigest()
+        identity=hmac_new(scope_key,b'atlas.native.offline-receipts.key/v0.3.account-bound','sha256').hexdigest()
         try:
             self._conn.execute('BEGIN IMMEDIATE')
             prev=self._conn.execute('SELECT value FROM meta WHERE name=?',('scope_key_id',)).fetchone()
@@ -46,20 +46,20 @@ class OfflinePreparationStore:
             epoch INTEGER NOT NULL, state TEXT NOT NULL CHECK(state = 'PREPARED_NOT_POSTED'),
             PRIMARY KEY(scope_hash,request_id), FOREIGN KEY(scope_hash) REFERENCES scopes(scope_hash))''')
 
-    def _scope(self, tenant, principal, room, purpose, source_digest):
-        for x in (tenant,principal,room,purpose):
+    def _scope(self, tenant, principal, room, purpose, source_digest, *, account=None):
+        for x in (tenant,account,principal,room,purpose):
             if type(x) is not str or not IDENT.fullmatch(x):
                 raise WireError('INVALID_SCOPE')
         if type(source_digest) is not str or not HEX64.fullmatch(source_digest):
             raise WireError('INVALID_SCOPE')
-        document=canonical_json({'tenant':tenant,'principal':principal,'room':room,
+        document=canonical_json({'tenant':tenant,'account':account,'principal':principal,'room':room,
                                  'purpose':purpose,'source_digest':source_digest})
         return hmac_new(self._key,document,'sha256').hexdigest()
 
-    def stage(self, tenant, principal, room, purpose, source_digest, request_id, payload_digest, epoch=0):
+    def stage(self, tenant, principal, room, purpose, source_digest, request_id, payload_digest, epoch=0, *, account=None):
         """Local durable candidate receipt; no permission or send side effects."""
         try:
-            scope=self._scope(tenant,principal,room,purpose,source_digest)
+            scope=self._scope(tenant,principal,room,purpose,source_digest,account=account)
             if type(request_id) is not str or not IDENT.fullmatch(request_id) or type(payload_digest) is not str or not HEX64.fullmatch(payload_digest):
                 raise WireError('INVALID_INPUT')
             if type(epoch) is not int or not 0<=epoch<MAX_EPOCH:
@@ -87,10 +87,10 @@ class OfflinePreparationStore:
         except (WireError,TypeError,ValueError,OverflowError,sqlite3.Error):
             return dict(HOLD)
 
-    def withdraw(self, tenant, principal, room, purpose, source_digest):
+    def withdraw(self, tenant, principal, room, purpose, source_digest, *, account=None):
         """Advance a *local synthetic* epoch; NOT a real host rights withdrawal."""
         try:
-            scope=self._scope(tenant,principal,room,purpose,source_digest)
+            scope=self._scope(tenant,principal,room,purpose,source_digest,account=account)
             with self._lock:
                 try:
                     self._conn.execute('BEGIN IMMEDIATE')
