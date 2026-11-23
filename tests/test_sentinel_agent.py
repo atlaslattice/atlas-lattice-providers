@@ -149,6 +149,72 @@ class SentinelTests(unittest.TestCase):
                 self.assertIsNone(result.retained_work_packet)
                 self.assertNotIn("fictional-private-not-for-work", json.dumps(result.receipt()))
 
+    def test_declared_private_exclusion_precedes_serialization(self):
+        p = candidate()
+        p["payload"]["cannot_encode"] = object()
+        for mode in ("PLAY", "SOCIAL", "QUIET", "UNKNOWN_EXTERNAL_MODE"):
+            with self.subTest(mode=mode):
+                r = inspect(p, declared_mode=mode)
+                self.assertEqual(r.disposition, "HOLD_PRIVATE_BOUNDARY")
+                self.assertEqual(r.source_sha256, "")
+                self.assertEqual(r.source_bytes, 0)
+                self.assertIsNone(r.retained_work_packet)
+                self.assertEqual(r.input_mode, mode if mode in ("PLAY", "SOCIAL", "QUIET") else "UNKNOWN")
+
+    def test_inband_private_dict_exclusion_precedes_serialization(self):
+        p = candidate()
+        p["mode"] = "PALACE"
+        p["payload"]["cannot_encode"] = object()
+        r = inspect(p)
+        self.assertEqual(r.disposition, "HOLD_PRIVATE_BOUNDARY")
+        self.assertEqual(r.source_sha256, "")
+        self.assertEqual(r.source_bytes, 0)
+        self.assertIsNone(r.retained_work_packet)
+
+    def test_private_json_string_and_bytes_have_no_digest_or_length(self):
+        for mode in ("SOCIAL", "HABITAT", "IMAGINE"):
+            p = candidate()
+            p["mode"] = mode
+            for raw in (json.dumps(p), json.dumps(p).encode("utf-8")):
+                with self.subTest(mode=mode, kind=type(raw).__name__):
+                    r = inspect(raw)
+                    self.assertEqual(r.disposition, "HOLD_PRIVATE_BOUNDARY")
+                    self.assertEqual(r.source_sha256, "")
+                    self.assertEqual(r.source_bytes, 0)
+                    self.assertEqual(r.input_mode, mode)
+                    self.assertIsNone(r.retained_work_packet)
+
+    def test_private_no_harvest_has_no_fingerprint(self):
+        for data_kind in ("dict", "text"):
+            p = candidate()
+            p["no_harvest"] = True
+            source = p if data_kind == "dict" else json.dumps(p)
+            with self.subTest(data_kind=data_kind):
+                r = inspect(source)
+                self.assertEqual(r.disposition, "HOLD_PRIVATE_BOUNDARY")
+                self.assertEqual(r.source_sha256, "")
+                self.assertEqual(r.source_bytes, 0)
+                self.assertIsNone(r.retained_work_packet)
+
+    def test_untrusted_mode_field_is_never_echoed(self):
+        p = candidate()
+        p["mode"] = {"private": "SYNTHETIC_MODE_CANARY"}
+        raw = json.dumps(p)
+        r = inspect(raw)
+        self.assertEqual(r.disposition, "HOLD_PRIVATE_BOUNDARY")
+        self.assertEqual(r.source_sha256, "")
+        self.assertEqual(r.source_bytes, 0)
+        self.assertEqual(r.input_mode, "UNKNOWN")
+        self.assertNotIn("SYNTHETIC_MODE_CANARY", json.dumps(r.receipt()))
+
+    def test_work_candidate_digest_retained_for_local_replay(self):
+        p = candidate()
+        r = inspect(p)
+        self.assertEqual(r.disposition, "REVIEWABLE_LOCAL_ONLY")
+        self.assertEqual(len(r.source_sha256), 64)
+        self.assertGreater(r.source_bytes, 0)
+        self.assertIsNotNone(r.retained_work_packet)
+
     def test_cannot_persist_private(self):
         with tempfile.TemporaryDirectory() as d:
             with self.assertRaises(ValueError):
