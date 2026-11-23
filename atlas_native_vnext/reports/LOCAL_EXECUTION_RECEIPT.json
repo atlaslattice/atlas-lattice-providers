@@ -10,13 +10,13 @@
   "public_github_registry_records": 272,
   "license_status": "SELECTED_CANDIDATES_REVIEW_REQUIRED",
   "unit_tests_normal": {
-    "methods": 91,
-    "passed": 91,
+    "methods": 92,
+    "passed": 92,
     "kind": "LOCAL"
   },
   "unit_tests_optimized": {
-    "methods": 91,
-    "passed": 91,
+    "methods": 92,
+    "passed": 92,
     "kind": "LOCAL"
   },
   "synthetic_negatives": {
@@ -34,5 +34,7 @@
   "pr_merged": false,
   "host_deployed": false,
   "canon_ratified": false,
-  "note": "Source-only package and offline tests. No external access, private material, provider spend, or automatic action."
+  "note": "Local source-only tests 92 normal + 92 optimized; 1024 synthetic negatives; no CI/host proof. Private host locator omitted from current public catalog; historical commit retained.",
+  "private_broker_locator_public_manifest": "WITHHELD_CURRENT_HEAD",
+  "historical_git_objects_unchanged": true
 }
