@@ -31,7 +31,7 @@ class OfflinePipelineTest(unittest.TestCase):
                         'coordinate':'H01.S01.N01'},
             'origin_mode':'PUBLIC','source_scope':'PUBLIC_REPORTED','authority':'none',
             'canon':False,'deployment':False}
-        self.ctx={'tenant':'test-tenant','principal':'test-user','room':'offline-work'}
+        self.ctx={'tenant':'test-tenant','account':'test-account','principal':'test-user','room':'offline-work'}
     def tearDown(self):self.store.close();self.tmp.cleanup()
     def test_real_cross_repo_pipeline_stages_no_side_effects(self):
         o=self.pipe.prepare(self.x,**self.ctx)
@@ -54,10 +54,21 @@ class OfflinePipelineTest(unittest.TestCase):
         self.assertEqual(b['status'],'HOLD')
     def test_wrong_scope_not_replayed_as_peer(self):
         a=self.pipe.prepare(self.x,**self.ctx)
-        b=self.pipe.prepare(self.x,tenant='different-tenant',principal=self.ctx['principal'],room=self.ctx['room'])
+        b=self.pipe.prepare(self.x,tenant='different-tenant',account=self.ctx['account'],principal=self.ctx['principal'],room=self.ctx['room'])
         self.assertEqual(a['status'],b['status'])
         self.assertFalse(b['peer_read'])
         self.assertEqual(self.store.report()['prepared_records'],2)
+    def test_account_switch_same_tenant_principal_is_distinct(self):
+        a=self.pipe.prepare(self.x,**self.ctx)
+        b=self.pipe.prepare(self.x,**{**self.ctx,'account':'another-account'})
+        self.assertEqual(a['status'],'LOCAL_REVIEW_PREPARED_NOT_SENT')
+        self.assertEqual(b['status'],'LOCAL_REVIEW_PREPARED_NOT_SENT')
+        self.assertEqual(self.store.report()['prepared_records'],2)
+        self.pipe.withdraw_local(**self.ctx,source_sha256=a['lab_receipt_sha256'])
+        fresh=self.pipe.prepare(self.x,**{**self.ctx,'account':'another-account'})
+        self.assertEqual(fresh['status'],'LOCAL_REVIEW_PREPARED_NOT_SENT')
+        self.assertEqual(fresh['local_sqlite_state'],'DEDUPLICATED_PREPARED_LOCAL_ONLY')
+
     def test_invalid_private_mode_has_no_preparation(self):
         x=dict(self.x);x['origin_mode']='PALACE'
         r=self.pipe.prepare(x,**self.ctx)
