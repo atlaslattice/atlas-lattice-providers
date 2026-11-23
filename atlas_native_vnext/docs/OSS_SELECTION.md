@@ -13,7 +13,7 @@ These are **candidate source pointers**, not vendored dependencies, completed li
 | `orcs` | science | [atlaslattice/open-regenerative-compute-standard](https://github.com/atlaslattice/open-regenerative-compute-standard) | MIXED | `WRAP_READ_ONLY` | `SOURCE_PINNED` |
 | `foundation` | knowledge | [atlaslattice/atlas-lattice-foundation](https://github.com/atlaslattice/atlas-lattice-foundation) | UNKNOWN_PROJECT_LICENSE | `REVIEW_ONLY` | `SOURCE_PINNED` |
 | `element145` | math | [atlaslattice/element-145](https://github.com/atlaslattice/element-145) | FOUNDATION_CUSTOM | `REVIEW_ONLY` | `REVIEW_LICENSE` |
-| `swarmchat` | collaboration | [HOST_SCOPED_NO_GIT_PIN](https://swarmchat-private-broker-20261112.tdavesheldon.chatgpt.site/) | NOT_APPLICABLE | `HOST_INTEGRATION` | `HOST_GATED` |
+| `swarmchat` | collaboration | ACCOUNT_PRIVATE_HOST_REFERENCE_WITHHELD | NOT_APPLICABLE | `HOST_INTEGRATION` | `HOST_GATED` |
 | `atlas-labs-v32` | science | [atlaslattice/atlas-lattice-providers](https://github.com/atlaslattice/atlas-lattice-providers/pull/61) | UNKNOWN_PROJECT_LICENSE | `WRAP_READ_ONLY` | `SOURCE_PINNED` |
 | `openai-agents` | agent-runtime | [UPSTREAM_REFERENCE](https://github.com/openai/openai-agents-python) | VERIFY_CURRENT | `OPTIONAL_PLUGIN` | `REVIEW_LICENSE` |
 | `a2a` | interop | [atlaslattice/A2A](https://github.com/a2aproject/A2A) | Apache-2.0 | `OPTIONAL_PLUGIN` | `REVIEW_SECURITY` |
