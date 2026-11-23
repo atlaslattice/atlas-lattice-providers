@@ -176,6 +176,11 @@ def validate_grounding(resolved: Any) -> dict:
     # Exact JSON-decoded objects are plain dicts; reject opaque packet wrappers.
     if type(resolved) is not dict or any(type(key) is not str for key in resolved):
         return {"valid": False, "reasons": ["not_a_packet"]}
+    # Fail closed before comparing any nested caller-controlled packet values.
+    # Plain builtins contain no behavioral __eq__ / .get hooks; derived packet
+    # validation must not execute arbitrary Python subclass methods.
+    if not _plain_json(resolved):
+        return {"valid": False, "reasons": ["not_a_plain_json_packet"]}
     if resolved.get("earth_reference") != EARTH:
         problems.append("wrong_earth_reference")
     if resolved.get("route") != "candidate_review" or resolved.get("errors"):
