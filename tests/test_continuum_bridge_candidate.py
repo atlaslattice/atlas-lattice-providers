@@ -109,11 +109,17 @@ class CandidateBridgeTests(unittest.TestCase):
                 result=propose(raw)
                 self.assertEqual(result["status"], "HOLD")
                 self.assertIn("UNPARSEABLE_JSON", result["reason_codes"])
-        # A literal zero or a representable subnormal is not underflow.
+        # These numerals parse without underflow, but synthetic_weight is
+        # intentionally NOT an allowed source field. Test parsing and the
+        # independent field-allowlist boundary separately.
         for allowed in ("0e-9999", "5e-324"):
             with self.subTest(allowed=allowed):
                 raw=base+', "synthetic_weight":'+allowed+'}'
-                self.assertEqual(propose(raw)["status"], "REVIEWABLE_LOCAL_ONLY")
+                result=propose(raw)
+                self.assertEqual(result["status"], "HOLD")
+                self.assertNotIn("UNPARSEABLE_JSON", result["reason_codes"])
+                self.assertIn("UNRECOGNIZED_SOURCE_FIELDS", result["reason_codes"])
+                self.assertIsNone(result["source_sha256"])
 
     def test_non_utf8_bytes_hold(self):
         self.assertEqual(propose(b'\xff\xfe')["status"],"HOLD")
