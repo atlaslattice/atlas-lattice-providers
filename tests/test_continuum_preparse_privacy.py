@@ -57,12 +57,18 @@ class PreparsePrivacyTests(unittest.TestCase):
                 self.assertIsNone(result["source_sha256"])
                 self.assertIsNone(result["source_bytes"])
 
-    def test_valid_work_invalid_coordinate_retains_source_only_fingerprint(self):
-        obj=good();obj["coordinate"]="H12.S01.N02"
-        result=propose(json.dumps(obj))
-        self.assertEqual(result["status"],"HOLD")
-        self.assertEqual(result["source_bytes"],len(json.dumps(obj).encode()))
-        self.assertEqual(len(result["source_sha256"]),64)
+    def test_one_based_h12_allowed_and_h00_withheld(self):
+        # Ariadne v0.7 is one-based: H12 is valid; H00 is legacy-only.
+        valid = good(); valid["coordinate"] = "H12.S01.N02"
+        accepted = propose(json.dumps(valid))
+        self.assertEqual(accepted["status"], "REVIEWABLE_LOCAL_ONLY")
+        self.assertEqual(accepted["source_bytes"], len(json.dumps(valid).encode()))
+        self.assertEqual(len(accepted["source_sha256"]), 64)
+        invalid = good(); invalid["coordinate"] = "H00.S01.N02"
+        denied = propose(json.dumps(invalid))
+        self.assertEqual(denied["status"], "HOLD")
+        self.assertIsNone(denied["source_sha256"])
+        self.assertIsNone(denied["source_bytes"])
     def test_valid_work_candidate_is_still_local_only(self):
         result=propose(good())
         self.assertEqual(result["status"],"REVIEWABLE_LOCAL_ONLY")
