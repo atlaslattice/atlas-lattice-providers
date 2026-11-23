@@ -65,7 +65,25 @@ def inspect(data: str | bytes | dict[str, Any], *, declared_mode: str = "WORK") 
     """
     if type(data) not in (dict, str, bytes):
         raise TypeError("data must be exact UTF-8 JSON bytes, text, or dict")
-    mode = str(declared_mode).upper()
+    # Caller-declared non-Work mode is a one-way exclusion, not a reason to
+    # serialize, hash, count or inspect its body.
+    mode = declared_mode.upper() if type(declared_mode) is str else "UNKNOWN"
+    if mode != "WORK":
+        safe_mode = mode if mode in PRIVATE_MODES else "UNKNOWN"
+        return SentinelReview("HOLD_PRIVATE_BOUNDARY",
+                              ("NO_LEISURE_OR_PRIVATE_WORK_IMPORT",),
+                              "", 0, safe_mode, None, (), False)
+    # Exact dicts allow a shallow privacy preflight without touching payload,
+    # dissent or provenance. Bytes/text are parsed only to discover metadata.
+    if type(data) is dict:
+        inband_mode = data.get("mode", "WORK")
+        if (type(inband_mode) is not str or inband_mode != "WORK" or
+                data.get("no_harvest", False) is not False):
+            safe_mode = (inband_mode if type(inband_mode) is str and
+                         inband_mode in PRIVATE_MODES else "UNKNOWN")
+            return SentinelReview("HOLD_PRIVATE_BOUNDARY",
+                                  ("UNAUTHORIZED_OR_PRIVATE_SOURCE_MODE",),
+                                  "", 0, safe_mode, None, (), False)
     try:
         if type(data) is dict:
             raw = packet96_to_json(data).encode("utf-8")
@@ -76,26 +94,26 @@ def inspect(data: str | bytes | dict[str, Any], *, declared_mode: str = "WORK") 
     except (ValueError, TypeError, UnicodeError, RecursionError, OverflowError):
         # No exact source bytes exist, so do not invent a SHA-256 or retain
         # possibly private data in an error or a candidate receipt.
-        if mode != "WORK":
-            return SentinelReview("HOLD_PRIVATE_BOUNDARY",
-                                  ("NO_LEISURE_OR_PRIVATE_WORK_IMPORT", "SOURCE_BYTES_UNAVAILABLE"),
-                                  "", 0, mode, None, (), False)
         return SentinelReview("QUARANTINE_UNPARSEABLE",
                               ("NON_SERIALIZABLE_SOURCE", "SOURCE_BYTES_UNAVAILABLE"),
                               "", 0, mode, None, (), False)
     digest, size = _digest(raw), len(raw)
-    if mode != "WORK":
-        return SentinelReview("HOLD_PRIVATE_BOUNDARY", ("NO_LEISURE_OR_PRIVATE_WORK_IMPORT",), digest,
-                              size, mode, None, (), False)
     try:
         # Strict JSON decoder rejects NaN, duplicate keys, non-objects and invalid encoding.
         packet = packet96_from_json(raw.decode("utf-8"))
     except (ValueError, UnicodeDecodeError, TypeError) as exc:
         return SentinelReview("QUARANTINE_UNPARSEABLE", (type(exc).__name__,), digest, size, mode,
                               None, (), False)
-    if packet.get("mode", "WORK") != "WORK" or packet.get("no_harvest", False) is not False:
-        return SentinelReview("HOLD_PRIVATE_BOUNDARY", ("UNAUTHORIZED_OR_PRIVATE_SOURCE_MODE",), digest,
-                              size, str(packet.get("mode", "UNKNOWN")), None, (), False)
+    packet_mode = packet.get("mode", "WORK")
+    if (type(packet_mode) is not str or packet_mode != "WORK" or
+            packet.get("no_harvest", False) is not False):
+        # A mode field can itself contain protected content. Never echo
+        # arbitrary text, a private digest or byte length into the receipt.
+        safe_mode = (packet_mode if type(packet_mode) is str and
+                     packet_mode in PRIVATE_MODES else "UNKNOWN")
+        return SentinelReview("HOLD_PRIVATE_BOUNDARY",
+                              ("UNAUTHORIZED_OR_PRIVATE_SOURCE_MODE",),
+                              "", 0, safe_mode, None, (), False)
     reasons: list[str] = []
     action = packet.get("requested_action", "review")
     if type(action) is not str or not action.strip():
