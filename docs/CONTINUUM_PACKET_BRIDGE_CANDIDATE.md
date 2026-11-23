@@ -32,7 +32,7 @@ This independent Python module converts a *self-declared* public/Work-scope cont
 
 The claimed source scope `WORK_REPORTED` or `PUBLIC_REPORTED` is only a **declared restriction**, *not* access authorization. The rights state must remain `UNVERIFIED` for candidate review. Missing or ambiguous scope is **HOLD**. PLAY, SOCIAL, DREAM, IMAGINE, QUIET, BRAIN and other private or unknown mode content is excluded. The caller must independently authenticate permission before even providing a source record.
 
-The adapter accepts the 12 × 12 × 12 strict H-S-N coordinate range, D01–D12, explicit source and different target continuums (restricted to opaque 80-character IDs), and candidate-only false canon/deployment/fusion flags. D-affinity and dissent-ref arrays must be explicitly present; absence holds instead of defaulting silently. It rejects forged authority, destructive/external actions, unknown rights assertions, invalid JSON, duplicate JSON keys, nonfinite values, invalid UTF-8, cyclic/unserializable structures and oversized source bodies.
+The adapter accepts the 12 × 12 × 12 strict **one-based Ariadne v0.7** coordinate range (H01–H12, S01–S12, N01–N12), D01–D12, explicit source and different target continuums (restricted to opaque 80-character IDs), and candidate-only false canon/deployment/fusion flags. D-affinity and dissent-ref arrays must be explicitly present; absence holds instead of defaulting silently. It rejects forged authority, destructive/external actions, unknown rights assertions, invalid JSON, duplicate JSON keys, nonfinite values, invalid UTF-8, cyclic/unserializable structures and oversized source bodies.
 
 ## Returned evidence and limitations
 
@@ -66,3 +66,14 @@ python -m py_compile core/continuum_bridge_candidate.py
 Local byte-matched JSON Schema compatibility and Packet96 review tests have passed. Independently check source-rights-at-read/effect, actual principal identities, live consent/revocation, safe error/telemetry paths, and a reachable human-root decision queue before wiring into a service. Keep original historical branches intact and require targeted review for any production integration.
 
 **Keeper:** A bridge proposal carries pointers and dissent constraints—not minds, bodies, permissions or crowns.
+
+## Ariadne address boundary correction (2026-11-22)
+
+The previous candidate regex accepted the equally sized but **different** zero-based
+H00–H11/S00–S11/N00–N11 address set. Exhaustive, isolated enumeration yields
+1,728 old and 1,728 canonical addresses, only 1,331 overlapping, with **397
+old-only aliases** and **397 missing canonical coordinates**. The candidate
+source now accepts H01–H12 for every dimension and rejects H00; tests cover
+all three zero-coordinate positions plus H12 positive controls. This is a
+source-only address fix, not a changed ontology edition, semantic crosswalk,
+CANON adoption, host gate, or proof of live graph compatibility.
