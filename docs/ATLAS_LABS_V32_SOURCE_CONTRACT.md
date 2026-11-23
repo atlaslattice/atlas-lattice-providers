@@ -58,3 +58,15 @@ The narrow additive guard rejects that specific set, plus Arabic Letter Mark, LR
 - **Not yet performed:** the 17 checked-in tests have not been executed from a complete checked-out PR tree; full historical Labs suite and exact branch GitHub CI remain UNVERIFIED. No host principal binding, real source rights, real lab/quantum hardware, source-reviewed scientific claims, CANON status, hosted Work post or independent peer acceptance is established.
 
 **HOLD:** PR #61 remains OPEN/DRAFT; issue #62 source-to-host acceptance remains OPEN. The cross-repository Actions runner admission blocker is issue #54. Keep source-rights/license and independent code reviews, exact-source suite, runner steps/logs, and explicit human release authorization pending before any merge or hosted promotion.
+
+## Invisible format operator review-text hardening — 2026-11-22 HST (append-only)
+
+**SOURCE-ONLY / DRAFT / NO HOST OR SCIENTIFIC AUTHORITY.** An independent check of the preceding exact-source review validator (Git blob `cf970315fcbce47a7bc9dd85361a69c2fa2d67f6`) reproduced a residual human-readable evidence integrity ambiguity. Review-facing strings containing U+00AD SOFT HYPHEN, U+034F COMBINING GRAPHEME JOINER, U+180E, U+200B ZERO WIDTH SPACE or U+2060–U+206F non-printing operators/format controls were previously accepted while displaying nearly identically to text without those bytes. No hosted attack or private evidence exposure is claimed.
+
+An additive guard now rejects those selected invisibles in all existing title/hypothesis/falsifier/model-revision paths. It deliberately **preserves U+200C ZWNJ and U+200D ZWJ** for ordinary multilingual shaping and emoji, alongside Greek, Chinese and ASCII science text. This is not a general Unicode ban, a scientific validation, or a source/rights policy change.
+
+- Actual implementation commit: https://github.com/atlaslattice/atlas-lattice-providers/commit/703419d622ca3177a54528761dc04f2bd6b0ffb3 (new source Git blob `d3eb9cfe9009a23488b33f09dd1782fed93e28c3`).
+- Three authored checked-in regression methods: https://github.com/atlaslattice/atlas-lattice-providers/commit/72f44aa46d793548b1201e7ab2dd623387e544d3 (new tests Git blob `a2340f7a4a9ed8590967f366200273696bf4390f`), including 10 invisible-codepoint helper cases, 3 positive multilingual cases and synthetic whole-prepare HOLD assertions across four review fields.
+- Independent local extracted-predicate check: **13 distinct cases passed in ordinary Python and 13 in optimized `-O`** (26 focused executions), using the reviewed current helper/constant source; **not** the full checked-out module or complete repo tests. Authenticated GitHub source and test blob readbacks matched exactly.
+- Unchanged release holds: independent full-HEAD suite, GitHub-hosted CI executing actual steps (issue #54), source rights/license review, real Atlas ONE / Work broker / Alexandria READ+RETURN and permission/revocation proof, model/hardware execution and owner-approved release. No CANON, hosted action, broker post, or merge.
+
