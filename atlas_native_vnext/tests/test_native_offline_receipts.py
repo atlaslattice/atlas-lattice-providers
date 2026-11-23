@@ -56,10 +56,12 @@ class ReceiptStoreTest(unittest.TestCase):
         self.stage()
         other=self.s.stage('tenant-B','principal-A','work-room','review','a'*64,'review.001','b'*64,0)
         self.assertEqual(other['status'],'NEW_PREPARED_LOCAL_ONLY')
-    def test_wrong_key_does_not_match_prior(self):
-        self.stage();s2=OfflinePreparationStore(self.path,scope_key=b'x'*32)
-        try:self.assertEqual(s2.stage(*SCOPE,'review.001','b'*64,0)['status'],'NEW_PREPARED_LOCAL_ONLY')
-        finally:s2.close()
+    def test_wrong_key_after_restart_holds_before_replay(self):
+        self.stage();self.s.close()
+        with self.assertRaises(WireError):
+            OfflinePreparationStore(self.path,scope_key=b'x'*32)
+        self.s=OfflinePreparationStore(self.path,scope_key=KEY)
+        self.assertEqual(self.stage()['status'],'DEDUPLICATED_PREPARED_LOCAL_ONLY')
     def test_multiple_threads_single_record(self):
         with ThreadPoolExecutor(max_workers=12) as ex:
             r=list(ex.map(lambda _:self.stage(),range(24)))
