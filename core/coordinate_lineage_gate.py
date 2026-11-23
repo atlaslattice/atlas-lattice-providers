@@ -60,6 +60,10 @@ def review_crosswalk(original: object, target: object) -> dict:
     rkey, raxes = right
     if lkey == rkey:
         status = "SAME_TYPED_REFERENCE_NOT_SEMANTIC_EQUIVALENCE"
+    elif lkey[0] != rkey[0]:
+        # Coordinate labels are only comparable within the same claimed namespace.
+        # Cross-namespace axis matches are not candidate edition aliases.
+        status = "DISTINCT_LINEAGES"
     elif lkey[1] == LEGACY and rkey[1] == ARIADNE and tuple(n + 1 for n in laxes) == raxes:
         status = "ARITHMETIC_ALIAS_REVIEW_REQUIRED"
     elif lkey[1] != rkey[1] and lkey[3] == rkey[3]:
