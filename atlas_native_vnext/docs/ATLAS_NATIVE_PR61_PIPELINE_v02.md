@@ -14,7 +14,7 @@ The isolated Native Synthesis source from [PR63](https://github.com/atlaslattice
 
 ## Exact tested source and commands
 
-- Source pin for Atlas Labs PR61 `labs/atlas_labs_v32.py`: Git blob SHA-1 `eb667d20e8e80c463dbc84e1559d808dd803047c`. The smoke-runner checks source *bytes before importing*, rejects anything else and only then imports locally. The package never vendors PR61 or external upstream code.
+- Source pin for Atlas Labs PR61 `labs/atlas_labs_v32.py`: Git blob SHA-1 `d3eb9cfe9009a23488b33f09dd1782fed93e28c3`. The smoke-runner checks source *bytes before importing*, rejects anything else and only then imports locally. The package never vendors PR61 or external upstream code.
 - Native PR63 source parent at integration start: `59a994b36ed404f80c3507eccec7ee1eaea7eb11`; current head must be independently refreshed before review/merge.
 - Separate public ORCS source is `GPTWORK_START_HERE_STARS_2_0.md` at commit `ea2ba0133338b316b01c62f83c97bd845c61a9f0`, blob `ef51e2a526e27119b9504ba8a13eabf80b975f01`. The scientific document itself explicitly holds implementation pending scientific approval and is not simulation validation.
 
@@ -44,3 +44,30 @@ On an installation that does **not** provide the exact PR61 source, source-depen
 8. **Competitive comparison:** preregister same tasks and model/cost/latency/accessibility fixtures; collect data from real peer baselines before any superiority claim.
 
 Source receipt ≠ hosted proof. Real user rights and legal licensing are independent of structural type validation.
+
+## November 23 exact-source local replay and schema-admission checks
+
+The current **external** Atlas Labs PR #61 public source was reconstructed
+from the independently retrieved GitHub diff and compared byte-for-byte
+against Git blob `d3eb9cfe9009a23488b33f09dd1782fed93e28c3` prior to import. The prior
+`eb667d20e8e80c463dbc84e1559d808dd803047c` is historical only; the
+current smoke-runner accepts only the new blob and fails closed on any other
+source revision, without fetching private data or granting authority.
+
+Executed from the Native Synthesis source tree with the exact external
+PR61 checkout on PYTHONPATH: **148/148 Python tests PASS, zero skipped**
+in normal and optimized mode. The public synthetic `pr61-native-fusion.json`
+runner completed with `LOCAL_REVIEW_PREPARED_NOT_SENT` and a new local
+SQLite receipt; `TASK_NOT_DISPATCHED`, `WORK_MESSAGE_NOT_POSTED`,
+`GRAPH_NOT_WRITTEN`, no host attestation, zero provider spend.
+
+Four separate current-head SQLite regression methods reproduce and
+prevent markerless legacy receipt admission, deleted current marker
+reuse and unknown metadata adoption. Missing-key historical tables are
+preserved and held, not silently relabeled or automatically migrated.
+
+These are actual **local no-skip** tests with a public Git-blob verified
+external source, NOT original host CI, real D1 security, authentic QPU,
+peer delivery or scientific experimental verification. CI zero-step
+failure issue #54 remains open and release requires independent owner
+authorization and hosted two-account tests.
