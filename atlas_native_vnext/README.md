@@ -80,7 +80,7 @@ post peer messages, ratify CANON or deploy a Site.
 
 Independent Atlas Labs PR #61 source is **not vendored** into this package.
 Install the exact reviewed `labs/atlas_labs_v32.py` blob
-`eb667d20e8e80c463dbc84e1559d808dd803047c` in a separate local checkout.
+`d3eb9cfe9009a23488b33f09dd1782fed93e28c3` in a separate local checkout.
 From this package's root, activate its optional cross-repository tests with:
 
 ```sh
@@ -151,3 +151,26 @@ synthetic SQLite contract, not a real SwarmChat two-account/D1/network
 boundary. CI issue #54 remains open: latest Eight Gates run
 [45236508176](https://github.com/atlaslattice/atlas-lattice-providers/actions/runs/45236508176)
 reported zero executed steps and missing logs. No merge/CANON/deployment.
+
+## November 23, 2026 — exact current PR61 no-skip replay
+
+The current Atlas Labs PR #61 candidate source was reconstructed from the
+GitHub-reviewed diff, and its exact local Git blob matched
+`d3eb9cfe9009a23488b33f09dd1782fed93e28c3` **before import**. This is a new source pin; the previous
+`eb667d20e8e80c463dbc84e1559d808dd803047c` is a historical, superseded revision and is
+no longer accepted by the current smoke runner.
+
+With the latest source-pinned PR61 checkout outside this repository,
+**148/148 Native Synthesis Python unittest methods PASS, zero skipped**
+in both normal and optimized Python. The separately run **1,024 synthetic
+adversarial preflight checks PASS**, with no model calls or hosted writes.
+The exact latest PR61 source remains **an external test fixture**, not
+vendored or deployed inside Atlas Native Synthesis.
+
+A separate exact-source fail-closed SQLite repair refuses old tables or
+prepared records without the v0.3 scope-key marker; four new regressions
+cover missing/deleted markers and safe initialization. Prior source
+accepted one such legacy ledger incorrectly; the new source does not
+adopt or rewrite its records. These tests do not establish real host
+account authentication, two-account D1 privacy, GitHub Actions CI,
+broker delivery or CANON authorization. PR #61 and PR #63 stay DRAFT.
