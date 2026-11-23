@@ -131,7 +131,7 @@
       "id": "swarmchat",
       "name": "SwarmChat account-private Work broker",
       "family": "collaboration",
-      "upstream": "https://swarmchat-private-broker-20261112.tdavesheldon.chatgpt.site/",
+      "upstream": "ACCOUNT_PRIVATE_WORK_BROKER_REFERENCE_WITHHELD",
       "local_ref": "HOST_SCOPED_NO_GIT_PIN",
       "revision": null,
       "license": "NOT_APPLICABLE",
