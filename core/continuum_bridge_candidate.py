@@ -79,7 +79,7 @@ def propose(source: dict | str | bytes) -> dict:
     else:
         return {"status": "HOLD", "reason_codes": ["UNSUPPORTED_SOURCE_TYPE"],
                 "source_sha256": None, "source_bytes": None, "packet96": None, "link": None}
-    digest = _digest(raw)
+    # Only mint a fingerprint for a fully validated local candidate.
     if len(raw) > MAX_BYTES:
         reasons.append("SOURCE_TOO_LARGE")
     obj = {}
@@ -125,22 +125,13 @@ def propose(source: dict | str | bytes) -> dict:
         if type(dissent) is not list or any(not _text(x) for x in dissent):
             reasons.append("BAD_DISSENT_REFS")
     if reasons:
-        # Do not retain even length/fingerprint signals for self-declared
-        # leisure/private or unknown-scope material. No Play-to-Work harvest.
-        # Invalid/non-object/oversized input has no trustworthy mode. Do not
-        # emit a fingerprint or byte count for potentially private content.
-        # Even valid JSON must explicitly declare BOTH a permitted scope and
-        # Work/Public mode with harvesting opt-out disabled.
-        private = not (type(obj) is dict and
-                       type(obj.get("source_scope")) is str and
-                       obj["source_scope"] in SCOPES and
-                       type(obj.get("mode")) is str and
-                       obj["mode"] in ("WORK", "PUBLIC") and
-                       obj.get("no_harvest") is False)
+        # Caller Work/scope labels are untrusted. Even a HOLD fingerprint
+        # or byte count can become a protected-source existence oracle.
         return {"status": "HOLD", "reason_codes": sorted(set(reasons)),
-                "source_sha256": None if private else digest,
-                "source_bytes": None if private else len(raw),
+                "source_sha256": None, "source_bytes": None,
                 "packet96": None, "link": None, "authority_effect": "NONE"}
+
+    digest = _digest(raw)
 
     # Source pointer and dissent references are hashed to prevent accidental
     # transfer of private identifiers; this is not long-term archival custody.
