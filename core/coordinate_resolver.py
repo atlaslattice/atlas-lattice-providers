@@ -174,7 +174,7 @@ def validate_grounding(resolved: Any) -> dict:
     problems = []
     # An untrusted dict subclass may override get/items and run caller code.
     # Exact JSON-decoded objects are plain dicts; reject opaque packet wrappers.
-    if type(resolved) is not dict:
+    if type(resolved) is not dict or any(type(key) is not str for key in resolved):
         return {"valid": False, "reasons": ["not_a_packet"]}
     if resolved.get("earth_reference") != EARTH:
         problems.append("wrong_earth_reference")
