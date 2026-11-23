@@ -71,8 +71,16 @@ def _decode(raw: Any) -> dict:
     return obj
 
 
+# Reject spoof-prone directional marks and invisible line/paragraph control
+# characters in review-facing text, without excluding ordinary Unicode science.
+REVIEW_VISUAL_CONTROLS = frozenset({0x061C, 0x200E, 0x200F, 0x2028, 0x2029, 0xFEFF}
+    | set(range(0x202A, 0x202F)) | set(range(0x2066, 0x206A)))
+
+
 def _text(x: Any, limit: int = 240) -> bool:
-    return type(x) is str and bool(x.strip()) and len(x) <= limit and all(ord(c) >= 32 for c in x)
+    return (type(x) is str and bool(x.strip()) and len(x) <= limit
+            and all(ord(c) >= 32 and not 0x7F <= ord(c) <= 0x9F
+                    and ord(c) not in REVIEW_VISUAL_CONTROLS for c in x))
 
 
 def _quantity(q: Any) -> dict:
