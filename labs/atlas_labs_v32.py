@@ -16,7 +16,7 @@ SCHEMA = "atlas.labs.experiment-candidate/v0.1"
 HSN_PIN = "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
 HSN = re.compile(r"^H(0[1-9]|1[0-2])\.S(0[1-9]|1[0-2])\.N(0[1-9]|1[0-2])$")
 IDENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$")
-DECIMAL = re.compile(r"^-?(?:0|[1-9]\d{0,14})(?:\.\d{1,12})?(?:[eE][+-]?\d{1,3})?$")
+DECIMAL = re.compile(r"^-?(?:0|[1-9][0-9]{0,14})(?:\.[0-9]{1,12})?(?:[eE][+-]?[0-9]{1,3})?$")
 UNITS = frozenset({"1", "bit", "Hz", "Pa", "s", "m", "kg", "K", "W", "J", "eV", "m/s", "ratio"})
 EXPERIMENT_FIELDS = frozenset({"schema", "experiment_id", "lab_id", "source_id", "title",
     "hypothesis", "falsifier", "model_kind", "model_revision", "quantities",
