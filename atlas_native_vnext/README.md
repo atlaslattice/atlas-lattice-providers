@@ -71,3 +71,48 @@ Runbook: [docs/ATLAS_NATIVE_PR61_PIPELINE_v02.md](docs/ATLAS_NATIVE_PR61_PIPELIN
 - The synthetic authority uses a local HMAC key for regression fixtures. Real identity, issuer trust, principal binding, D1 race semantics, network/stream withdrawal and durable exactly-once delivery require independently controlled platform interfaces.
 
 **Build principle:** research can inspire work; only source, tests, rights and observed host effects establish what works.
+
+## November 22, 2026 HST — integration and fail-closed source checkpoint
+
+This is a **source-only** checkpoint. The native kernel does not create an Atlas ONE,
+SwarmChat or Alexandria host session, grant source rights, run UWS/quantum hardware,
+post peer messages, ratify CANON or deploy a Site.
+
+Independent Atlas Labs PR #61 source is **not vendored** into this package.
+Install the exact reviewed `labs/atlas_labs_v32.py` blob
+`eb667d20e8e80c463dbc84e1559d808dd803047c` in a separate local checkout.
+From this package's root, activate its optional cross-repository tests with:
+
+```sh
+PYTHONPATH="/path/to/atlas-labs-pr61-checkout:$PWD" python -m unittest discover -s tests -p 'test_*.py' -q
+PYTHONPATH="/path/to/atlas-labs-pr61-checkout:$PWD" python -O -m unittest discover -s tests -p 'test_*.py' -q
+python scripts/adversarial_preflight.py
+```
+
+Using that exact standalone PR #61 source, **138/138 tests passed with zero skips**
+in ordinary and optimized Python. The 1,024-case deterministic synthetic
+adversarial preflight passed separately; synthetic cases do not count as peer
+exchanges or host acceptance. Without the separate checkout, 25 optional
+cross-repository checks deliberately skip: do not quote `OK (skipped=25)` as
+full integration coverage.
+
+New source/negative controls added on this candidate branch:
+
+- `OfflinePreparationStore`: near epoch `2**31-1`, complete a final local
+  withdrawal and then hold every new stage; a saturated `withdraw()` returns
+  HOLD, never a misleading simulated success. The saturated HOLD survives
+  reopening the same SQLite file. **This is NOT a real host authorization
+  revocation** or distributed exactly-once guarantee.
+- GitHub source locators now reject `../`, `./` and repeated empty path segments.
+  They remain self-reported candidate pointers: the code does not fetch or
+  independently validate the referenced blob bytes or source licenses.
+- Atlas ONE v2 **separate rewrite PR #8** remains an independent candidate.
+  Its Work host-port currently omits explicit tenant/account fields from the
+  callbacks. A source-linked review raised this gap; no implication that an
+  actual hosted tenant leak has been observed, and no competing broker created.
+
+**Release HOLD:** GitHub Actions jobs are still reporting failure without
+recorded steps; host principal/tenant binding, two-account D1 READ/RETURN,
+actual model activation, durable receiver receipts, source privacy, publisher
+license/rollback, real UWS/QPU/science execution and matched competitor benchmarks
+must be separately observed. All research outputs are candidates until reviewed.
