@@ -65,6 +65,12 @@ class PacketFieldGuardTests(unittest.TestCase):
         self.assertEqual(resolver.validate_grounding(packet),
                          {"valid": False, "reasons": ["not_a_packet"]})
 
+    def test_non_string_packet_key_rejected(self):
+        packet = resolver.resolve_to_earth(claim())
+        packet[42] = "synthetic"
+        self.assertEqual(resolver.validate_grounding(packet),
+                         {"valid": False, "reasons": ["not_a_packet"]})
+
 
 if __name__ == "__main__":
     unittest.main()
