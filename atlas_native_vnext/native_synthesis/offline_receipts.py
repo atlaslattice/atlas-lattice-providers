@@ -12,6 +12,7 @@ from threading import RLock
 from .wire import WireError, HEX64, IDENT, clean_text, canonical_json
 
 HOLD = {'status':'HOLD','message_posted':False,'host_verified':False,'authority_effect':'NONE'}
+MAX_EPOCH = 2**31 - 1
 
 class OfflinePreparationStore:
     def __init__(self, database=':memory:', scope_key=None):
@@ -61,14 +62,14 @@ class OfflinePreparationStore:
             scope=self._scope(tenant,principal,room,purpose,source_digest)
             if type(request_id) is not str or not IDENT.fullmatch(request_id) or type(payload_digest) is not str or not HEX64.fullmatch(payload_digest):
                 raise WireError('INVALID_INPUT')
-            if type(epoch) is not int or not 0<=epoch<=2**31:
+            if type(epoch) is not int or not 0<=epoch<MAX_EPOCH:
                 raise WireError('INVALID_EPOCH')
             with self._lock:
                 try:
                     self._conn.execute('BEGIN IMMEDIATE')
                     self._conn.execute('INSERT OR IGNORE INTO scopes(scope_hash,epoch) VALUES (?,0)',(scope,))
                     row=self._conn.execute('SELECT epoch FROM scopes WHERE scope_hash=?',(scope,)).fetchone()
-                    if row is None or row[0]!=epoch:
+                    if row is None or row[0]>=MAX_EPOCH or row[0]!=epoch:
                         self._conn.execute('ROLLBACK')
                         return dict(HOLD)
                     prev=self._conn.execute('SELECT payload_digest,epoch FROM records WHERE scope_hash=? AND request_id=?',(scope,request_id)).fetchone()
@@ -94,7 +95,13 @@ class OfflinePreparationStore:
                 try:
                     self._conn.execute('BEGIN IMMEDIATE')
                     self._conn.execute('INSERT OR IGNORE INTO scopes(scope_hash,epoch) VALUES (?,0)',(scope,))
-                    self._conn.execute('UPDATE scopes SET epoch=epoch+1 WHERE scope_hash=? AND epoch<2147483647',(scope,))
+                    # A saturated epoch must never silently claim successful withdrawal.
+                    # Future stage() calls also HOLD at MAX_EPOCH.
+                    current=self._conn.execute('SELECT epoch FROM scopes WHERE scope_hash=?',(scope,)).fetchone()[0]
+                    if current>=MAX_EPOCH:
+                        self._conn.execute('ROLLBACK')
+                        return dict(HOLD)
+                    self._conn.execute('UPDATE scopes SET epoch=epoch+1 WHERE scope_hash=?',(scope,))
                     row=self._conn.execute('SELECT epoch FROM scopes WHERE scope_hash=?',(scope,)).fetchone()
                     self._conn.execute('COMMIT')
                     return {'status':'SIMULATED_WITHDRAWAL_ONLY','new_epoch':row[0],
