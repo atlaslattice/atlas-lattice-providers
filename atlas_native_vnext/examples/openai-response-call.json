@@ -1,0 +1,6 @@
+{
+  "type": "function_call",
+  "name": "atlas_native_readiness",
+  "call_id": "call_synthetic_001",
+  "arguments": "{\"query\":\"status\"}"
+}
