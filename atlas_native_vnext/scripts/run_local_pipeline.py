@@ -17,7 +17,7 @@ sys.path.insert(0,str(ROOT))
 from native_synthesis.offline_receipts import OfflinePreparationStore
 from native_synthesis.pipeline import OfflineAtlasPipeline
 
-LABS_PR61_SOURCE_GIT_BLOB='eb667d20e8e80c463dbc84e1559d808dd803047c'
+LABS_PR61_SOURCE_GIT_BLOB='d3eb9cfe9009a23488b33f09dd1782fed93e28c3'
 
 
 def import_pinned_labs_source(path: Path):
