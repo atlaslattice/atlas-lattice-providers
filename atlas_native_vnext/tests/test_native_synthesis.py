@@ -129,6 +129,19 @@ class TestExperiment(unittest.TestCase):
         self.assertEqual(self.engine.prepare_experiment(changed(**{'source.commit':'a'*40}))['status'],'HOLD')
     def test_invalid_blob_sha_holds(self):
         self.assertEqual(self.engine.prepare_experiment(changed(**{'source.blob_sha':'0'*39}))['status'],'HOLD')
+    def test_source_url_canonical_segments_required(self):
+        valid=EX['source']['url']; prefix=valid.rsplit('/',1)[0]
+        for relative in ('../unknown.md','./source.md','a//b.md','a/../b.md',
+                         'a/./b.md','a//../b.md'):
+            with self.subTest(path=relative):
+                x=changed(**{'source.url':prefix+'/'+relative})
+                r=self.engine.prepare_experiment(x)
+                self.assertEqual(r['status'],'HOLD')
+                self.assertIsNone(r['payload'])
+                self.assertEqual(r['source_count'],0)
+        self.assertEqual(self.engine.prepare_experiment(EX)['status'],
+                         'SOURCE_PREPARED_ONLY')
+
     def test_unlicensed_fork_not_experiment_source(self):
         self.assertEqual(self.engine.prepare_experiment(changed(**{'source.asset_id':'n8n'}))['status'],'HOLD')
     def test_unknown_field_no_source_fingerprint(self):
