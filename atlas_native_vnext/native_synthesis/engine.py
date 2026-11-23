@@ -52,6 +52,12 @@ class NativeSynthesis:
             raise WireError('SOURCE_NOT_PINNED')
         if asset['state'] not in ('SOURCE_PINNED','REVIEW_LICENSE'):
             raise WireError('SOURCE_NOT_PINNED')
+        # GitHub paths must have unambiguous canonical segments.  Accepting
+        # ../, ./ or repeated separators lets a later URL reader fetch a
+        # different object than the review packet appears to pin.
+        path=item['url'].split('/blob/'+item['commit']+'/',1)[-1]
+        if not path or any(part in ('', '.', '..') for part in path.split('/')):
+            raise WireError('SOURCE_NOT_PINNED')
         # We validate *structural source pins*; source contents are not fetched here.
         return {'asset_id':asset['id'],'commit':item['commit'], 'blob_sha':item['blob_sha'],
                 'source_pointer_sha256':sha256(item['url'].encode()).hexdigest(),
