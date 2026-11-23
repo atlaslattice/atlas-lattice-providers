@@ -60,3 +60,10 @@ The swarm should be able to answer four questions in one command:
 4. Are we preserving the Continuum OS naming and plural-continuum model?
 
 That is the threshold from artifact generation to operational surface area.
+
+
+## Source-file boundary for candidate proof (2026-11-23)
+
+The source-only proof runner now resolves candidate source files and optional tests against the current checkout before opening or executing them. Symlinks pointing outside the checkout must not supply term-presence proof, produce false forbidden-name failures, influence syntax compilation, or enter optional pytest execution. Symlinked directory roots are not scanned. Ordinary in-checkout files continue to participate. This is a local source boundary, **not** an attestation against concurrent hostile filesystem replacement, a secure build sandbox, or permission to scan private data.
+
+A synthetic external-file falsifier affected the old term-presence and forbidden-name checks. Eight focused source-equivalent synthetic methods passed in normal Python and eight under Python -O after the narrow patch. Five additional regression methods are checked into `tests/test_world_class_proof_receipts.py`, but the full repository test suite and GitHub-hosted CI have **not** been executed here. The pull request still needs branch-conflict reconciliation, independent rights/review acceptance, and a real CI runner pass before merge or release. The existing historical instructions, edition references and receipts are preserved.
