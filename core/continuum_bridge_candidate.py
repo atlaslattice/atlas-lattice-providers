@@ -104,6 +104,14 @@ def propose(source: dict | str | bytes) -> dict:
         except (UnicodeDecodeError, ValueError, TypeError, RecursionError):
             reasons.append("UNPARSEABLE_JSON")
     if not reasons:
+        # JSON escape syntax can decode to an unpaired UTF-16 surrogate.
+        # json.loads accepts it, but the later source/dissent pointer hash
+        # would raise UnicodeEncodeError. Reject before minting any digest.
+        try:
+            json.dumps(obj, ensure_ascii=False, allow_nan=False).encode("utf-8")
+        except (UnicodeEncodeError, ValueError):
+            reasons.append("INVALID_UNICODE_SCALAR")
+    if not reasons:
         if set(obj) - ALLOWED_SOURCE_FIELDS:
             reasons.append("UNRECOGNIZED_SOURCE_FIELDS")
         for key in ("claim_id", "source_ref", "source_continuum_id", "target_continuum_id"):
