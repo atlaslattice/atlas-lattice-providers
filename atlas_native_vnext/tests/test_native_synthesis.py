@@ -70,6 +70,10 @@ class TestCatalog(unittest.TestCase):
     def test_restricted_licenses_not_vendored(self):
         for x in ('n8n','dify'):
             self.assertEqual(self.c.get(x)['strategy'],'DO_NOT_VENDOR')
+    def test_private_broker_locator_not_exported(self):
+        s=self.c.get('swarmchat')
+        self.assertEqual(s['upstream'],'ACCOUNT_PRIVATE_WORK_BROKER_REFERENCE_WITHHELD')
+        self.assertNotIn('.chatgpt.site',json.dumps(self.c._entries))
     def test_source_only_metadata(self):
         self.assertTrue(all(x['host_state']=='NOT_HOST_VERIFIED' for x in self.c._entries.values()))
     def test_catalog_mutation_safe(self):
