@@ -13,7 +13,8 @@ from typing import Any
 
 SCHEMA = "atlas.continuum-link/candidate-v0.1"
 PACKET96 = "atlas.transparent-packet96/candidate-v0.1"
-COORD = re.compile(r"^H(0[0-9]|1[01])\.S(0[0-9]|1[01])\.N(0[0-9]|1[01])$")
+# Ariadne v0.7 uses one-based H01..H12 / S01..S12 / N01..N12.
+COORD = re.compile(r"^H(0[1-9]|1[0-2])\.S(0[1-9]|1[0-2])\.N(0[1-9]|1[0-2])$")
 D = re.compile(r"^D(0[1-9]|1[0-2])$")
 CONTINUUM_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$")
 BRIDGES = frozenset({"message", "receipt", "claim", "mirror", "review", "simulation", "human_root_decision"})
