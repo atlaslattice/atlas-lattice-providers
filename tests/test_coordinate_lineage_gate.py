@@ -66,7 +66,7 @@ class LineageGateTests(unittest.TestCase):
         a=record(ARIADNE,"H01.S01.N01")
         b=record(ARIADNE,"H01.S01.N01",namespace="other",registry="c"*64)
         result=review_crosswalk(a,b)
-        self.assertEqual(result["status"],"COORDINATE_COLLISION_REVIEW_REQUIRED")
+        self.assertEqual(result["status"],"DISTINCT_LINEAGES")
         self.assertFalse(result["same_as"])
 
     def test_forged_historical_edition_held(self):

@@ -23,7 +23,11 @@ def _held(reason: str) -> dict:
 
 def _parse(record: object) -> tuple | None:
     # No arbitrary caller fields (body, private URLs, permissions, tokens).
-    if type(record) is not dict or set(record) != _ALLOWED:
+    # Key-set comparison can invoke a str subclass equality hook.
+    # Reject behavioral keys before any comparison against field names.
+    if (type(record) is not dict
+            or any(type(key) is not str for key in record)
+            or set(record) != _ALLOWED):
         return None
     namespace = record["namespace"]
     edition = record["edition"]
