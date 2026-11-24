@@ -101,7 +101,9 @@ class CoordinateSnapshotTests(unittest.TestCase):
         packet["original_claim"]["other"] = SideEffectObject()
         verdict = resolver.validate_grounding(packet)
         self.assertFalse(verdict["valid"])
-        self.assertIn("source_not_plain_json", verdict["reasons"])
+        # Whole-packet admission now rejects unsafe values before field diagnostics.
+        self.assertEqual(verdict, {"valid": False,
+                                   "reasons": ["not_a_plain_json_packet"]})
 
     def test_non_dict_string_still_quarantined_compatibly(self):
         packet = resolver.resolve_to_earth("unsafe")

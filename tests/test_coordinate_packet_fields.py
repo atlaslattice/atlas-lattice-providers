@@ -51,7 +51,9 @@ class PacketFieldGuardTests(unittest.TestCase):
         packet["caller_metadata"] = object()
         verdict = resolver.validate_grounding(packet)
         self.assertFalse(verdict["valid"])
-        self.assertIn("caller_metadata_not_plain_json", verdict["reasons"])
+        # Whole-packet admission now rejects unsafe values before field diagnostics.
+        self.assertEqual(verdict, {"valid": False,
+                                   "reasons": ["not_a_plain_json_packet"]})
 
     def test_plain_caller_metadata_remains_inert(self):
         packet = resolver.wrap_as_coordinate_packet(claim(),
