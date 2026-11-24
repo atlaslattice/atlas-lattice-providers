@@ -1,61 +1,60 @@
 #!/usr/bin/env python3
-"""
-20_Workload_Identity_Secrets_Hygiene (Phase 1 - foundational)
-===========================================================
-Replace pasted keys with federated / workload identity where possible.
-Env-only, secret scanning, rotation hooks, least-privilege.
+"""Workload identity and environment hygiene checks for OpenAI interop."""
+from __future__ import annotations
 
-Purpose: Dramatically improve security posture for the lattice + OpenAI integrations.
-Emits hygiene ClaimPackets / audit events.
-
-Integrates with setup_environment.py (existing), notion secret resolver, runner policies.
-"""
-
-import os
-import json
-from typing import Dict, Any, List
 from datetime import datetime
-import logging
-
-logger = logging.getLogger("openai_workload_secrets_hygiene")
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+import os
 
 
 class WorkloadIdentitySecretsHygiene:
-    """
-    Security hygiene module for OpenAI + lattice.
-    """
+    REQUIRED_ENV = ["OPENAI_API_KEY"]
+    OPTIONAL_ENV = ["OPENAI_ORG_ID", "OPENAI_PROJECT_ID", "GITHUB_TOKEN", "NOTION_API_KEY", "XAI_API_KEY", "GOOGLE_API_KEY", "MS_GRAPH_TOKEN"]
 
-    REQUIRED_ENV = ["OPENAI_API_KEY", "XAI_API_KEY", "GOOGLE_API_KEY"]  # examples; never hardcode values
-
-    def __init__(self, simulate: bool = True):
+    def __init__(self, simulate: bool = True, simulate_default: Optional[bool] = None):
+        if simulate_default is not None:
+            simulate = simulate_default
         self.simulate = simulate
 
     def check_environment(self) -> Dict[str, Any]:
-        report = {"timestamp": datetime.utcnow().isoformat(), "present": {}, "missing": [], "recommendations": []}
-        for key in self.REQUIRED_ENV:
-            val = os.getenv(key)
-            report["present"][key] = "PRESENT" if val else "MISSING"
-            if not val:
-                report["missing"].append(key)
-        if report["missing"]:
-            report["recommendations"].append("Use workload identity / federated tokens instead of long-lived keys where supported (Azure, GCP, GitHub OIDC).")
-            report["recommendations"].append("Run secret scans in CI (gitleaks, trufflehog).")
+        report = {"timestamp": datetime.utcnow().isoformat() + "Z", "present": {}, "missing_required": [], "recommendations": []}
+        for key in self.REQUIRED_ENV + self.OPTIONAL_ENV:
+            present = bool(os.getenv(key))
+            report["present"][key] = "PRESENT" if present else "MISSING"
+            if key in self.REQUIRED_ENV and not present:
+                report["missing_required"].append(key)
+        if report["missing_required"]:
+            report["recommendations"].append("Set OPENAI_API_KEY locally or in the deployment environment; never commit key material.")
+        report["recommendations"].append("Prefer short-lived workload identity/OIDC and environment injection for CI/deploy flows.")
+        report["recommendations"].append("Keep CI smoke tests in simulation mode so public pull requests do not require credentials.")
         return {"feature": "openai_workload_identity_secrets_hygiene", "report": report, "grok_leads": True}
 
-    async def run(self, operation: str = "check", **kwargs) -> Dict[str, Any]:
+    def scan_for_obvious_literals(self, root: str = ".") -> Dict[str, Any]:
+        findings: List[str] = []
+        for path in Path(root).rglob("*"):
+            if path.is_dir() or any(part.startswith(".git") for part in path.parts):
+                continue
+            if path.suffix.lower() not in {".py", ".md", ".yml", ".yaml", ".json", ".txt"}:
+                continue
+            try:
+                text = path.read_text(encoding="utf-8", errors="ignore")[:200000]
+            except Exception:
+                continue
+            if "sk-" in text or "OPENAI_API_KEY=" in text:
+                findings.append(str(path))
+        return {"feature": "secrets_hygiene", "finding_count": len(findings), "findings": findings[:20], "grok_leads": True}
+
+    async def run(self, operation: str = "check", **kwargs: Any) -> Dict[str, Any]:
         if operation == "check":
             return self.check_environment()
-        elif operation == "scan_for_secrets":
-            # Placeholder for real secret scanner integration
-            return {"feature": "secrets_hygiene", "scan": "simulated_clean", "grok_leads": True}
-        return {"status": "ok"}
+        if operation == "scan_for_secrets":
+            return self.scan_for_obvious_literals(kwargs.get("root", "."))
+        return {"status": "unknown_op", "op": operation}
 
     def enforce_env_only(self) -> None:
-        """Call early to fail fast if secrets are hardcoded (for dev/CI)."""
-        # In real usage: integrate with existing setup_environment.py checks
-        pass
+        return None
 
 
 if __name__ == "__main__":
-    hygiene = WorkloadIdentitySecretsHygiene(simulate=True)
-    print(hygiene.check_environment())
+    print(WorkloadIdentitySecretsHygiene().check_environment())
