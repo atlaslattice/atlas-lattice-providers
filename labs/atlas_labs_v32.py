@@ -105,9 +105,12 @@ def _quantity(q: Any) -> dict:
             v = Decimal(s)
         except InvalidOperation as e:
             raise ValueError("bad decimal") from e
-        if not v.is_finite() or abs(v) > Decimal("1e12"):
+        # Decimal.__abs__ applies the caller's precision/exponent context.
+        # Range admission must compare exact wire values without rounding or traps.
+        magnitude = v.copy_abs()
+        if not v.is_finite() or magnitude > Decimal("1e12"):
             raise ValueError("out of bounded range")
-        if v != 0 and abs(v) < Decimal("1e-12"):
+        if v != 0 and magnitude < Decimal("1e-12"):
             raise ValueError("below numerical reporting floor")
         if key == "uncertainty" and v < 0:
             raise ValueError("negative uncertainty")
