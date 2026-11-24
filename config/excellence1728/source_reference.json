@@ -1,0 +1,72 @@
+{
+  "authority": "none",
+  "canon_reference": {
+    "decision_id": "ATLAS-UHM-CANON-20261123-001",
+    "new_canon_changes": false
+  },
+  "canon_status": "NOT CANON",
+  "completion": {
+    "genuine_macroturns": 0,
+    "implemented": 0,
+    "integrated": 0,
+    "verified": 0
+  },
+  "counts": {
+    "capabilities": 144,
+    "phases": 12,
+    "steps": 1728,
+    "workstreams": 12
+  },
+  "coverage": {
+    "ariadne_source_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6",
+    "houses": 12,
+    "nodes": 1728,
+    "ordinal_identity_implied": false,
+    "semantic_crosswalk_status": "SOURCE_REVIEW_REQUIRED",
+    "spheres": 144
+  },
+  "deployment": false,
+  "engineering_namespace": "EX1728",
+  "plan_sha256": "47084b895a6317db16275a92c3878a340d31af15fb9ab479db7101953c18e49c",
+  "program_id": "ATLAS-EXCELLENCE-1728-20261123",
+  "review_status": "CANDIDATE",
+  "revision": 1,
+  "runtime_status": "SOURCE_PORT_ONLY",
+  "schema": "atlas.excellence.source-reference.v1",
+  "source_commit": "dcb3de996e798ab5d96c77e91690bbc06a56f966",
+  "source_files": {
+    "README.md": "f32ead6014f23937af137f599dab6af9e6c94036c2346f428c42d88b97096135",
+    "package.json": "6d652c25c5b9b1e0a66496fc157fab0cd813a7141b74440b95b31eb94b6a63e1",
+    "programs/excellence1728/.gitignore": "72e4b022737fcfc8f7b0e124722b489571727397ab80b4beb2684f812208eb18",
+    "programs/excellence1728/README.md": "1f483c8bcacc3b51536729590243b74fef32003d393da1e43b38e24e438f750a",
+    "programs/excellence1728/catalog/canon_reference.json": "eef7d897eaafac3e794df0a90219e9674fadeb7e763e55de477029f54c86ec03",
+    "programs/excellence1728/catalog/capabilities.json": "6438ae4722d801045a82b95a13b4acd8062958b8ca9da44a7b1570a831d95d6e",
+    "programs/excellence1728/catalog/coverage.json": "f3ded912f9375a49da6c7b8f951f4269ac1928c60d923163ee03f9d98c51fa63",
+    "programs/excellence1728/catalog/phases.json": "9e66adc7857077e4f1847581a16c6500eb5131de035d7af761b99fa00f30f0c8",
+    "programs/excellence1728/catalog/source_inventory.json": "8c8840c0b9f9bd575f2cc3184ae8316bfc4d160bd2e75085de04cbd6af13443f",
+    "programs/excellence1728/docs/catalog/EX1728_CATALOG.md": "afe623718dcbbad792adb3f46904cd31a8a01c233210be1585537142e7725367",
+    "programs/excellence1728/docs/verification/ENGINE_TESTS.log": "dc93446755db94b0de99556b112f660ccfb622eecda2f8539dbc29962226f95b",
+    "programs/excellence1728/docs/verification/RUNTIME_VERIFICATION.json": "2678ab543e3e6aa7a181375269ae767186a1ab42d8de1c0fba4fa769204000e2",
+    "programs/excellence1728/integrations/README.md": "c81a2796cefb612c046fcbd97c98f3c8856659be061bc9a577418b2ff37f478e",
+    "programs/excellence1728/integrations/excellence-host.mjs": "c06c00358b3ca643201d89a75d63fd9d8becc99904c577d15140f675c944f855",
+    "programs/excellence1728/integrations/excellence-plan-data.mjs": "dd91e169a423cb37525fafc04c7d6245630dce7c7db99c48725ea93ce1c41ecb",
+    "programs/excellence1728/integrations/excellence-program.mjs": "6619b3ed740c074b4061265a0c5e0cd20d6b4d6dff15479fcc5bf712785c16c0",
+    "programs/excellence1728/integrations/excellence_reference.py": "4c7c447ef6316c34791c6c328eca2d6121f0f4fd3e864ec1d7e8409322c980e7",
+    "programs/excellence1728/integrations/run_excellence_program.mjs": "4f3c2b75f24b72724e59ac37cf42d06fac6c63903c8f28b46f49a1bfea00d052",
+    "programs/excellence1728/integrations/test/excellence-host.test.mjs": "15c8779d0e57bd7145f36460af53082a1097a93dbc29d67c03955b322d217f6b",
+    "programs/excellence1728/integrations/test/excellence-program.test.mjs": "d5f1705e7d5ded60d1760244ee27492740af7932372ac2ae18cdae88f7618168",
+    "programs/excellence1728/runtime/README.md": "3a7f6a3e1f70109bb3f67aba78d76d66bb9f454819d2bfd558be74cb100afadc",
+    "programs/excellence1728/runtime/excellence1728/__init__.py": "96ee3fc4c84f0cd06c04384cab544f1ea3784f786820946529a42815b79d6dec",
+    "programs/excellence1728/runtime/excellence1728/__main__.py": "e2915a16a3c6f055bfd424b0478cd986be213985d0e32d68bce5c3a8c4cd1cbf",
+    "programs/excellence1728/runtime/excellence1728/ledger.py": "8c30e6e32a1cc71b35835c283aee9577eeec3766dc7c18ce4e6443284065eae3",
+    "programs/excellence1728/runtime/excellence1728/memory.py": "0b01d96456cb41aeb08edd01ea3fcf77b53072d7937ef83843ff6b3b417b846f",
+    "programs/excellence1728/runtime/excellence1728/meta145.py": "7d56dda1237929c46cedd1332e645717b5f1348ca61d68da67b1ee4cb4ea2a59",
+    "programs/excellence1728/runtime/excellence1728/model.py": "d450d344ca1b773f855fd3f8ce97df85e8575552c7dc99639ecf6ee9aa5b8afb",
+    "programs/excellence1728/runtime/excellence1728/runner.py": "7927a6ffe53526ba748eed3c6269436523fcb62178004c2bdd709f7f67cd821a",
+    "programs/excellence1728/tests/test_engine.py": "cab3926643780f022930a45b112eb865c069d594451796baa5761eb23b1a56a6",
+    "scripts/build_excellence1728.mjs": "3d9f0ee507bfa92e1d9fc90d554b968409ec89572839ec11e75b90e460da9b53",
+    "scripts/run_excellence1728.mjs": "a937fedb9ee771b93d8d1a3580eb2d9a27f7e11f02c6d2e02bfe2e82376162d6"
+  },
+  "source_repository": "atlaslattice/Atlas-Intelligence",
+  "status": "PLANNED"
+}
