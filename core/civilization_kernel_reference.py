@@ -1,4 +1,4 @@
-"""Optional metadata reference to the canonical Atlas R01 software kernels.
+"""Optional metadata reference to the pinned upstream Atlas R01 software kernels.
 
 This module validates caller-selected bytes and prepares Work candidates. It has
 no network, model, kernel-execution, room-posting, storage, or promotion API. A
@@ -28,6 +28,7 @@ REQUIRED_FILES = frozenset(SOURCE_ROOT + "/" + path for path in (
 PROTOCOL_SHA256 = "e7895c7f39549706eb1e377ebdd2d3c9ae8904d7d492b96f1f9433c286bb2d38"
 RAW_SHA256 = "ed03acd0bacd3990d90051e01a9552faadb49bcbea05723d7eed8f59fd45cef6"
 ASSESSMENT_SHA256 = "dfcbb79f6b2d531e5220ccba45fb7aff01868211bc2de9fc51d5e4d7793b638b"
+CANDIDATE_NOTICE = "CANDIDATE, NOT CANON. AUTHORITY: none. DEPLOYMENT: false."
 
 
 class ReferenceError(ValueError):
@@ -95,7 +96,11 @@ def read_reference(raw: bytes, expected_reference_sha256: str) -> dict:
               "source_files", "kernel_houses", "dispatch", "benchmark", "authority", "canon",
               "deployment", "source_bodies_included", "specialized_node_contracts_complete",
               "ordinal_identity_implied"}
-    _require(type(record) is dict and set(record) == fields, "reference_fields_mismatch")
+    _require(type(record) is dict and set(record) in (fields, fields | {"candidate_notice"}),
+             "reference_fields_mismatch")
+    # Optional Providers host annotation; legacy references remain valid.
+    if "candidate_notice" in record:
+        _require(record["candidate_notice"] == CANDIDATE_NOTICE, "candidate_notice_mismatch")
     _require(record["schema"] == "atlas.civilization.kernel-source-reference.v1"
              and record["release_id"] == RELEASE_ID and record["status"] == "SUPPORTING_CAPABILITY_SOURCE_REFERENCE",
              "release_identity_mismatch")

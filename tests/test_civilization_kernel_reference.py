@@ -5,7 +5,7 @@ import json
 import unittest
 
 from core.civilization_kernel_reference import (
-    ASSESSMENT_SHA256, HOUSES, PROTOCOL_SHA256, RAW_SHA256, RELEASE_ID,
+    ASSESSMENT_SHA256, CANDIDATE_NOTICE, HOUSES, PROTOCOL_SHA256, RAW_SHA256, RELEASE_ID,
     REQUIRED_FILES, SOURCE_ROOT, ReferenceError, prepare_kernel_reference, read_reference,
 )
 
@@ -39,6 +39,24 @@ def encoded(record=None):
 
 
 class KernelSourceReferenceTests(unittest.TestCase):
+    def test_optional_providers_notice_accepts_legacy_and_exact_annotation_only(self):
+        legacy_bytes, legacy_pin = encoded()
+        legacy = prepare_kernel_reference(legacy_bytes, legacy_pin, house_id="H02", room_id="work-test")
+        self.assertNotIn("candidate_notice", read_reference(legacy_bytes, legacy_pin))
+        record = fixture(); record["candidate_notice"] = CANDIDATE_NOTICE
+        annotated_bytes, annotated_pin = encoded(record)
+        self.assertEqual(read_reference(annotated_bytes, annotated_pin)["candidate_notice"], CANDIDATE_NOTICE)
+        annotated = prepare_kernel_reference(annotated_bytes, annotated_pin, house_id="H02", room_id="work-test")
+        legacy["source"].pop("reference_sha256"); annotated["source"].pop("reference_sha256")
+        self.assertEqual(legacy, annotated)
+        for notice in ("edited notice", None, True, {"text": CANDIDATE_NOTICE}):
+            record = fixture(); record["candidate_notice"] = notice
+            with self.subTest(notice=notice), self.assertRaisesRegex(ReferenceError, "candidate_notice_mismatch"):
+                read_reference(*encoded(record))
+        record = fixture(); record["candidate_notice"] = CANDIDATE_NOTICE; record["unlisted_host_metadata"] = "value"
+        with self.assertRaisesRegex(ReferenceError, "reference_fields_mismatch"):
+            read_reference(*encoded(record))
+
     def test_known_candidate_retains_scope_source_and_h02_fallback(self):
         raw, pin = encoded()
         packet = prepare_kernel_reference(raw, pin, house_id="H02", room_id="work-test")
