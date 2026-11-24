@@ -7,17 +7,28 @@ from __future__ import annotations
 
 from hashlib import sha256
 import json
+import math
 import re
 from typing import Any
 
 SCHEMA = "atlas.continuum-link/candidate-v0.1"
 PACKET96 = "atlas.transparent-packet96/candidate-v0.1"
-COORD = re.compile(r"^H(0[0-9]|1[01])\.S(0[0-9]|1[01])\.N(0[0-9]|1[01])$")
+# Ariadne v0.7 uses one-based H01..H12 / S01..S12 / N01..N12.
+COORD = re.compile(r"^H(0[1-9]|1[0-2])\.S(0[1-9]|1[0-2])\.N(0[1-9]|1[0-2])$")
 D = re.compile(r"^D(0[1-9]|1[0-2])$")
 CONTINUUM_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$")
 BRIDGES = frozenset({"message", "receipt", "claim", "mirror", "review", "simulation", "human_root_decision"})
 SCOPES = frozenset({"PUBLIC_REPORTED", "WORK_REPORTED"})
 MAX_BYTES = 65536
+# Reject untyped extra fields, including caller-supplied raw protected bodies.
+# Schema extensions require separate review instead of silently hashing them.
+ALLOWED_SOURCE_FIELDS = frozenset({
+    "claim_id", "source_ref", "source_continuum_id", "target_continuum_id",
+    "coordinate", "bridge_type", "source_scope", "rights_status", "mode",
+    "no_harvest", "canon", "deployment", "collapse_allowed",
+    "identity_fusion_allowed", "authority", "requested_action",
+    "d_affinity", "dissent_refs",
+})
 
 
 def _reject_duplicate(pairs: list[tuple[str, Any]]) -> dict:
@@ -31,6 +42,18 @@ def _reject_duplicate(pairs: list[tuple[str, Any]]) -> dict:
 
 def _reject_constant(value: str) -> Any:
     raise ValueError("nonfinite JSON constant: " + value)
+
+
+def _reject_nonfinite_float(value: str) -> float:
+    """Reject JSON exponent overflow (1e10000) as well as NaN/Infinity."""
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError("nonfinite JSON number")
+    # A nonzero JSON mantissa rounded to float zero loses numeric meaning.
+    # Hold instead of silently converting tiny evidence weights to zero.
+    if number == 0.0 and any(d in "123456789" for d in value.lower().split("e", 1)[0]):
+        raise ValueError("underflowed nonzero JSON number")
+    return number
 
 
 def _digest(data: bytes) -> str:
@@ -66,20 +89,31 @@ def propose(source: dict | str | bytes) -> dict:
     else:
         return {"status": "HOLD", "reason_codes": ["UNSUPPORTED_SOURCE_TYPE"],
                 "source_sha256": None, "source_bytes": None, "packet96": None, "link": None}
-    digest = _digest(raw)
+    # Only mint a fingerprint for a fully validated local candidate.
     if len(raw) > MAX_BYTES:
         reasons.append("SOURCE_TOO_LARGE")
     obj = {}
     if not reasons:
         try:
             obj = json.loads(raw.decode("utf-8"), object_pairs_hook=_reject_duplicate,
-                             parse_constant=_reject_constant)
+                             parse_constant=_reject_constant,
+                             parse_float=_reject_nonfinite_float)
             if type(obj) is not dict:
                 reasons.append("NOT_AN_OBJECT")
                 obj = {}
         except (UnicodeDecodeError, ValueError, TypeError, RecursionError):
             reasons.append("UNPARSEABLE_JSON")
     if not reasons:
+        # JSON escape syntax can decode to an unpaired UTF-16 surrogate.
+        # json.loads accepts it, but the later source/dissent pointer hash
+        # would raise UnicodeEncodeError. Reject before minting any digest.
+        try:
+            json.dumps(obj, ensure_ascii=False, allow_nan=False).encode("utf-8")
+        except (UnicodeEncodeError, ValueError):
+            reasons.append("INVALID_UNICODE_SCALAR")
+    if not reasons:
+        if set(obj) - ALLOWED_SOURCE_FIELDS:
+            reasons.append("UNRECOGNIZED_SOURCE_FIELDS")
         for key in ("claim_id", "source_ref", "source_continuum_id", "target_continuum_id"):
             if not _text(obj.get(key)):
                 reasons.append("MISSING_" + key.upper())
@@ -111,14 +145,13 @@ def propose(source: dict | str | bytes) -> dict:
         if type(dissent) is not list or any(not _text(x) for x in dissent):
             reasons.append("BAD_DISSENT_REFS")
     if reasons:
-        # Do not retain even length/fingerprint signals for self-declared
-        # leisure/private or unknown-scope material. No Play-to-Work harvest.
-        private = ("PRIVATE_MODE_OR_UNKNOWN_HARVEST" in reasons or
-                   "PRIVATE_OR_UNKNOWN_SCOPE" in reasons)
+        # Caller Work/scope labels are untrusted. Even a HOLD fingerprint
+        # or byte count can become a protected-source existence oracle.
         return {"status": "HOLD", "reason_codes": sorted(set(reasons)),
-                "source_sha256": None if private else digest,
-                "source_bytes": None if private else len(raw),
+                "source_sha256": None, "source_bytes": None,
                 "packet96": None, "link": None, "authority_effect": "NONE"}
+
+    digest = _digest(raw)
 
     # Source pointer and dissent references are hashed to prevent accidental
     # transfer of private identifiers; this is not long-term archival custody.
@@ -145,6 +178,13 @@ def propose(source: dict | str | bytes) -> dict:
         "canon": False, "deployment": False, "authority": "none",
         "identity_scope": "DISTINCT_PARTICIPANTS", "host_attestation": "NONE",
         "semantic_review": "UNREVIEWED", "same_as": False,
+        "continuum_context": {
+            "source_continuum_id": obj["source_continuum_id"],
+            "target_continuum_id": obj["target_continuum_id"],
+            "bridge_type": obj["bridge_type"],
+            "collapse_allowed": False, "identity_fusion_allowed": False,
+            "dissent_preserved": True, "inv0_preservation_required": True,
+        },
         "dissent": [{"ref_hash": h} for h in dissent_hashes],
         "provenance": {"source_ref": source_pointer, "source_cut": "SELF_DECLARED_UNVERIFIED"},
         "receipt": {"assurance": "LOCAL_UNATTESTED", "delivered": False},
