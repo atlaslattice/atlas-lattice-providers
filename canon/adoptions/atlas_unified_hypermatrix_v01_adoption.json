@@ -1,0 +1,85 @@
+{
+  "adopted_baseline_release": "0.1.0",
+  "adopted_scope": {
+    "amendment_policy": "Preserve alternatives and dissent; new mappings remain proposed until a subsequent scoped owner decision.",
+    "coordinate_policy": "Independent namespaces, editions and source digests; shared position or cardinality never implies identity.",
+    "functional_mapping_counts": {
+      "functional_profiles": 12,
+      "operator_assignments": 34,
+      "physical_context_analogies": 17,
+      "profiles_without_default_element": 4,
+      "public_sources": 18,
+      "sphere_affinities": 40
+    },
+    "historical_policy": "Preserve all 144 original symbolic associations and original source bytes as separately addressable history.",
+    "mapping_policy": "Task and operator compatibility with many-to-many Sphere affinities and state-qualified property contexts; no compulsory element assignment.",
+    "memory_policy": "Reuse source- and implementation-qualified functional results subject to current scope and revocation checks."
+  },
+  "approval_basis": "Explicit project-owner instruction in the current owner conversation; public projection prepared by the assisting system under that instruction.",
+  "approval_quote_published": false,
+  "canon_release": "0.2.0",
+  "cryptographic_identity_attestation": false,
+  "debate": {
+    "issue_url": "https://github.com/atlaslattice/Atlas-Intelligence/issues/40",
+    "status": "OPEN_FOR_DEBATE"
+  },
+  "decision_id": "ATLAS-UHM-CANON-20261123-001",
+  "decision_revision": 1,
+  "epistemic_boundaries": {
+    "autonomous_agents_or_personhood_established": false,
+    "draft_prs_merged_by_this_record": false,
+    "historical_lexical_remaps_automatically_accepted": 0,
+    "host_authentication_or_consent_granted": false,
+    "hosted_deployment_verified": false,
+    "hypothetical_elements_confirmed": 0,
+    "physical_properties_transfer_across_analogy": false,
+    "project_adoption_is_scientific_validation": false,
+    "relation_types_changed_by_approval": false
+  },
+  "independent_matrices": [
+    "olympus",
+    "ariadne",
+    "elemental",
+    "nuclear",
+    "electronic",
+    "cymatic",
+    "glyph",
+    "computational",
+    "functional_memory",
+    "iron_empire"
+  ],
+  "independent_peer_consensus_claimed": false,
+  "owner_date": "2026-11-23",
+  "owner_timezone": "Pacific/Honolulu",
+  "physical_state_stack": [
+    "nucleon_architecture",
+    "nucleus_katharos",
+    "ionized_states",
+    "neutral_atom",
+    "classical_chemistry",
+    "molecules_materials",
+    "engineered_states"
+  ],
+  "project": "Atlas Unified HyperMatrix",
+  "relationship_types": [
+    "EXACT_IDENTITY",
+    "PHYSICAL_PROPERTY",
+    "MATHEMATICAL_RELATION",
+    "STATISTICAL_CORRELATION",
+    "COMPUTATIONAL_OPERATOR",
+    "SEMANTIC_CANDIDATE",
+    "MYTHOLOGICAL_ASSOCIATION",
+    "GENERATIVE_ANALOGY",
+    "CONTRADICTS",
+    "UNKNOWN"
+  ],
+  "release_audience": "Public-safe architecture, authored mapping projection and public source citations only; no original private corpora, recovery transcripts or private-mode content.",
+  "schema": "atlas.project-canon-public-adoption.v1",
+  "source_pins": {
+    "ariadne_original_v07_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6",
+    "functional_crosswalks_sha256": "bf024f895355f663a6e6ffd934a6e11788633dd94de18234733cfff6e2790115",
+    "predecessor_archive_sha256": "07d96a7c4a540906512234517c9403e3ed08cb10dcf726d3d12d93b4ba2ba04d",
+    "public_mapping_projection_sha256": "47a7e21dcfa43132991377f047452115cc008df547e5602730c532eb61225306"
+  },
+  "status": "OWNER_APPROVED_PROJECT_CANON"
+}

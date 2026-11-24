@@ -55,3 +55,8 @@ The [receipt scorer](RECEIPT_COMPLETENESS_SCORE.md) added by [PR #45](https://gi
 This queue's current acceptance is limited to **documentation present with four seed candidates and explicit ungranted review gates**. The missing source receipts, executable coordination demonstration and runtime permissions remain open tasks.
 
 **Keeper:** The queue can remember a proposal. It cannot make the proposal true.
+
+## Separate adopted project decision — 23 November 2026
+
+The queue items and historical master index above retain their original status. Explicit owner decision [ATLAS-UHM-CANON-20261123-001](canon/ATLAS_UNIFIED_HYPERMATRIX_20261123.md) adopts the independent HyperMatrix architecture and revisable functional defaults. The active project pointer is `canon/index/active_project_canon.json`; it grants no runtime or Notion permissions and does not ratify unrelated candidates. [Shared amendment discussion](https://github.com/atlaslattice/Atlas-Intelligence/issues/40).
+

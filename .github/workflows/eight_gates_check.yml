@@ -1,3 +1,5 @@
+# Status: CANDIDATE CI implementation, NOT CANON.
+# AUTHORITY: exact owner project approval contexts only. DEPLOYMENT: no runtime change.
 name: Eight Gates Check
 
 on:
@@ -6,18 +8,23 @@ on:
 
 jobs:
   eight-gates:
-    name: Eight Gates Candidate Safety Scan
+    name: Eight Gates Candidate and Scoped Project Review
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      - name: Verify scoped approval boundaries
+        run: python -m unittest discover -s tests -p "test_eight_gates_project_adoption.py" -v
 
       - name: Collect changed files
         id: files
@@ -39,7 +46,12 @@ jobs:
             echo "No candidate text/code files to scan."
             exit 0
           fi
-          python core/eight_gates.py $(cat scan_files.txt) --out archive/reports/eight_gates_packet.json
+          mapfile -t scan_paths < scan_files.txt
+          python core/eight_gates.py "${scan_paths[@]}" \
+            --repo-root . \
+            --project-approval canon/approval_contexts/ATLAS-UHM-CANON-20261123-001.json \
+            --expected-project-approval-sha256 d9bdc343dac6aed89be58fc3cdef4e0d1bb523ff1a6dcfefa5d8da9900084546 \
+            --out archive/reports/eight_gates_packet.json
 
       - name: Upload Eight Gates packet
         if: always()
@@ -48,3 +60,4 @@ jobs:
           name: eight-gates-packet
           path: archive/reports/eight_gates_packet.json
           if-no-files-found: ignore
+

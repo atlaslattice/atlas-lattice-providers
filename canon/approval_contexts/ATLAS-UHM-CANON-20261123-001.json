@@ -1,0 +1,44 @@
+{
+  "approval_kind": "EXPLICIT_PROJECT_OWNER_INSTRUCTION",
+  "approved_source_pins": {
+    "ariadne_original_v07_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6",
+    "functional_crosswalks_sha256": "bf024f895355f663a6e6ffd934a6e11788633dd94de18234733cfff6e2790115",
+    "predecessor_archive_sha256": "07d96a7c4a540906512234517c9403e3ed08cb10dcf726d3d12d93b4ba2ba04d"
+  },
+  "artifacts": {
+    "canon/adoptions/atlas_unified_hypermatrix_public_mappings.json": {
+      "role": "MAPPING_PROJECTION",
+      "sha256": "47a7e21dcfa43132991377f047452115cc008df547e5602730c532eb61225306"
+    },
+    "canon/adoptions/atlas_unified_hypermatrix_v01_adoption.json": {
+      "role": "ADOPTION_RECORD",
+      "sha256": "d3aeaf3aee92c7c7f61809652476d5ee267d449b3027b270fff3a276adc301c1"
+    },
+    "canon/index/active_project_canon.json": {
+      "role": "ACTIVE_INDEX",
+      "sha256": "52fe761716231af12545eddda11ae367d947e07d8c7902339fa5e32bdfb26faa"
+    },
+    "docs/CANON_CANDIDATE_QUEUE.md": {
+      "role": "MIXED_HISTORICAL_QUEUE",
+      "sha256": "676cf2cd992cdadd9db345a45038069ee03e9968d2f0e83c3efd43d4b3c72c45"
+    },
+    "docs/canon/ATLAS_UNIFIED_HYPERMATRIX_20261123.md": {
+      "role": "PROJECT_EXPLANATION",
+      "sha256": "d3f1a91e03bc7c5fd1b5d4471ad9cfc5ccae95b8f2d0a631c89a2e1c8bb2b3c0"
+    }
+  },
+  "authority_scope": "OWNER_PROJECT_ARCHITECTURE_AND_MAPPING_DEFAULTS",
+  "decision_id": "ATLAS-UHM-CANON-20261123-001",
+  "default_candidate_policy": "Unlisted or changed artifacts retain the candidate gates and require their own evidence and approval; recommendations remain visible.",
+  "host_authentication_or_consent_granted": false,
+  "hosted_runtime_deployment_granted": false,
+  "model_training_or_personhood_granted": false,
+  "owner_date": "2026-11-23",
+  "owner_timezone": "Pacific/Honolulu",
+  "private_content_export_granted": false,
+  "recorded_approval_sha256": "9b6f0757deb92b31486a9cd704d76c80cb6eef7aa55618658694ab11b928e05e",
+  "schema": "atlas.eight-gates.owner-project-approval.v1",
+  "scientific_validation_granted": false,
+  "trust_contract": "The invoking owner or reviewed workflow must separately supply this context and its expected SHA-256. Repository strings alone supply no authority. The digest verifies selected bytes, not human identity.",
+  "unrelated_constitutional_or_fiction_ratification_granted": false
+}
