@@ -4,8 +4,9 @@
 This command does not promote anything to canon. It generates a candidate proof
 receipt showing which operability checks passed, failed, or were skipped.
 
-Default mode is non-destructive and CI-safe. Use --strict locally when you want
-fail-fast behavior.
+The broad command reads checkout sources and can invoke optional interop tests;
+run it only with an independently authorized source and execution scope. CI runs
+explicit synthetic regression modules instead. --strict also fails on warnings.
 """
 from __future__ import annotations
 
@@ -22,6 +23,16 @@ from typing import Dict, List, Optional
 
 ROOT = Path(__file__).resolve().parents[1]
 LEGACY_NAME_ALLOWED_CONTEXT = {"docs/CONTINUUM_OS_DIRECTIVE.md", "docs/WORLD_CLASS_PROOF.md", "scripts/world_class_proof.py"}
+REQUIRED_CHECK_NAMES = (
+    "py_compile_core_surfaces",
+    "openai_operability_surface",
+    "continuum_os_plural_continuums_directive",
+    "continuum_not_continuity_name_guard",
+    "a2a_no_merged_mind_invariant",
+    "inv0_preservation_invariant",
+    "candidate_not_canon_boundary",
+    "pytest_openai_interop",
+)
 
 
 @dataclass
@@ -45,7 +56,28 @@ class ProofReceipt:
     generated_at: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
     checks: List[CheckResult] = field(default_factory=list)
 
+    def evidence_errors(self) -> List[str]:
+        """Check coverage and result shape before interpreting status labels."""
+        if type(self.checks) is not list or not self.checks:
+            return ["NO_CHECK_EVIDENCE"]
+        names = []
+        errors = []
+        for check in self.checks:
+            if not isinstance(check, CheckResult) or type(check.name) is not str or not check.name.strip():
+                errors.append("MALFORMED_CHECK")
+                continue
+            names.append(check.name)
+            if type(check.status) is not str or check.status not in {"PASS", "WARN", "FAIL"}:
+                errors.append("UNKNOWN_CHECK_STATUS")
+        if len(names) != len(set(names)):
+            errors.append("DUPLICATE_CHECK_NAME")
+        if not set(REQUIRED_CHECK_NAMES).issubset(names):
+            errors.append("MISSING_REQUIRED_CHECKS")
+        return sorted(set(errors))
+
     def overall(self) -> str:
+        if self.evidence_errors():
+            return "CANDIDATE_INCOMPLETE"
         if any(c.status == "FAIL" for c in self.checks):
             return "CANDIDATE_INCOMPLETE"
         if any(c.status == "WARN" for c in self.checks):
@@ -54,6 +86,8 @@ class ProofReceipt:
 
     def to_dict(self) -> Dict:
         data = asdict(self)
+        data["required_check_names"] = list(REQUIRED_CHECK_NAMES)
+        data["evidence_errors"] = self.evidence_errors()
         data["overall"] = self.overall()
         return data
 
@@ -157,6 +191,8 @@ def scan_terms(name: str, required_terms: List[str], roots: List[str]) -> CheckR
 def scan_for_forbidden_term() -> CheckResult:
     roots = ["docs", "scripts", "core", "providers", "a2a", "AGENTS.md"]
     hits: List[str] = []
+    checked = 0
+    unreadable = 0
     for root in roots:
         path = ROOT / root
         if in_repo_file(path):
@@ -170,14 +206,21 @@ def scan_for_forbidden_term() -> CheckResult:
             if rp in LEGACY_NAME_ALLOWED_CONTEXT:
                 continue
             try:
-                text = p.read_text(encoding="utf-8", errors="ignore")
-            except Exception:
+                text = p.read_text(encoding="utf-8", errors="strict")
+            except (OSError, UnicodeError):
+                unreadable += 1
                 continue
+            checked += 1
             if "Continuity OS".lower() in text.lower():
                 hits.append(rp)
     if hits:
-        return CheckResult("continuum_not_continuity_name_guard", "FAIL", "Forbidden legacy name found outside directive docs", hits[:50])
-    return CheckResult("continuum_not_continuity_name_guard", "PASS", "No forbidden legacy name references found outside directive docs")
+        return CheckResult("continuum_not_continuity_name_guard", "FAIL",
+                           f"Forbidden legacy name found outside directive docs; checked_files={checked}; unreadable_files={unreadable}", hits[:50])
+    if not checked or unreadable:
+        return CheckResult("continuum_not_continuity_name_guard", "WARN",
+                           f"Name-check evidence incomplete; checked_files={checked}; unreadable_files={unreadable}")
+    return CheckResult("continuum_not_continuity_name_guard", "PASS",
+                       f"No forbidden legacy name references in the readable source selection; checked_files={checked}; unreadable_files=0")
 
 
 def openai_readiness() -> CheckResult:
@@ -241,9 +284,12 @@ def main() -> int:
     args = parser.parse_args()
     receipt = build_receipt()
     write_receipt(receipt, args.output)
-    if args.strict and receipt.overall() != "CANDIDATE_READY":
+    overall = receipt.overall()
+    if overall == "CANDIDATE_INCOMPLETE":
         return 1
-    return 0 if not any(c.status == "FAIL" for c in receipt.checks) else 1
+    if args.strict and overall != "CANDIDATE_READY":
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

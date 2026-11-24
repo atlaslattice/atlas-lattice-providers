@@ -1,4 +1,4 @@
-name: World Class Proof
+name: Proof receipt synthetic regressions
 
 on:
   pull_request:
@@ -7,20 +7,25 @@ on:
       - main
       - one-command-world-class-proof
 
+# This job verifies the local repair only. Whole-proof acceptance remains held.
 jobs:
-  proof:
+  synthetic-regressions:
+    name: Proof receipt synthetic regressions
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     env:
-      PYTHONPATH: .
+      PYTHONPATH: .:tests
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /scripts/world_class_proof.py
+            /tests/test_world_class_proof_receipts.py
+            /tests/test_world_class_proof_evidence.py
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Run candidate proof receipt
-        run: python scripts/world_class_proof.py --output receipts/world_class_proof_receipt.json
-      - name: Upload proof receipt
-        uses: actions/upload-artifact@v4
-        with:
-          name: world-class-proof-receipt
-          path: receipts/world_class_proof_receipt.json
+      - name: Run exact offline synthetic test modules
+        run: python -B -m unittest -v test_world_class_proof_receipts test_world_class_proof_evidence

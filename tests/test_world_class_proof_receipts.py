@@ -131,7 +131,8 @@ class TestProofReceiptCustody(unittest.TestCase):
             (proof.ROOT / "docs").mkdir()
             (proof.ROOT / "docs/synthetic.md").symlink_to(target)
             outcome = proof.scan_for_forbidden_term()
-            self.assertEqual(outcome.status, "PASS")
+            # The external target is not read; zero eligible evidence cannot clear the guard.
+            self.assertEqual(outcome.status, "WARN")
             self.assertEqual(outcome.files, [])
 
     def test_outside_symlinked_python_cannot_be_compiled_or_tested(self):
