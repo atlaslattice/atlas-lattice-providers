@@ -1,0 +1,48 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { verifiedUtf16Highlight as highlight, sha256Utf8 } from '../interop/swarmchat_v32/source_highlight_offset.mjs';
+
+const selection = (sourceText,startCodePoint,endCodePoint,sha=sha256Utf8(sourceText)) => ({ sourceText, expectedSha256:sha,startCodePoint,endCodePoint });
+const result = (sourceText,start,end) => highlight(selection(sourceText,start,end));
+const accepted=(sourceText,start,end,expectedStart,expectedEnd)=> {
+  const r=result(sourceText,start,end);
+  assert.equal(r.status,'VERIFIED_SPAN');
+  assert.equal(r.unit,'utf16');
+  assert.equal(r.startUtf16,expectedStart);
+  assert.equal(r.endUtf16,expectedEnd);
+  assert.equal(sourceText.slice(r.startUtf16,r.endUtf16).length,expectedEnd-expectedStart);
+  assert.equal(r.graphemeAligned,true);
+};
+
+test('01 ASCII exact match returns same offset',()=>accepted('abcDEF',3,6,3,6));
+test('02 astral emoji before ASCII shifts code units',()=>accepted('🪿abc',1,4,2,5));
+test('03 emoji within selected phrase is grapheme-aligned',()=>accepted('a🪿b',1,3,1,4));
+test('04 whole decomposed accent is valid',()=>accepted('a'+'e\u0301'+'z',1,3,1,3));
+test('05 accent splitting is forbidden',()=>assert.equal(result('a'+'e\u0301'+'z',1,2).status,'HOLD_UNAVAILABLE'));
+test('06 ZWJ cluster full highlight is valid',()=>accepted('a👩‍🔬b',1,4,1,6));
+test('07 ZWJ cluster partial selection is forbidden',()=>assert.equal(result('a👩‍🔬b',1,2).status,'HOLD_UNAVAILABLE'));
+test('08 flag regional pair full highlight is valid',()=>accepted('x🇺🇸y',1,3,1,5));
+test('09 flag split is forbidden',()=>assert.equal(result('x🇺🇸y',1,2).status,'HOLD_UNAVAILABLE'));
+test('10 CRLF remains two literal scalar units',()=>accepted('a\r\nb',3,4,3,4));
+test('11 stale digest refuses',()=>assert.deepEqual(highlight(selection('abc',0,1,'a'.repeat(64))),{status:'HOLD_UNAVAILABLE'}));
+test('12 NFC-vs-NFD mismatch refuses rather than shifting',()=>assert.equal(highlight(selection('e\u0301',0,2,sha256Utf8('é'))).status,'HOLD_UNAVAILABLE'));
+test('13 upper-case digest refuses',()=>assert.equal(highlight(selection('abc',0,1,sha256Utf8('abc').toUpperCase())).status,'HOLD_UNAVAILABLE'));
+test('14 surrogate half refuses',()=>assert.equal(result('\ud800a',0,1).status,'HOLD_UNAVAILABLE'));
+test('15 orphan low surrogate refuses',()=>assert.equal(result('\udc00a',0,1).status,'HOLD_UNAVAILABLE'));
+test('16 zero length refuses',()=>assert.equal(result('abc',1,1).status,'HOLD_UNAVAILABLE'));
+test('17 out of range refuses',()=>assert.equal(result('abc',2,5).status,'HOLD_UNAVAILABLE'));
+test('18 nonintegers and booleans refuse',()=>{for(const s of [1.5,NaN,Infinity,true,'1',-1]) assert.equal(highlight(selection('abc',s,2)).status,'HOLD_UNAVAILABLE')});
+test('19 undefined object refuses',()=>assert.deepEqual(highlight(undefined),{status:'HOLD_UNAVAILABLE'}));
+test('20 primitive object refuses',()=>assert.equal(highlight('abc').status,'HOLD_UNAVAILABLE'));
+test('21 arrays refuse',()=>assert.equal(highlight([]).status,'HOLD_UNAVAILABLE'));
+test('22 large source refuses',()=>assert.equal(result('x'.repeat(262145),0,1).status,'HOLD_UNAVAILABLE'));
+test('23 max-length bounded source accepted',()=>accepted('x'.repeat(262144),0,1,0,1));
+test('24 non-string source refuses',()=>assert.deepEqual(highlight({sourceText:{toString(){throw Error('danger')}}}),{status:'HOLD_UNAVAILABLE'}));
+test('25 selected span does not reveal text',()=>{const r=result('🪿private',1,8); assert.equal(r.status,'VERIFIED_SPAN'); assert.equal('text' in r,false); assert.equal('sourceText' in r,false)});
+test('26 output frozen',()=>assert.equal(Object.isFrozen(result('abc',0,1)),true));
+test('27 same input deterministic',()=>assert.deepEqual(result('hello🦆world',5,7),result('hello🦆world',5,7)));
+test('28 empty text rejected as nonempty span',()=>assert.equal(result('',0,1).status,'HOLD_UNAVAILABLE'));
+test('29 supported 2nd astral after match',()=>accepted('ab🧬cd🪿',0,5,0,6));
+test('30 exact digest produced as SHA256 hex',()=>assert.match(sha256Utf8('abc'),/^[a-f0-9]{64}$/));
+test('31 wrong digest length refuses',()=>assert.equal(highlight(selection('abc',0,1,'1')).status,'HOLD_UNAVAILABLE'));
+test('32 malicious properties fail closed',()=>{const x={get sourceText(){throw Error('dont echo')}}; assert.deepEqual(highlight(x),{status:'HOLD_UNAVAILABLE'})});
