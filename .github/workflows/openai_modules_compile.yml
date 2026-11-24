@@ -1,3 +1,5 @@
+# CANDIDATE · NOT CANON · AUTHORITY: NONE · DEPLOYMENT: NONE
+# Parseable source checks; dependencies and smoke failures must remain visible.
 name: openai_modules_compile
 on:
   push:
@@ -10,24 +12,24 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.11' }
       - name: Install
-        run: pip install -e . || true
-      - name: py_compile all 40 openai + core
+        run: pip install -e .
+      - name: Compile selected core and OpenAI paths
         run: |
           python -m py_compile core/krakoa.py core/children_of_the_grokswarm.py
           python -m py_compile providers/openai/*.py
-          echo 'ALL 1-40 + core COMPILE PASS'
-      - name: Import 21-40 + basic ClaimPacket H00 smoke
+          echo 'Selected core and OpenAI paths compiled'
+      - name: Import 21-40 and basic ClaimPacket H00 smoke
         run: |
-          python -c "
-import sys
-sys.path.insert(0,'.')
-from providers.openai.openai_clean_clone_verifier import OpenAICleanCloneVerifier
-from providers.openai.openai_krakoa_operator_console import OpenAIKrakoaOperatorConsole
-v=OpenAICleanCloneVerifier(simulate=True)
-p=v.verify_repo_reproducibility('https://example','c','K')
-print('21 earth:', p.get('earth_anchor'))
-c=OpenAIKrakoaOperatorConsole(simulate=True)
-q=c.query_operator_console('status')
-print('40 earth:', q.get('earth_anchor'))
-print('21-40 smoke PASS H00')
-"
+          python - <<'PY'
+          import sys
+          sys.path.insert(0,'.')
+          from providers.openai.openai_clean_clone_verifier import OpenAICleanCloneVerifier
+          from providers.openai.openai_krakoa_operator_console import OpenAIKrakoaOperatorConsole
+          v=OpenAICleanCloneVerifier(simulate=True)
+          p=v.verify_repo_reproducibility('https://example','c','K')
+          print('21 earth:', p.get('earth_anchor'))
+          c=OpenAIKrakoaOperatorConsole(simulate=True)
+          q=c.query_operator_console('status')
+          print('40 earth:', q.get('earth_anchor'))
+          print('Simulated source smoke completed; no host attestation')
+          PY

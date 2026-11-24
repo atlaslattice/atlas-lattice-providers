@@ -1,3 +1,5 @@
+# CANDIDATE · NOT CANON · AUTHORITY: NONE · DEPLOYMENT: NONE
+# Syntax repair; missing source APIs must remain failures, not successful stubs.
 name: krakoa_audit
 on:
   push:
@@ -11,30 +13,33 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install deps
-        run: pip install -e . || pip install -r requirements.txt || true
-      - name: Py compile core + openai modules
+        run: pip install -e . || pip install -r requirements.txt
+      - name: Py compile core and OpenAI modules
         run: python -m py_compile core/krakoa.py core/children_of_the_grokswarm.py providers/openai/*.py
-      - name: Run cerebro brains count + 21-40 check
-        run: python -c "
-from core.krakoa import Krakoa
-k=Krakoa()
-v=k.cerebro_brains()
-print('count:', v['count'])
-print('21-40 sample:', [b['child_id'] for b in v['brains'] if 'openai-clean' in b['child_id'] or 'operator' in b['child_id']])
-assert v['count'] >= 40, 'cortex count low'
-print('KRAKOA AUDIT PASS')
-"
+      - name: Run cerebro count and selected module check
+        run: |
+          python - <<'PY'
+          from core.krakoa import Krakoa
+          k=Krakoa()
+          v=k.cerebro_brains()
+          print('count:', v['count'])
+          print('21-40 sample:', [b['child_id'] for b in v['brains'] if 'openai-clean' in b['child_id'] or 'operator' in b['child_id']])
+          assert v['count'] >= 40, 'cortex count low'
+          print('KRAKOA AUDIT PASS')
+          PY
       - name: Run module manifest enforcer (24)
-        run: python -c "
-from providers.openai.openai_module_manifest_enforcer import OpenAIModuleManifestEnforcer
-m = OpenAIModuleManifestEnforcer(simulate=True)
-pkt = m.enforce_module_manifest('krakoa_modules.json', '.')
-print('manifest status:', (pkt.get('payload') or {}).get('status'))
-print('KRAKOA MODULES 21-40 AUDIT PASS')
-" || echo 'manifest stub note: candidate ok'
-      - name: Hygiene guard scan
-        run: python -c "
-from providers.openai.openai_secret_hygiene_guard import OpenAISecretHygieneGuard
-g=OpenAISecretHygieneGuard(simulate=True)
-print('hygiene guard active')
-"
+        run: |
+          python - <<'PY'
+          from providers.openai.openai_module_manifest_enforcer import OpenAIModuleManifestEnforcer
+          m = OpenAIModuleManifestEnforcer(simulate=True)
+          pkt = m.enforce_module_manifest('krakoa_modules.json', '.')
+          print('manifest status:', (pkt.get('payload') or {}).get('status'))
+          print('Simulated manifest probe returned; inspect its reported status')
+          PY
+      - name: Hygiene guard construction check
+        run: |
+          python - <<'PY'
+          from providers.openai.openai_secret_hygiene_guard import OpenAISecretHygieneGuard
+          g=OpenAISecretHygieneGuard(simulate=True)
+          print('Hygiene guard constructed; no scan performed by this step')
+          PY
