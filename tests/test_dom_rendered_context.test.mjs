@@ -84,3 +84,11 @@ test('13 rendered text node traversal cap is enforced',async()=>{
 test('14 empty unrelated Text nodes preserve exact selection',async()=>{
   const r=await execute('A',['','A',''],[copy(1,0,1)]);assert.equal(r.result.status,'DOM_RANGE_VERIFIED');
 });
+test('15 document adoption while RETURN awaits invalidates captured context',async()=>{
+  const r=await execute('A',['A'],[copy(0,0,1)],0,1,{atReturn:f=>{
+    const nextDocument={};
+    f.root.ownerDocument=nextDocument;
+    for(const node of f.nodes)node.ownerDocument=nextDocument;
+  }});
+  assert.deepEqual(r.result,HOLD);
+});

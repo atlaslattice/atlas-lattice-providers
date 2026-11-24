@@ -1,6 +1,8 @@
 # SwarmChat v32: current rendered grapheme boundaries
 
-Status: source repair on existing draft PR #65. Tested locally with a DOM model; not deployed or authenticated browser verified.
+**CANDIDATE / NOT CANON. AUTHORITY: none. DEPLOYMENT: not activated.**
+
+Status: source repair on existing draft PR #65. Tested locally with a DOM model; hosted activation and authenticated browser verification remain pending.
 
 ## Reproduced counterexample
 

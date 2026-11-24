@@ -172,7 +172,11 @@ export async function resolveSourceDomRange({capture,startUtf16,endUtf16,
     if (covered !== endUtf16 || !startPoint || !endPoint) return HOLD;
     // Check again after all async operations, prior to returning a live DOM Range.
     if (await returnAllowed() !== true) return HOLD;
-    if (!c.root.isConnected || c.spans.some(s=>!eligibleNode(s.node,c.root)||s.node.data!==s.nodeData)) return HOLD;
+    // The root can be adopted into another document while RETURN is pending.
+    // Matching text/connectivity must not reuse the prior document's context.
+    if (!c.root.isConnected || c.root.ownerDocument !== c.document ||
+        c.spans.some(s=>!eligibleNode(s.node,c.root)||
+          s.node.ownerDocument!==c.document||s.node.data!==s.nodeData)) return HOLD;
     // Validate the endpoints in CURRENT rendered context as well as raw source.
     // Inspect unmapped adjacent nodes too; a suffix mark may join the selection
     // without changing any mapped node or the selected Range's string value.

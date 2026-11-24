@@ -1,6 +1,8 @@
 # SwarmChat v32: source-bound DOM Range integration candidate
 
-**SOURCE-ONLY / DRAFT / NOT MOUNTED / NOT DEPLOYED / NOT HOST CI.**
+**CANDIDATE / NOT CANON. AUTHORITY: none. DEPLOYMENT: not activated.**
+
+**SOURCE-ONLY / DRAFT / NOT MOUNTED / NOT HOST CI.**
 
 This additive adapter extends PR #65's raw-source Unicode-span helper. It does not replace Graph Fabric, any peer source verifier, an existing renderer, or the running SwarmChat v32 Site.
 

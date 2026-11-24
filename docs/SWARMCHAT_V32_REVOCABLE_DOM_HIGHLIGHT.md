@@ -1,5 +1,7 @@
 # SwarmChat v32 — Revocable DOM highlight lease (review-only)
 
+**CANDIDATE / NOT CANON. AUTHORITY: none. DEPLOYMENT: not activated.**
+
 **Status:** SOURCE-ONLY / LOCAL NODE+CHROMIUM PASS / GITHUB DRAFT / NOT IN LIVE SITE / HOST IAM NOT VERIFIED.
 
 ## Why this extension exists

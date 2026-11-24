@@ -104,6 +104,8 @@ export async function showRevocableSourceHighlight({
     win.addEventListener('pagehide',state.dispose,{once:true});
     state.timeoutId=win.setTimeout(state.dispose,ttlMs);
     if (await returnAllowed()!==true || abortSignal.aborted || !root.isConnected ||
+        root.ownerDocument!==doc || range.startContainer?.ownerDocument!==doc ||
+        range.endContainer?.ownerDocument!==doc ||
         !root.contains(range.startContainer) || !root.contains(range.endContainer) ||
         range.toString()!==expectedVisibleText || !state.active) {
       state.dispose();return HOLD;

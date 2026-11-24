@@ -92,3 +92,13 @@ test('25 stale root ownerDocument rejected on range check',async()=>{const f=fix
 test('26 registry set failure is fail-closed',async()=>{const f=fixture();f.registry.set=()=>{throw Error('secret')};holds(await f.show());});
 test('27 partial emoji grapheme selection rejects',async()=>{const f=fixture();holds(await f.show({startUtf16:1,endUtf16:2}));});
 test('28 already-denied READ does not allocate timer',async()=>{const f=fixture();f.setRead(false);holds(await f.show());assert.equal(f.cancelled(),0);});
+test('29 document adoption during final RETURN cannot register in stale window',async()=>{
+ const f=fixture();let calls=0;
+ const ret=async()=>{
+   if(++calls===2){const nextDocument={};f.root.ownerDocument=nextDocument;f.node.ownerDocument=nextDocument;}
+   return true;
+ };
+ const h=await f.show({returnAllowed:ret});
+ try{holds(h);assert.equal(f.registry.size,0);assert.ok(f.cancelled()>0);}
+ finally{h.dispose?.();}
+});

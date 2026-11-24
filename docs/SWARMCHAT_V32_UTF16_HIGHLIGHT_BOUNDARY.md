@@ -1,6 +1,8 @@
 # SwarmChat v32 source-only Unicode highlight adapter
 
-**Status:** SOURCE-ONLY / 32 local Node tests in normal and --jitless modes / NOT HOSTED / NOT DEPLOYED.
+**CANDIDATE / NOT CANON. AUTHORITY: none. DEPLOYMENT: not activated.**
+
+**Status:** SOURCE-ONLY / 32 local Node tests in normal and --jitless modes / NOT HOSTED.
 
 This isolated module complements existing graph search and selected-source review proposals. It does not fetch or index source records, infer semantic relationships, authenticate a resident, or change SwarmChat.
 
