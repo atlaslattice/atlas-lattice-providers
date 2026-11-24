@@ -1,0 +1,16 @@
+{
+  "entries": [
+    {
+      "debate_issue_url": "https://github.com/atlaslattice/Atlas-Intelligence/issues/40",
+      "decision_id": "ATLAS-UHM-CANON-20261123-001",
+      "mapping_path": "canon/adoptions/atlas_unified_hypermatrix_public_mappings.json",
+      "mapping_sha256": "47a7e21dcfa43132991377f047452115cc008df547e5602730c532eb61225306",
+      "project": "Atlas Unified HyperMatrix",
+      "record_path": "canon/adoptions/atlas_unified_hypermatrix_v01_adoption.json",
+      "record_sha256": "d3aeaf3aee92c7c7f61809652476d5ee267d449b3027b270fff3a276adc301c1",
+      "status": "OWNER_APPROVED_PROJECT_CANON"
+    }
+  ],
+  "schema": "atlas.active-project-canon-index.v1",
+  "scope": "Explicit project architecture and mapping defaults; does not replace any constitutional, scientific, cultural or fiction canon."
+}

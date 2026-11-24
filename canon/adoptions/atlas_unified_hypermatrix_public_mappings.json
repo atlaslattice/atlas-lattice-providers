@@ -1,0 +1,1348 @@
+{
+  "counts": {
+    "functional_profiles": 12,
+    "operator_assignments": 34,
+    "physical_context_analogies": 17,
+    "profiles_without_default_element": 4,
+    "public_sources": 18,
+    "sphere_affinities": 40
+  },
+  "decision_id": "ATLAS-UHM-CANON-20261123-001",
+  "epistemic_note": "Adoption selects revisable project defaults. Source relationship, review and physical evidence labels remain unchanged; no numerical confidence or computational speedup is inferred from mythology.",
+  "original_ariadne_source_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6",
+  "profiles": [
+    {
+      "alias_policy": "SEARCH_LABELS_ONLY; Greek/Roman figures retain distinct traditions and are not EXACT_IDENTITY",
+      "aliases": [
+        "Jupiter"
+      ],
+      "capability_authority": "NONE_FROM_MYTHOLOGY",
+      "deity": "Zeus",
+      "id": "zeus",
+      "mapping_notes": "Lightning imagery alone does not justify hydrogen or any other default element. Zeus is a coordination interface, not authority to authorize work.",
+      "mapping_status_in_source": "PROPOSED_FUNCTIONAL_ANALOGY",
+      "operator_assignments": [
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "constraint_rank",
+          "rationale": "Compare coordination options only after explicit task constraints are satisfied.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "pareto_front",
+          "rationale": "Keep competing system objectives visible rather than collapse them into one invented score.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "dimensional_check",
+          "rationale": "Require compatible quantities before combining cross-domain budgets.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        }
+      ],
+      "physical_context_analogies": [],
+      "physical_mapping_status": "UNASSIGNED_PENDING_TASK_SPECIFIC_PROPERTY_EVIDENCE",
+      "project_adoption": "OWNER_APPROVED_DEFAULT",
+      "sphere_affinities": [
+        {
+          "coordinate": "H07.S04",
+          "rationale": "System coordination and administration are a closer functional fit than an exclusive physics assignment.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H07.S05",
+          "rationale": "Governance models supply the coordination domain.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H09.S04",
+          "rationale": "Consequential choices require explicit value and constraint declarations.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        }
+      ]
+    },
+    {
+      "alias_policy": "SEARCH_LABELS_ONLY; Greek/Roman figures retain distinct traditions and are not EXACT_IDENTITY",
+      "aliases": [
+        "Neptune"
+      ],
+      "capability_authority": "NONE_FROM_MYTHOLOGY",
+      "deity": "Poseidon",
+      "id": "poseidon",
+      "mapping_notes": "Water is a molecule and seawater is a mixture. Neither is represented as a single neutral element.",
+      "mapping_status_in_source": "PROPOSED_FUNCTIONAL_ANALOGY",
+      "operator_assignments": [
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "resource_balance",
+          "rationale": "Compute declared stocks, inflows and outflows for a water system.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "dimensional_check",
+          "rationale": "Reject combinations of salinity, flow and inventory with incompatible units.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "graph_route",
+          "rationale": "Trace a supplied watershed or transport graph with explicit edge meaning.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        }
+      ],
+      "physical_context_analogies": [
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "charge": 1,
+          "conditions": [
+            "Aqueous ion, charge +1",
+            "Temperature, pressure, salinity and concentrations must be specified for quantitative conductivity."
+          ],
+          "element_z": 11,
+          "id": "poseidon_sodium_aqueous",
+          "measured_acceleration": null,
+          "property": "Mobile dissolved ions contribute to seawater electrical conductivity.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "Use ionic transport as a concrete physical context for flow-network models.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "NOAA_IONS",
+            "OCEAN_CONDUCTIVITY"
+          ],
+          "state": "Na+ dissolved in seawater"
+        },
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "charge": -1,
+          "conditions": [
+            "Aqueous ion, charge -1",
+            "Chemical species and mixture composition remain part of the state."
+          ],
+          "element_z": 17,
+          "id": "poseidon_chloride_aqueous",
+          "measured_acceleration": null,
+          "property": "Mobile dissolved chloride contributes to electrical conductivity.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "Retain the companion anion and charge balance rather than labeling sodium metal as seawater.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "NOAA_IONS",
+            "OCEAN_CONDUCTIVITY"
+          ],
+          "state": "Cl- dissolved in seawater"
+        },
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "component_elements": [
+            1,
+            8
+          ],
+          "conditions": [
+            "Property belongs to H2O, not an isolated hydrogen atom.",
+            "Temperature, pressure, salinity and phase are required for quantitative work."
+          ],
+          "element_z": 1,
+          "formula": "H2O",
+          "id": "poseidon_liquid_water",
+          "measured_acceleration": null,
+          "property": "Liquid water has high specific heat capacity.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "Water inventory and thermal buffering can be joined through an explicit heat-balance model.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "USGS_WATER"
+          ],
+          "state": "Liquid H2O mixture/material"
+        }
+      ],
+      "physical_mapping_status": "CONTEXTUAL_MANY_TO_MANY_CANDIDATES",
+      "project_adoption": "OWNER_APPROVED_DEFAULT",
+      "sphere_affinities": [
+        {
+          "coordinate": "H02.S05",
+          "rationale": "Reservoir and supply accounting use explicit water flows.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H03.S03",
+          "rationale": "Marine and watershed systems are the strongest domain match.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H03.S01",
+          "rationale": "Earthquake association may motivate geophysics retrieval; it is separate from hydrology.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        }
+      ]
+    },
+    {
+      "alias_policy": "SEARCH_LABELS_ONLY; Greek/Roman figures retain distinct traditions and are not EXACT_IDENTITY",
+      "aliases": [
+        "Ceres"
+      ],
+      "capability_authority": "NONE_FROM_MYTHOLOGY",
+      "deity": "Demeter",
+      "id": "demeter",
+      "mapping_notes": "N, P and K are distinct resource dimensions; the model does not collapse them into a single fertility score.",
+      "mapping_status_in_source": "PROPOSED_FUNCTIONAL_ANALOGY",
+      "operator_assignments": [
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "resource_balance",
+          "rationale": "Track nutrient stocks and losses over a declared time interval.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "pareto_front",
+          "rationale": "Keep yield, nutrient loss, water demand and ecological outcomes as separate objectives.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "dimensional_check",
+          "rationale": "Prevent mass of element from being confused with mass of its compound.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        }
+      ],
+      "physical_context_analogies": [
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "component_elements": [
+            1,
+            7,
+            8
+          ],
+          "conditions": [
+            "Soil solution context",
+            "Availability depends on soil chemistry, biology and environment.",
+            "No universal application rate is implied."
+          ],
+          "element_z": 7,
+          "formula": "NO3- / NH4+",
+          "id": "demeter_nitrogen_ions",
+          "measured_acceleration": null,
+          "property": "Nitrate and ammonium are plant-available nitrogen forms.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "Nutrient stock accounting must distinguish available nitrogen from atmospheric N2.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "VT_NUTRIENTS"
+          ],
+          "state": "Dissolved nitrate NO3- and ammonium NH4+ in soil solution"
+        },
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "component_elements": [
+            1,
+            8,
+            15
+          ],
+          "conditions": [
+            "Dissolved orthophosphate",
+            "pH required",
+            "Do not substitute elemental phosphorus."
+          ],
+          "element_z": 15,
+          "formula": "H2PO4- / HPO4^2-",
+          "id": "demeter_phosphate",
+          "measured_acceleration": null,
+          "property": "Plants take up H2PO4- and HPO4^2-; relative forms depend on pH.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "Make state/speciation an explicit dependency of phosphorus resource models.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "UH_CTAHR_PHOSPHATE"
+          ],
+          "state": "Orthophosphate in soil solution"
+        },
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "charge": 1,
+          "conditions": [
+            "Aqueous ion, charge +1",
+            "Soil solution and exchange processes affect availability."
+          ],
+          "element_z": 19,
+          "id": "demeter_potassium",
+          "measured_acceleration": null,
+          "property": "Potassium is taken up as a dissolved cation.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "Preserve available-ion accounting rather than elemental bulk inventory.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "VT_NUTRIENTS"
+          ],
+          "state": "K+ in soil solution"
+        }
+      ],
+      "physical_mapping_status": "CONTEXTUAL_MANY_TO_MANY_CANDIDATES",
+      "project_adoption": "OWNER_APPROVED_DEFAULT",
+      "sphere_affinities": [
+        {
+          "coordinate": "H02.S01",
+          "rationale": "Cultivation is a closer primary domain than a blanket assignment to all ecology.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H02.S06",
+          "rationale": "Soil nutrient availability depends on chemical state and environment.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H02.S07",
+          "rationale": "Production accounting connects resource quantities with crop systems.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H03.S04",
+          "rationale": "Ecological consequences remain a cross-house connection.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        }
+      ]
+    },
+    {
+      "alias_policy": "SEARCH_LABELS_ONLY; Greek/Roman figures retain distinct traditions and are not EXACT_IDENTITY",
+      "aliases": [
+        "Diana"
+      ],
+      "capability_authority": "NONE_FROM_MYTHOLOGY",
+      "deity": "Artemis",
+      "id": "artemis",
+      "mapping_notes": "The earlier health-house assignment is preserved as a proposal; it is not a clinical credential. Sensor matching is a modern analogy.",
+      "mapping_status_in_source": "PROPOSED_FUNCTIONAL_ANALOGY",
+      "operator_assignments": [
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "semantic_search",
+          "rationale": "Find observation records matching an explicitly stated monitoring need.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "compare_evidence",
+          "rationale": "Compare observations with reference evidence and preserve disagreements.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "constraint_rank",
+          "rationale": "Prioritize monitoring candidates under declared coverage and sensitivity requirements.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        }
+      ],
+      "physical_context_analogies": [
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "conditions": [
+            "Specific photodiode geometry and processing",
+            "NIST reference devices described for 5–254 nm",
+            "Responsivity, dark current and calibration are device-specific."
+          ],
+          "element_z": 14,
+          "id": "artemis_si_detector",
+          "measured_acceleration": null,
+          "property": "Incident radiation creates electron-hole pairs detected as current.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "Use an actual sensing mechanism as a context for observation and evidence collection.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "NIST_PHOTODIODE"
+          ],
+          "state": "Engineered silicon n-on-p photodiode"
+        },
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "conditions": [
+            "Semiconductor device, not a bare atom",
+            "Device band, cooling and calibration conditions must be specified."
+          ],
+          "element_z": 32,
+          "id": "artemis_ge_detector",
+          "measured_acceleration": null,
+          "property": "Lower-bandgap detector materials support longer infrared wavelengths than silicon.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "Choose detector material according to the signal band rather than assign a universal sensing element.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "NIST_DETECTORS"
+          ],
+          "state": "Germanium semiconductor detector"
+        }
+      ],
+      "physical_mapping_status": "CONTEXTUAL_MANY_TO_MANY_CANDIDATES",
+      "project_adoption": "OWNER_APPROVED_DEFAULT",
+      "sphere_affinities": [
+        {
+          "coordinate": "H03.S04",
+          "rationale": "Wildlife and habitat observation closely fits the selected hunting/wilderness motif.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H03.S02",
+          "rationale": "Monitoring requires sensor scope and uncertainty.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H05.S06",
+          "rationale": "Detection quality must be assessed through a measurement method.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        }
+      ]
+    },
+    {
+      "alias_policy": "SEARCH_LABELS_ONLY; Greek/Roman figures retain distinct traditions and are not EXACT_IDENTITY",
+      "aliases": [
+        "Athene",
+        "Pallas Athena"
+      ],
+      "capability_authority": "NONE_FROM_MYTHOLOGY",
+      "deity": "Athena",
+      "id": "athena",
+      "mapping_notes": "Helium remains a historical association. The computational role is planning; silicon is an optional hardware context, not the basis for selecting Athena.",
+      "mapping_status_in_source": "PROPOSED_FUNCTIONAL_ANALOGY",
+      "operator_assignments": [
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "constraint_rank",
+          "rationale": "Select feasible plans using explicit preconditions, budget and desired outcomes.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "pareto_front",
+          "rationale": "Present non-dominated tradeoffs rather than overclaim one universal best plan.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "compare_evidence",
+          "rationale": "Keep support and contradictions visible during method selection.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        }
+      ],
+      "physical_context_analogies": [
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "conditions": [
+            "Engineered doped device and circuit",
+            "Electrical bias, geometry and fabrication define behavior."
+          ],
+          "element_z": 14,
+          "id": "athena_si_logic",
+          "mapping_specificity": "CONTEXTUAL_NOT_EXCLUSIVE",
+          "measured_acceleration": null,
+          "property": "Semiconductor transistors implement controllable switches used in integrated logic.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "A physical realization of rule-gated computation; not a claim that silicon uniquely represents wisdom.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "NIST_SEMICONDUCTOR"
+          ],
+          "state": "Doped silicon semiconductor transistor circuit"
+        }
+      ],
+      "physical_mapping_status": "CONTEXTUAL_MANY_TO_MANY_CANDIDATES",
+      "project_adoption": "OWNER_APPROVED_DEFAULT",
+      "sphere_affinities": [
+        {
+          "coordinate": "H05.S06",
+          "rationale": "Reasoning about methods and evidence fits the planning interface.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H09.S05",
+          "rationale": "Logic and epistemology provide formal validity and evidence distinctions.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H03.S06",
+          "rationale": "Planning and constructive craft meet engineering design.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H05.S07",
+          "rationale": "Assessment provides measurable feedback on plan quality.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        }
+      ]
+    },
+    {
+      "alias_policy": "SEARCH_LABELS_ONLY; Greek/Roman figures retain distinct traditions and are not EXACT_IDENTITY",
+      "aliases": [
+        "Mars"
+      ],
+      "capability_authority": "NONE_FROM_MYTHOLOGY",
+      "deity": "Ares",
+      "id": "ares",
+      "mapping_notes": "Ares is a constructive adversarial-review role. Martial imagery does not justify assigning an element or authorizing harmful operations.",
+      "mapping_status_in_source": "PROPOSED_FUNCTIONAL_ANALOGY",
+      "operator_assignments": [
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "compare_evidence",
+          "rationale": "Surface contradictions and counterexamples in a claim or system report.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "constraint_rank",
+          "rationale": "Prioritize defects by declared severity and reproducibility, without hiding unresolved failures.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        }
+      ],
+      "physical_context_analogies": [],
+      "physical_mapping_status": "UNASSIGNED_PENDING_TASK_SPECIFIC_PROPERTY_EVIDENCE",
+      "project_adoption": "OWNER_APPROVED_DEFAULT",
+      "sphere_affinities": [
+        {
+          "coordinate": "H06.S06",
+          "rationale": "Adversarial input validation and failure analysis fit information security.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H06.S05",
+          "rationale": "Resilience and failure response connect to emergency preparedness.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H05.S06",
+          "rationale": "Falsification and negative controls are research methods.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        }
+      ]
+    },
+    {
+      "alias_policy": "SEARCH_LABELS_ONLY; Greek/Roman figures retain distinct traditions and are not EXACT_IDENTITY",
+      "aliases": [
+        "Mercury"
+      ],
+      "capability_authority": "NONE_FROM_MYTHOLOGY",
+      "deity": "Hermes",
+      "id": "hermes",
+      "mapping_notes": "Mercury is a mythic search alias, not evidence that Hg is the preferred transport material. A label overlap never establishes identity.",
+      "mapping_status_in_source": "PROPOSED_FUNCTIONAL_ANALOGY",
+      "operator_assignments": [
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "graph_route",
+          "rationale": "Find a valid path through explicitly typed relationships.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "namespace_resolve",
+          "rationale": "Translate qualified labels to exact editioned identifiers without merging unrelated entities.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "semantic_search",
+          "rationale": "Retrieve candidate records across vocabularies and disclose the actual retrieval method.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        }
+      ],
+      "physical_context_analogies": [
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "conditions": [
+            "Engineered interconnect",
+            "Dimensions, temperature, barriers and electromigration determine performance."
+          ],
+          "element_z": 29,
+          "id": "hermes_cu_interconnect",
+          "measured_acceleration": null,
+          "property": "Copper paths transmit electrical signals and power.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "Direct information-transport application; a closer task fit than historical aluminum-by-slot association.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "NIST_COPPER"
+          ],
+          "state": "Copper metal interconnect in an engineered circuit"
+        },
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "component_elements": [
+            8,
+            14
+          ],
+          "conditions": [
+            "SiO2 compound with designed core and cladding geometry",
+            "Publication concerns specific UV-transmitting fibers",
+            "Attenuation and transmission are wavelength/device dependent."
+          ],
+          "element_z": 14,
+          "formula": "SiO2",
+          "id": "hermes_silica_fiber",
+          "measured_acceleration": null,
+          "property": "A designed silica structure guides transmitted optical signals.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "A distinct optical transport implementation can coexist with electrical copper links.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "NIST_SILICA"
+          ],
+          "state": "Fused-silica photonic-crystal optical fiber"
+        }
+      ],
+      "physical_mapping_status": "CONTEXTUAL_MANY_TO_MANY_CANDIDATES",
+      "project_adoption": "OWNER_APPROVED_DEFAULT",
+      "sphere_affinities": [
+        {
+          "coordinate": "H03.S07",
+          "rationale": "Routing and information transport fit infrastructure directly.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H08.S04",
+          "rationale": "Vocabulary translation and disambiguation connect to language.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H10.S05",
+          "rationale": "Communication studies supply context for exchange.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        }
+      ]
+    },
+    {
+      "alias_policy": "SEARCH_LABELS_ONLY; Greek/Roman figures retain distinct traditions and are not EXACT_IDENTITY",
+      "aliases": [
+        "Phoebus"
+      ],
+      "capability_authority": "NONE_FROM_MYTHOLOGY",
+      "deity": "Apollo",
+      "id": "apollo",
+      "mapping_notes": "Cs atomic hyperfine and quartz mechanical resonance are distinct mechanisms; their numeric frequencies cannot be substituted.",
+      "mapping_status_in_source": "PROPOSED_FUNCTIONAL_ANALOGY",
+      "operator_assignments": [
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "spectral_modes",
+          "rationale": "Decompose a declared sampled signal or model with explicit boundary assumptions.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "unit_convert",
+          "rationale": "Convert frequency and period units while preserving which phenomenon is measured.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "dimensional_check",
+          "rationale": "Keep acoustic, electronic and atomic transitions in distinct physical models.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        }
+      ],
+      "physical_context_analogies": [
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "charge": 0,
+          "conditions": [
+            "Isotope 133Cs",
+            "Neutral atom",
+            "Unperturbed ground-state hyperfine transition",
+            "Practical clocks require environmental and relativistic corrections."
+          ],
+          "element_z": 55,
+          "id": "apollo_cs133_clock",
+          "isotope_mass_number": 133,
+          "measured_acceleration": null,
+          "property": "The reference transition frequency is exactly 9192631770 Hz in the SI definition.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": 9192631770,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "A precise timing/metrology reference for datasets and temporal computations.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "NIST_SI"
+          ],
+          "state": "Neutral cesium-133, unperturbed electronic ground-state hyperfine transition",
+          "uncertainty": 0,
+          "uncertainty_note": "Exact defining value for the ideal unperturbed transition; realization uncertainty belongs to the actual clock measurement.",
+          "uncertainty_type": "EXACT_SI_DEFINITION_NOT_MEASURED_LOCAL",
+          "unit": "Hz"
+        },
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "component_elements": [
+            8,
+            14
+          ],
+          "conditions": [
+            "SiO2 crystal, not neutral silicon",
+            "Cut, size, mode and temperature determine frequency",
+            "No universal elemental frequency exists."
+          ],
+          "element_z": 14,
+          "formula": "SiO2",
+          "id": "apollo_quartz_resonator",
+          "measured_acceleration": null,
+          "property": "Piezoelectric coupling supports mechanical resonance and electrical oscillation.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "Provides an explicitly mechanical/electrical bridge to spectral and cymatic work.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "NIST_QUARTZ"
+          ],
+          "state": "Engineered crystalline quartz resonator"
+        }
+      ],
+      "physical_mapping_status": "CONTEXTUAL_MANY_TO_MANY_CANDIDATES",
+      "project_adoption": "OWNER_APPROVED_DEFAULT",
+      "sphere_affinities": [
+        {
+          "coordinate": "H08.S01",
+          "rationale": "Musical pattern and periodic structure motivate the interface.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H01.S01",
+          "rationale": "Measurement of physical periodicity supplies evidence.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H01.S06",
+          "rationale": "Elastic modes are a distinct continuum-mechanics route.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H01.S07",
+          "rationale": "Atomic and quantum transition models remain a different route.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        }
+      ]
+    },
+    {
+      "alias_policy": "SEARCH_LABELS_ONLY; Greek/Roman figures retain distinct traditions and are not EXACT_IDENTITY",
+      "aliases": [
+        "Venus"
+      ],
+      "capability_authority": "NONE_FROM_MYTHOLOGY",
+      "deity": "Aphrodite",
+      "id": "aphrodite",
+      "mapping_notes": "Attraction in mythology does not establish chemical bonding or electromagnetism. No default copper or other element is selected for this interface.",
+      "mapping_status_in_source": "PROPOSED_FUNCTIONAL_ANALOGY",
+      "operator_assignments": [
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "pareto_front",
+          "rationale": "Keep multiple aesthetic and usability objectives visible without inventing a scalar beauty score.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "compose",
+          "rationale": "Combine compatible representations while retaining their constituent sources.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        }
+      ],
+      "physical_context_analogies": [],
+      "physical_mapping_status": "UNASSIGNED_PENDING_TASK_SPECIFIC_PROPERTY_EVIDENCE",
+      "project_adoption": "OWNER_APPROVED_DEFAULT",
+      "sphere_affinities": [
+        {
+          "coordinate": "H08.S02",
+          "rationale": "Generative aesthetic choices fit visual design.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H09.S02",
+          "rationale": "Preference and interpretation require psychological context.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H10.S01",
+          "rationale": "Relationships form a social context, not a physical force law.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        }
+      ]
+    },
+    {
+      "alias_policy": "SEARCH_LABELS_ONLY; Greek/Roman figures retain distinct traditions and are not EXACT_IDENTITY",
+      "aliases": [
+        "Vesta"
+      ],
+      "capability_authority": "NONE_FROM_MYTHOLOGY",
+      "deity": "Hestia",
+      "id": "hestia",
+      "mapping_notes": "Hestia does not stand for Indigenous spiritual authority. Community and knowledge-memory links are optional, context-specific design associations.",
+      "mapping_status_in_source": "PROPOSED_FUNCTIONAL_ANALOGY",
+      "operator_assignments": [
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "memory_reuse",
+          "rationale": "Reuse an existing derivation only when source digests, inputs and context still match.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "namespace_resolve",
+          "rationale": "Restore exact editioned record references during continuity operations.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "resource_balance",
+          "rationale": "Track declared continuity resources without reading private leisure records.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        }
+      ],
+      "physical_context_analogies": [
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "component_elements": [
+            8,
+            12,
+            26,
+            27
+          ],
+          "conditions": [
+            "CoFe/MgO multilayer device",
+            "Layer dimensions, magnetic configuration and write/read circuitry required",
+            "Raw iron or cobalt is not a complete memory."
+          ],
+          "element_z": 26,
+          "formula": "CoFe / MgO / CoFe",
+          "id": "hestia_cofe_mram",
+          "measured_acceleration": null,
+          "property": "Relative magnetic states encode information in a nonvolatile memory device.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "A concrete memory-retention application; the property belongs to the engineered stack.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "NIST_MRAM"
+          ],
+          "state": "Cobalt-iron ferromagnetic layers with magnesium-oxide tunnel barrier"
+        },
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "charge": 1,
+          "conditions": [
+            "Battery electrodes, electrolyte and state of charge specified",
+            "Li+ ion, not bulk lithium metal",
+            "No capacity or lifetime estimate without device data."
+          ],
+          "element_z": 3,
+          "id": "hestia_li_energy_storage",
+          "measured_acceleration": null,
+          "property": "Lithium ions move through the electrolyte during charge/discharge; interfaces affect impedance.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "Energy continuity is an auxiliary resource context, separate from informational memory.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "NIST_LI_ION"
+          ],
+          "state": "Li+ transported in a rechargeable battery system"
+        }
+      ],
+      "physical_mapping_status": "CONTEXTUAL_MANY_TO_MANY_CANDIDATES",
+      "project_adoption": "OWNER_APPROVED_DEFAULT",
+      "sphere_affinities": [
+        {
+          "coordinate": "H05.S05",
+          "rationale": "Persistent sources, revisions and reusable knowledge are the primary computational domain.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H10.S07",
+          "rationale": "Community continuity is a separate contextual relation.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H03.S05",
+          "rationale": "Shelter and built-environment context support the hearth motif.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        }
+      ]
+    },
+    {
+      "alias_policy": "SEARCH_LABELS_ONLY; Greek/Roman figures retain distinct traditions and are not EXACT_IDENTITY",
+      "aliases": [
+        "Juno"
+      ],
+      "capability_authority": "NONE_FROM_MYTHOLOGY",
+      "deity": "Hera",
+      "id": "hera",
+      "mapping_notes": "Contract/integrity is a modern functional interpretation, with lower myth-specificity than Hermes routing. It is not ancient evidence of data governance or automatic legal authority. No physical element forced.",
+      "mapping_status_in_source": "PROPOSED_FUNCTIONAL_ANALOGY",
+      "operator_assignments": [
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "compare_evidence",
+          "rationale": "Verify that an asserted relationship retains its source, edition and unresolved objections.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "namespace_resolve",
+          "rationale": "Keep commitments attached to the correct identity and edition.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "constraint_rank",
+          "rationale": "Check explicit relationship and data-use constraints before proposing combinations.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        }
+      ],
+      "physical_context_analogies": [],
+      "physical_mapping_status": "UNASSIGNED_PENDING_TASK_SPECIFIC_PROPERTY_EVIDENCE",
+      "project_adoption": "OWNER_APPROVED_DEFAULT",
+      "sphere_affinities": [
+        {
+          "coordinate": "H11.S07",
+          "rationale": "Preserving data-use boundaries is a concrete integrity task.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H07.S02",
+          "rationale": "Formal commitments and their context connect to law as an editorial domain.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H09.S04",
+          "rationale": "Relationship constraints require stated ethical criteria.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        }
+      ]
+    },
+    {
+      "alias_policy": "SEARCH_LABELS_ONLY; Greek/Roman figures retain distinct traditions and are not EXACT_IDENTITY",
+      "aliases": [
+        "Hephaistos",
+        "Vulcan"
+      ],
+      "capability_authority": "NONE_FROM_MYTHOLOGY",
+      "deity": "Hephaestus",
+      "id": "hephaestus",
+      "mapping_notes": "The sulfur/computer-science association remains history. Material and process selection now follows explicit behavior and constraints.",
+      "mapping_status_in_source": "PROPOSED_FUNCTIONAL_ANALOGY",
+      "operator_assignments": [
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "compose",
+          "rationale": "Build a pipeline only when the output and input contracts of adjacent transformations are compatible.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "dimensional_check",
+          "rationale": "Verify dimensions during material/process calculations.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        },
+        {
+          "availability": "RESOLVE_AGAINST_LOCAL_OPERATOR_REGISTRY",
+          "benchmark_status": "NOT_INDEPENDENTLY_EVALUATED",
+          "operator_id": "constraint_rank",
+          "rationale": "Select feasible fabrication candidates from declared process constraints.",
+          "relationship_type": "COMPUTATIONAL_OPERATOR"
+        }
+      ],
+      "physical_context_analogies": [
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "component_elements": [
+            6,
+            26
+          ],
+          "conditions": [
+            "Alloy composition required",
+            "Time-temperature path, cooling and prior microstructure required",
+            "Steel is not a single pure element state."
+          ],
+          "element_z": 26,
+          "id": "hephaestus_iron_steel",
+          "measured_acceleration": null,
+          "property": "Heat treatment changes material structure and resulting properties.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "A material example of stateful transformation pipelines with process-dependent outcomes.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "NIST_STEEL"
+          ],
+          "state": "Iron-based steel with specified composition and thermal history"
+        },
+        {
+          "association_evidence_status": "PROPOSED_FUNCTIONAL_ANALOGY",
+          "conditions": [
+            "Bulk metal and alloy/compound variants kept distinct",
+            "Temperature, atmosphere and geometry required for application",
+            "Tungsten-carbide hardness is not the same property as tungsten-metal melting behavior."
+          ],
+          "element_z": 74,
+          "id": "hephaestus_tungsten",
+          "measured_acceleration": null,
+          "property": "Tungsten has a very high melting point among metals.",
+          "property_evidence_status": "SOURCE_SUPPORTED_WITH_CONTEXT",
+          "property_numeric_value": null,
+          "property_relationship_type": "PHYSICAL_PROPERTY",
+          "rationale": "A defensible high-temperature manufacturing context.",
+          "relationship_type": "GENERATIVE_ANALOGY",
+          "source_ids": [
+            "USGS_TUNGSTEN"
+          ],
+          "state": "Bulk tungsten metal or specified tungsten-containing engineering material"
+        }
+      ],
+      "physical_mapping_status": "CONTEXTUAL_MANY_TO_MANY_CANDIDATES",
+      "project_adoption": "OWNER_APPROVED_DEFAULT",
+      "sphere_affinities": [
+        {
+          "coordinate": "H01.S04",
+          "rationale": "Material state and metallurgy are the primary domain.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H03.S06",
+          "rationale": "Fabrication and transformation composition fit manufacturing.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H12.S04",
+          "rationale": "Space robotics is a cross-house application rather than an exclusive home.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        },
+        {
+          "coordinate": "H01.S03",
+          "rationale": "Thermal process and energy conversion supply additional constraints.",
+          "relationship_type": "SEMANTIC_CANDIDATE",
+          "review_status": "CURATED_PROPOSAL",
+          "source_registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6"
+        }
+      ]
+    }
+  ],
+  "project_adoption": "OWNER_APPROVED_PROJECT_CANON",
+  "projection_note": "Authored functional mappings with coordinate identifiers and public property sources. Original private Ariadne labels/descriptions and historical recovery records are excluded. This projection has its own digest and is not byte-identical to the source snapshot.",
+  "public_sources": [
+    {
+      "claim_scope": "Hymns 2, 5, 8, 9, 12, 18, 20, 21, 22, 23, 24, 27, 29: mythic roles.",
+      "full_document_bytes_sha256": null,
+      "id": "MYTH_HYMNS",
+      "limitations": "Modern software roles and element associations are authored analogies, not claims made by the ancient text. Roster choice is a modern project proposal.",
+      "source_kind": "PRIMARY_ANCIENT_TEXT_TRANSLATION",
+      "title": "Homeric Hymns, Evelyn-White translation",
+      "url": "https://adfonteslibrary.org/work-homeric-hymns",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Athena and Hephaestus teach crafts.",
+      "full_document_bytes_sha256": null,
+      "id": "MYTH_HEPHAESTUS_PERSEUS",
+      "limitations": "No algorithmic or physical association is asserted by the ancient source.",
+      "source_kind": "PRIMARY_ANCIENT_TEXT_TRANSLATION",
+      "title": "Homeric Hymn 20 to Hephaestus, 1–5",
+      "url": "https://atlas.perseus.tufts.edu/library/passage/urn%3Acts%3AgreekLit%3Atlg0013.tlg020.perseus-eng2%3A1-5/",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Unperturbed neutral Cs-133 ground-state hyperfine transition: 9192631770 Hz by definition; atomic parameter and specified state.",
+      "full_document_bytes_sha256": null,
+      "id": "NIST_SI",
+      "limitations": "No deity or software-performance claim is supported by this physical source.",
+      "source_kind": "PRIMARY_STANDARDS_REFERENCE",
+      "title": "NIST SP 330: International System of Units, Section 2",
+      "url": "https://www.nist.gov/pml/special-publication-330/sp-330-section-2",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Quartz piezoelectric resonator; frequency depends on cut, size and environment.",
+      "full_document_bytes_sha256": null,
+      "id": "NIST_QUARTZ",
+      "limitations": "No deity or software-performance claim is supported by this physical source.",
+      "source_kind": "PRIMARY_INSTITUTIONAL_TECHNICAL_REFERENCE",
+      "title": "NIST Time and Frequency A to Z: Quartz Oscillator",
+      "url": "https://www.nist.gov/pml/time-and-frequency-division/popular-links/time-frequency-z/time-and-frequency-z-q-ra",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Copper interconnect signal and power transmission; electromigration and diffusion barriers matter.",
+      "full_document_bytes_sha256": null,
+      "id": "NIST_COPPER",
+      "limitations": "No deity or software-performance claim is supported by this physical source.",
+      "source_kind": "PRIMARY_AUTHOR_PUBLICATION",
+      "title": "NIST: Copper metallization and diffusion barriers",
+      "url": "https://www.nist.gov/publications/perspective-high-entropy-alloys-and-high-entropy-nitrides-diffusion-barriers-copper",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Reported fused-silica solid-core photonic-crystal fibers transmitting ultraviolet light; device-specific result.",
+      "full_document_bytes_sha256": null,
+      "id": "NIST_SILICA",
+      "limitations": "No deity or software-performance claim is supported by this physical source.",
+      "source_kind": "PRIMARY_AUTHOR_PUBLICATION",
+      "title": "NIST: Single-Mode Optical Fiber for High-Power, Low-Loss UV Transmission",
+      "url": "https://www.nist.gov/publications/single-mode-optical-fiber-high-power-low-loss-uv-transmission",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Semiconductor transistor switches and silicon integrated circuits.",
+      "full_document_bytes_sha256": null,
+      "id": "NIST_SEMICONDUCTOR",
+      "limitations": "No deity or software-performance claim is supported by this physical source.",
+      "source_kind": "PRIMARY_INSTITUTIONAL_TECHNICAL_REFERENCE",
+      "title": "NIST Semiconductor Glossary",
+      "url": "https://www.nist.gov/semiconductors/semiconductor-glossary",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Silicon n-on-p photodiodes detect radiation through electron-hole generation; devices issued for 5–254 nm.",
+      "full_document_bytes_sha256": null,
+      "id": "NIST_PHOTODIODE",
+      "limitations": "No deity or software-performance claim is supported by this physical source.",
+      "source_kind": "PRIMARY_INSTRUMENT_DESCRIPTION",
+      "title": "NIST Si EUV Photodiode Transfer Standard",
+      "url": "https://www.nist.gov/laboratories/tools-instruments/si-euv-photodiode-transfer-standard",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Silicon photodiodes and lower-bandgap germanium/InGaAs detectors for longer infrared wavelengths.",
+      "full_document_bytes_sha256": null,
+      "id": "NIST_DETECTORS",
+      "limitations": "No deity or software-performance claim is supported by this physical source.",
+      "source_kind": "PRIMARY_RESEARCH_PUBLICATION",
+      "title": "NIST optical detector metrology, JRES 106(1)",
+      "url": "https://nvlpubs.nist.gov/nistpubs/jres/106/1/j61par.pdf",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Heat-treatment procedures and effects in iron and steel; composition and thermal history determine material state.",
+      "full_document_bytes_sha256": null,
+      "id": "NIST_STEEL",
+      "limitations": "No deity or software-performance claim is supported by this physical source.",
+      "source_kind": "PRIMARY_INSTITUTIONAL_MONOGRAPH",
+      "title": "NBS Monograph 88: Heat Treatment and Properties of Iron and Steel",
+      "url": "https://nvlpubs.nist.gov/nistpubs/legacy/mono/nbsmonograph88.pdf",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Tungsten has the highest melting point among metals; tungsten-carbide hardness is a compound property.",
+      "full_document_bytes_sha256": null,
+      "id": "USGS_TUNGSTEN",
+      "limitations": "No deity or software-performance claim is supported by this physical source.",
+      "source_kind": "PRIMARY_INSTITUTIONAL_REFERENCE",
+      "title": "USGS: Mineral of the Month, Tungsten",
+      "url": "https://www.usgs.gov/publications/mineral-month-tungsten",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Nonvolatile magnetic states in cobalt-iron layers separated by magnesium oxide; whole engineered stack matters.",
+      "full_document_bytes_sha256": null,
+      "id": "NIST_MRAM",
+      "limitations": "No deity or software-performance claim is supported by this physical source.",
+      "source_kind": "PRIMARY_LABORATORY_RESEARCH_REPORT",
+      "title": "NIST: The Persistence of Memory, Looking into MRAM",
+      "url": "https://www.nist.gov/news-events/news/2013/08/persistence-memory-looking-mram",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Lithium-ion flow in a battery and interface impedance in studied solid-state cells.",
+      "full_document_bytes_sha256": null,
+      "id": "NIST_LI_ION",
+      "limitations": "No deity or software-performance claim is supported by this physical source.",
+      "source_kind": "PRIMARY_LABORATORY_RESEARCH_REPORT",
+      "title": "NIST: Impeding the Impedance",
+      "url": "https://www.nist.gov/news-events/news/2021/11/impeding-impedance-research-reveals-how-design-better-next-generation",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Sodium and chloride are prevalent dissolved ions in seawater.",
+      "full_document_bytes_sha256": null,
+      "id": "NOAA_IONS",
+      "limitations": "No deity or software-performance claim is supported by this physical source.",
+      "source_kind": "PRIMARY_INSTITUTIONAL_REFERENCE",
+      "title": "NOAA: Why Is the Ocean Salty?",
+      "url": "https://oceanservice.noaa.gov/facts/whysalty.html?v=2",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Conductivity from dissolved ions depends on seawater temperature, salinity and pressure.",
+      "full_document_bytes_sha256": null,
+      "id": "OCEAN_CONDUCTIVITY",
+      "limitations": "No deity or software-performance claim is supported by this physical source.",
+      "source_kind": "PRIMARY_RESEARCH_PUBLICATION",
+      "title": "Tyler et al.: Electrical Conductivity of the Global Ocean",
+      "url": "https://link.springer.com/article/10.1186/s40623-017-0739-7",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "High heat capacity of liquid water and thermal buffering; not a property of isolated hydrogen or oxygen atoms.",
+      "full_document_bytes_sha256": null,
+      "id": "USGS_WATER",
+      "limitations": "No deity or software-performance claim is supported by this physical source.",
+      "source_kind": "PRIMARY_INSTITUTIONAL_REFERENCE",
+      "title": "USGS: Specific Heat Capacity and Water",
+      "url": "https://www.usgs.gov/water-science-school/science/specific-heat-capacity-and-water",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Plant uptake of nitrate/ammonium and potassium ions.",
+      "full_document_bytes_sha256": null,
+      "id": "VT_NUTRIENTS",
+      "limitations": "HTML table has malformed charges for phosphate and sulfate; those entries are not ingested. Phosphate speciation uses UH_CTAHR_PHOSPHATE instead. No application-rate advice is derived.",
+      "source_kind": "PRIMARY_UNIVERSITY_TEACHING_REFERENCE",
+      "title": "Virginia Cooperative Extension: Soils and Nutrient Management",
+      "url": "https://pressbooks.lib.vt.edu/emgtraining/chapter/2/",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    },
+    {
+      "claim_scope": "Plants take up orthophosphate H2PO4- and HPO4^2-; speciation depends on pH.",
+      "full_document_bytes_sha256": null,
+      "id": "UH_CTAHR_PHOSPHATE",
+      "limitations": "No deity or software-performance claim is supported by this physical source.",
+      "source_kind": "PRIMARY_UNIVERSITY_TEACHING_REFERENCE",
+      "title": "University of Hawaii CTAHR Maui Soil: Phosphorus",
+      "url": "https://www.ctahr.hawaii.edu/mauisoil/c_nutrients02.aspx",
+      "verification": "BROWSED_SOURCE_NOT_RAW_FILE_HASHED"
+    }
+  ],
+  "schema": "atlas.hypermatrix-public-mapping-projection.v1",
+  "source_file_sha256": "bf024f895355f663a6e6ffd934a6e11788633dd94de18234733cfff6e2790115",
+  "source_profile_edition": "functional-v0.1"
+}
