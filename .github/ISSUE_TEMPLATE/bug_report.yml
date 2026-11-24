@@ -1,0 +1,36 @@
+# CANDIDATE · NOT CANON · AUTHORITY: NONE · DEPLOYMENT: NONE
+name: Reproducible bug
+description: Report a concrete failure with source and reproduction details.
+title: "Bug: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Include only synthetic or authorized Work examples. Remove credentials and private source bodies.
+        For failures of the Eight Gates check, use the dedicated Eight Gates form.
+  - type: input
+    id: source
+    attributes:
+      label: Affected path and commit
+      description: Include the file or component and the output of git rev-parse HEAD, or an exact PR/run URL.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and observed behavior
+      description: Explain what should happen and what actually happens.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Smallest useful reproduction
+      description: Provide commands, sanitized inputs and output. State the operating system and runtime version.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact and related work
+      description: Describe who is affected and link relevant issues, PRs or workarounds. Leave unknown facts explicit.

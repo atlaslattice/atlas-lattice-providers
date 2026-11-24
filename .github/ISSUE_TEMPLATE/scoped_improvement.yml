@@ -1,0 +1,36 @@
+# CANDIDATE · NOT CANON · AUTHORITY: NONE · DEPLOYMENT: NONE
+name: Scoped improvement
+description: Propose a specific improvement with a testable outcome.
+title: "Improve: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check existing issues and PRs first. Link overlapping work and preserve its attribution.
+        This request records a candidate for review; it does not grant release or execution authority.
+  - type: textarea
+    id: problem
+    attributes:
+      label: User or contributor problem
+      description: Describe the friction and the affected component, path or workflow.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Proposed outcome and acceptance
+      description: State the smallest useful change and how someone can verify that it works.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources and related work
+      description: Link source versions, related issues, dependency PRs and existing alternatives.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Compatibility and scope
+      description: Note affected editions, external effects, rights or permissions, and a reversible approach.
