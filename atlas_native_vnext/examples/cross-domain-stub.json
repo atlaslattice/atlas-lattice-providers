@@ -1,0 +1,11 @@
+{
+  "schema":"atlas.native.crossdomain/v0.1",
+  "request_id":"public.crossdomain.synthetic.001",
+  "hypothesis":"The formal evidence contract can carry an engineering sensor hypothesis and a mathematical detector null without silently treating their measurements as equivalent.",
+  "falsifier":"Version-mismatched data, missing units, or an independently observed null fails the proposed transfer.",
+  "alternatives":["Only a superficial analogy exists","Simulation benchmark does not transfer to experimental calibration"],
+  "sources":[
+    {"lab_id":"fusion","source":{"asset_id":"orcs","url":"https://github.com/atlaslattice/open-regenerative-compute-standard/blob/ea2ba0133338b316b01c62f83c97bd845c61a9f0/GPTWORK_START_HERE_STARS_2_0.md","commit":"ea2ba0133338b316b01c62f83c97bd845c61a9f0","blob_sha":"ef51e2a526e27119b9504ba8a13eabf80b975f01","origin_mode":"PUBLIC","visibility":"PUBLIC"}},
+    {"lab_id":"mathematics","source":{"asset_id":"foundation","url":"https://github.com/atlaslattice/atlas-lattice-foundation/blob/d72e7f161a514d63bd03946e8ed6885bfe66eb89/spec_modules/18_volumetric_acoustic_printing_spec.md","commit":"d72e7f161a514d63bd03946e8ed6885bfe66eb89","blob_sha":"28b1c82a4a0935654ba7096abe5a512a06fb2477","origin_mode":"PUBLIC","visibility":"PUBLIC"}}
+  ]
+}

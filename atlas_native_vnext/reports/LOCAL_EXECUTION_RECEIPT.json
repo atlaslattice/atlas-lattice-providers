@@ -1,0 +1,40 @@
+{
+  "schema": "atlas.native.local-receipt/v0.1",
+  "date_utc": "2026-11-23",
+  "scope": "OFFLINE_SOURCE_ONLY",
+  "base_repo": "atlaslattice/atlas-lattice-providers",
+  "base_sha": "03f2b9c40573af4096bd6ba1cecee8940b4d9233",
+  "build_sha256": "6325c22eca197d412ecf56f24f29bde621548d90b6c1ce5d8c0b6a1781318e8b",
+  "github_staging_sha256": "9f581bb6ee72cccf2f86027616d4e59cd19fbe2a91ee48b71ba55b7117d8eb9f",
+  "selected_assets": 31,
+  "public_github_registry_records": 272,
+  "license_status": "SELECTED_CANDIDATES_REVIEW_REQUIRED",
+  "unit_tests_normal": {
+    "methods": 92,
+    "passed": 92,
+    "kind": "LOCAL"
+  },
+  "unit_tests_optimized": {
+    "methods": 92,
+    "passed": 92,
+    "kind": "LOCAL"
+  },
+  "synthetic_negatives": {
+    "cases": 1024,
+    "passed": 1024
+  },
+  "actual_model_calls": 0,
+  "actual_work_posts": 0,
+  "atlas_one_dispatches": 0,
+  "alexandria_graph_writes": 0,
+  "scientific_validation": false,
+  "real_qpu": false,
+  "real_host_principal": false,
+  "ci_verified": false,
+  "pr_merged": false,
+  "host_deployed": false,
+  "canon_ratified": false,
+  "note": "Local source-only tests 92 normal + 92 optimized; 1024 synthetic negatives; no CI/host proof. Private host locator omitted from current public catalog; historical commit retained.",
+  "private_broker_locator_public_manifest": "WITHHELD_CURRENT_HEAD",
+  "historical_git_objects_unchanged": true
+}

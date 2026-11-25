@@ -1,0 +1,20 @@
+{
+  "schema": "atlas.labs.experiment-candidate/v0.1",
+  "experiment_id": "pr61.native.offline.001",
+  "lab_id": "fusion-plasma",
+  "source_id": "stars2-source-gateway",
+  "title": "Synthetic source-only finite computation",
+  "hypothesis": "A frozen numerical fixture returns its expected finite energy quantity.",
+  "falsifier": "A second isolated replay changes its signed quantity or source fingerprint.",
+  "model_kind": "SYNTHETIC_MODEL",
+  "model_revision": "local-no-hardware-v0.1",
+  "quantities": [
+    {"name": "simulated_energy", "value": "2.500", "unit": "J", "uncertainty": "0.125", "evidence_class": "SYNTHETIC_MODEL_ONLY"}
+  ],
+  "ontology": {"edition": "Ariadne v0.7", "registry_sha256": "07533cf7a6b6f567259962bf73efee9b22b47cbacb429499787800e07864e5a6", "coordinate": "H01.S01.N01"},
+  "origin_mode": "PUBLIC",
+  "source_scope": "PUBLIC_REPORTED",
+  "authority": "none",
+  "canon": false,
+  "deployment": false
+}
