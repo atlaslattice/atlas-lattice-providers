@@ -1,0 +1,18 @@
+{
+  "schema": "atlas.labs.experiment-candidate/v0.1",
+  "experiment_id": "AQL-ACOUSTIC-0001",
+  "lab_id": "physics-mathematics",
+  "source_id": "acoustic-model-spec",
+  "title": "Synthetic binary acoustic readout example",
+  "hypothesis": "An idealized synthetic readout distinguishes an injected 1,0 bit pair.",
+  "falsifier": "Independent numerical replay produces a different bit or fails the agreed tolerance.",
+  "model_kind": "SYNTHETIC_MODEL",
+  "model_revision": "fixture-v0.1-not-hardware",
+  "quantities": [{"name": "output_bit", "value": "1", "unit": "bit", "uncertainty": "0", "evidence_class": "SYNTHETIC_MODEL_ONLY"}],
+  "ontology": null,
+  "origin_mode": "PUBLIC",
+  "source_scope": "PUBLIC_REPORTED",
+  "authority": "none",
+  "canon": false,
+  "deployment": false
+}
